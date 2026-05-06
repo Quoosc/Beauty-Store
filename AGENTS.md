@@ -14,15 +14,15 @@ This folder contains the authoritative Figma exports and architecture/UI descrip
 Before implementing any page or component:
 1. Find the corresponding screen in `src/app/pages/` or `src/app/components/`
 2. Match: colors, layout, spacing, typography, interactions
-3. Use the design token mappings in `../docs/design-reference.md`
+3. Use the design token mappings in `docs/design-reference.md`
 
 Do NOT invent UI that deviates from `src/` designs without explicit user instruction.
 
 # Project Documentation
 
-Full context, guidelines and conventions are in `../docs/`:
-- `system-overview.md`   — Architecture, tech stack, screens, API endpoints
-- `coding-convention.md` — TypeScript, component, store, service conventions
-- `user-stories.md`      — 14 user stories with acceptance criteria
-- `design-reference.md`  — Design tokens, component patterns, compliance checklist
+Full context, guidelines and conventions are in `docs/`:
+- `docs/system-overview.md`   — Architecture, tech stack, screens, API endpoints
+- `docs/coding-convention.md` — TypeScript, component, store, service conventions
+- `docs/user-stories.md`      — 14 user stories with acceptance criteria
+- `docs/design-reference.md`  — Design tokens, component patterns, compliance checklist
 <!-- END:beautystore-design-rules -->

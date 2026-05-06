@@ -1,39 +1,32 @@
 import axios from "axios";
 
+/**
+ * Axios instance cho BeautyERP Backend
+ *
+ * Auth cơ chế: httpOnly cookie (JWT)
+ * - Backend set cookie sau login: Set-Cookie: jwt=...; HttpOnly; Secure; SameSite=Strict
+ * - withCredentials: true → trình duyệt tự gửi cookie trong mọi request
+ * - KHÔNG dùng Authorization: Bearer header
+ * - KHÔNG có refresh token — TTL JWT là 8 giờ, hết thì login lại
+ */
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,   // gửi httpOnly cookie tự động
   headers: { "Content-Type": "application/json" },
   timeout: 10000,
 });
 
-api.interceptors.request.use((config) => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
+/**
+ * Response interceptor — handle 401 (session hết hạn)
+ * Redirect về /login, không có refresh token flow
+ */
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
-      original._retry = true;
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (refreshToken) {
-        try {
-          const { data } = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-            { refreshToken }
-          );
-          localStorage.setItem("accessToken", data.accessToken);
-          original.headers.Authorization = `Bearer ${data.accessToken}`;
-          return api(original);
-        } catch {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login";
-        }
+  (error) => {
+    if (error.response?.status === 401) {
+      // Session hết hạn hoặc token bị revoke (Redis blacklist)
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);

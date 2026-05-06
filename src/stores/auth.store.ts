@@ -1,49 +1,88 @@
 import { create } from "zustand";
-import { User } from "@/types";
+import { User, UserRole } from "@/types";
 import { authService } from "@/services/auth.service";
+
+/**
+ * LƯU Ý KIẾN TRÚC: Backend KHÔNG có GET /auth/me
+ * User info chỉ nhận được từ LoginResponse body sau POST /auth/login.
+ * Để persist qua page refresh, lưu user info vào sessionStorage (không phải token).
+ * Session hết hạn (8h) → 401 → axios interceptor → redirect /login.
+ */
+
+const SESSION_KEY = "erp_user";
+
+function loadUserFromSession(): User | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = sessionStorage.getItem(SESSION_KEY);
+    return stored ? (JSON.parse(stored) as User) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveUserToSession(user: User | null): void {
+  if (typeof window === "undefined") return;
+  if (user) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+  } else {
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+}
 
 interface AuthStore {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** Đăng nhập — backend set httpOnly cookie 'jwt', trả User object trong body */
+  login: (username: string, password: string) => Promise<User>;
+  /** Đăng xuất — gọi backend revoke JWT + xóa cookie */
   logout: () => Promise<void>;
-  fetchMe: () => Promise<void>;
+  /** Xóa state (dùng khi axios interceptor bắt 401) */
+  clearAuth: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  user: null,
-  isLoading: false,
-  isAuthenticated: false,
+/** Map role → route redirect sau login */
+export const ROLE_REDIRECT: Record<UserRole, string> = {
+  ADMIN: "/admin",
+  BRANCH_MANAGER: "/branch-manager",
+  CASHIER: "/pos/shift",
+  WAREHOUSE_STAFF: "/warehouse",
+};
 
-  login: async (email, password) => {
+const initialUser = loadUserFromSession();
+
+export const useAuthStore = create<AuthStore>((set) => ({
+  // Khôi phục user từ sessionStorage nếu còn (page refresh)
+  user: initialUser,
+  isLoading: false,
+  isAuthenticated: !!initialUser,
+
+  login: async (username, password) => {
     set({ isLoading: true });
     try {
-      const { data } = await authService.login(email, password);
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      set({ user: data.data.user, isAuthenticated: true });
+      const { data } = await authService.login(username, password);
+      const user = data.data.user;
+      saveUserToSession(user); // persist để page refresh không mất
+      set({ user, isAuthenticated: true });
+      return user;
     } finally {
       set({ isLoading: false });
     }
   },
 
   logout: async () => {
-    await authService.logout().catch(() => {});
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    set({ user: null, isAuthenticated: false });
-  },
-
-  fetchMe: async () => {
     set({ isLoading: true });
     try {
-      const { data } = await authService.getMe();
-      set({ user: data.data, isAuthenticated: true });
-    } catch {
-      set({ user: null, isAuthenticated: false });
+      await authService.logout().catch(() => { /* ignore network error */ });
     } finally {
-      set({ isLoading: false });
+      saveUserToSession(null);
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
+  },
+
+  clearAuth: () => {
+    saveUserToSession(null);
+    set({ user: null, isAuthenticated: false });
   },
 }));
