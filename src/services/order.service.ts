@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { ApiResponse, Order, ReturnTransaction } from "@/types";
+import { ApiResponse, CancelLogStatus, Order, ReturnTransaction } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -34,6 +34,16 @@ export interface CreateOrderPayload {
   tenderedAmount: number;
 }
 
+export interface CancelRequest {
+  id: string;
+  orderId: string;
+  cashierName: string;
+  orderTotal: number;
+  reason: string;
+  requestedAt: string;
+  status: CancelLogStatus;
+}
+
 export const orderService = {
   /**
    * Tạo đơn hàng — BẮT BUỘC gửi Idempotency-Key header (UUID ngẫu nhiên)
@@ -66,6 +76,12 @@ export const orderService = {
   /** BRANCH_MANAGER từ chối yêu cầu hủy */
   rejectCancel: (id: string) =>
     api.post<ApiResponse<Order>>(`/order/orders/${id}/cancel/reject`),
+
+  /** Danh sách yêu cầu hủy đơn chờ duyệt — BRANCH_MANAGER, ADMIN */
+  getCancelRequests: async (params?: { page?: number; size?: number; status?: string }) => {
+    const res = await api.get(`/order/cancel-requests`, { params });
+    return res.data.data;
+  },
 
   getReceipt: (id: string) =>
     api.get<ApiResponse<string>>(`/order/orders/receipts/${id}`),

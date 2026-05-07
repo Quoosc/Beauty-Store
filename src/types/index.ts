@@ -272,7 +272,8 @@ export type NotificationType =
   | "SHIFT_VARIANCE"
   | "CANCEL_APPROVAL"
   | "PO_PARTIAL"
-  | "REPORT_READY";
+  | "REPORT_READY"
+  | "ACCOUNT_LOCKED";  // Admin nhận khi tài khoản bị khóa sau 5 lần sai
 
 export interface Notification {
   id: string;
