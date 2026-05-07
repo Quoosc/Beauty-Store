@@ -12,7 +12,7 @@ import type { Product, Category, ProductStatus } from "@/types";
 const formatVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
-export default function ProductsPage() {
+export default function ManagerProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -119,7 +119,7 @@ export default function ProductsPage() {
               </svg>
             </div>
           ) : products.length === 0 ? (
-            <div className="flex flex-col items-center py-16 text-center">
+            <div className="flex flex-col items-center py-16">
               <Package className="w-12 h-12 text-gray-200 mb-3" />
               <p className="text-gray-500">Không có sản phẩm nào</p>
             </div>
@@ -204,7 +204,6 @@ export default function ProductsPage() {
           )}
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500">Trang {page + 1} / {totalPages}</p>
