@@ -1,10 +1,17 @@
-# BeautyStore FE — System Overview
+# BeautyERP FE — System Overview
 
 ## 1. Giới thiệu dự án
 
-BeautyStore FE là giao diện người dùng (customer-facing storefront) của hệ thống bán lẻ mỹ phẩm BeautyStore. Đây là ứng dụng web dành cho **khách hàng cuối** — người dùng có thể duyệt sản phẩm, thêm vào giỏ hàng, thanh toán và quản lý tài khoản.
+BeautyERP FE là **giao diện nội bộ (internal ERP)** của hệ thống quản lý bán lẻ mỹ phẩm BeautyERP, phục vụ **4 vai trò nhân viên**:
 
-**Khác biệt so với BeautyERP:** BeautyERP là hệ thống nội bộ dành cho nhân viên (Admin, Cashier, Branch Manager, Warehouse Staff). BeautyStore FE là cổng mua sắm công khai dành cho khách hàng.
+| Role | Redirect sau login | Phạm vi chính |
+|------|--------------------|--------------|
+| `ADMIN` | `/admin` | Quản lý toàn hệ thống, tài khoản, cấu hình, audit |
+| `BRANCH_MANAGER` | `/branch-manager` | Dashboard chi nhánh, phê duyệt, báo cáo |
+| `CASHIER` | `/pos/shift` | Bán hàng tại quầy (POS), ca làm việc |
+| `WAREHOUSE_STAFF` | `/warehouse` | Quản lý kho, nhập hàng, điều chỉnh |
+
+> **Lưu ý quan trọng:** BeautyERP FE là cổng nội bộ cho nhân viên — **không phải** cổng mua sắm cho khách hàng. Không có customer registration, không có customer cart, không có customer checkout.
 
 ---
 
@@ -30,81 +37,44 @@ BeautyStore FE là giao diện người dùng (customer-facing storefront) của
 ### 3.1 Kiến trúc tổng thể
 
 ```
-Browser (Khách hàng)
+Browser (Nhân viên — 4 roles)
        │
        ▼
 ┌──────────────────────────────────────────┐
-│        BeautyStore FE (Next.js)          │
+│        BeautyERP FE (Next.js)            │
 │                                          │
 │  ┌──────────────┐  ┌──────────────────┐  │
 │  │  App Router  │  │  Zustand Stores  │  │
-│  │  (Pages)     │  │  (Client State)  │  │
+│  │  (Pages)     │  │  Auth/POS/Notif  │  │
 │  └──────────────┘  └──────────────────┘  │
 │           │                              │
 │  ┌──────────────────────────────────┐    │
 │  │      Service Layer (Axios)       │    │
 │  └──────────────────────────────────┘    │
 └──────────────────────────────────────────┘
-       │  HTTP / REST API
+       │  HTTP / REST API (httpOnly cookie JWT)
        ▼
-┌────────────────────────┐
-│   BeautyERP Backend    │
-│  (Spring Cloud + MS)   │
-└────────────────────────┘
+┌──────────────────────────────────────────┐
+│   BeautyERP API Gateway :8080            │
+│   ├── Verify JWT + Redis blacklist       │
+│   ├── Inject X-User-Id, X-Role, X-Branch-Id headers
+│   └── Route → 7 microservices (8081–8087)│
+└──────────────────────────────────────────┘
 ```
 
-### 3.2 Cấu trúc thư mục chuẩn
+### 3.2 Phân layer (bắt buộc tuân thủ)
 
 ```
-beautystore-fe/
-├── src/
-│   ├── app/                        ← Next.js App Router (pages only)
-│   │   ├── page.tsx                ← Trang chủ (Hero, Categories, Sale Banner)
-│   │   ├── layout.tsx              ← Root layout (Navbar, Footer, Toaster)
-│   │   ├── globals.css
-│   │   ├── login/
-│   │   │   └── page.tsx            ← Đăng nhập
-│   │   ├── register/
-│   │   │   └── page.tsx            ← Đăng ký tài khoản
-│   │   ├── products/
-│   │   │   ├── page.tsx            ← Danh sách & tìm kiếm sản phẩm
-│   │   │   └── [slug]/
-│   │   │       └── page.tsx        ← Chi tiết sản phẩm
-│   │   ├── cart/
-│   │   │   └── page.tsx            ← Giỏ hàng
-│   │   ├── checkout/
-│   │   │   └── page.tsx            ← Thanh toán
-│   │   ├── orders/
-│   │   │   ├── page.tsx            ← Lịch sử đơn hàng (auth required)
-│   │   │   └── [id]/
-│   │   │       └── page.tsx        ← Chi tiết đơn hàng
-│   │   ├── sale/
-│   │   │   └── page.tsx            ← Sản phẩm khuyến mãi
-│   │   └── account/
-│   │       └── page.tsx            ← Trang tài khoản cá nhân
-│   ├── components/
-│   │   ├── layout/                 ← Navbar, Footer
-│   │   ├── shared/                 ← ProductCard, CategoryCard, v.v.
-│   │   └── ui/                     ← shadcn/ui — KHÔNG sửa trực tiếp
-│   ├── services/                   ← Tất cả API calls (Axios)
-│   │   ├── auth.service.ts
-│   │   ├── product.service.ts
-│   │   ├── order.service.ts
-│   │   └── cart.service.ts
-│   ├── stores/                     ← Zustand stores
-│   │   ├── auth.store.ts
-│   │   └── cart.store.ts
-│   ├── lib/
-│   │   ├── axios.ts                ← Axios instance + interceptors
-│   │   └── utils.ts                ← cn() và helpers
-│   ├── constants/                  ← App-wide constants
-│   └── types/
-│       └── index.ts                ← TypeScript interfaces
-├── docs/                           ← Tài liệu dự án (thư mục này)
-├── AGENTS.md
-├── CLAUDE.md
-├── package.json
-└── next.config.ts
+Page (app/**/page.tsx)
+  │  "use client" chỉ khi cần state/event. Không gọi service trực tiếp.
+  ▼
+Hooks (hooks/) / Stores (stores/)
+  │  Business logic, state management. Gọi services.
+  ▼
+Services (services/*.service.ts)
+  │  Chỉ gọi API — không có business logic. Dùng api từ lib/axios.ts.
+  ▼
+lib/axios.ts  →  API Gateway :8080/api/v1
 ```
 
 ---
@@ -115,90 +85,157 @@ beautystore-fe/
 
 | Token | Tailwind class | Hex | Ứng dụng |
 |-------|----------------|-----|----------|
-| Primary | `pink-600` | `#DB2777` | CTA buttons, links, accents |
-| Primary Hover | `pink-700` | `#BE185D` | Button hover states |
-| Primary Light | `pink-50` | `#FFF1F2` | Section backgrounds |
-| Hero Gradient | `from-pink-50 to-rose-100` | — | Hero section background |
-| Admin Gradient | `from-[#FF69B4] to-[#D946A6]` | — | Gradient elements (from src/) |
-| Text Primary | `gray-800` | `#1F2937` | Main headings |
+| Primary | `pink-600` | `#DB2777` | CTA buttons, active states, accents |
+| Primary Hover | `pink-700` | `#BE185D` | Button hover |
+| Primary Light | `pink-50` | `#FFF1F2` | Section backgrounds, highlights |
+| Gradient | `from-[#FF69B4] to-[#D946A6]` | — | Sidebar headers, admin cards |
+| Text Primary | `gray-800` | `#1F2937` | Headings, labels |
 | Text Secondary | `gray-600` | `#4B5563` | Body text |
 | Text Muted | `gray-400` | `#9CA3AF` | Placeholder, disabled |
 
-> **Bắt buộc:** Mọi màu sắc phải khớp với thiết kế trong thư mục `src/` tại root workspace.
-> Xem [design-reference.md](./design-reference.md) để biết chi tiết.
+> **Bắt buộc:** Mọi màu sắc khớp 100% với thiết kế trong thư mục `src/` tại root workspace. Xem [design-reference.md](./design-reference.md).
 
 ### 4.2 Typography
 
 | Ngữ cảnh | Class | Ví dụ |
 |---------|-------|-------|
-| Hero heading | `text-4xl md:text-5xl font-bold text-gray-800` | "Khám phá vẻ đẹp của bạn" |
-| Section heading | `text-2xl font-bold` | "Danh mục nổi bật" |
-| Card title | `font-medium text-gray-700` | Tên sản phẩm |
-| Price | `text-pink-600 font-bold` | "299.000₫" |
+| Page heading | `text-2xl font-bold text-gray-800` | "Quản lý ca làm việc" |
+| Section heading | `text-lg font-semibold` | "Thông tin ca" |
+| Table header | `text-sm font-medium text-gray-700` | "Trạng thái" |
+| Price / KPI | `text-pink-600 font-bold text-xl` | "5.420.000₫" |
 | Body | `text-gray-600 text-sm` | Mô tả |
+| Badge | `text-xs font-medium` | Status badge |
 
 ### 4.3 shadcn/ui Components sử dụng
 
 | Component | Ứng dụng |
 |-----------|---------|
-| `Button` | CTA, actions (variant: default=pink, outline, ghost) |
-| `Card`, `CardContent`, `CardHeader` | Product cards, forms |
-| `Input`, `Label` | Forms (login, search, checkout) |
-| `Badge` | Tags, trạng thái đơn hàng |
-| `Sheet` | Mobile menu, cart drawer |
-| `Separator` | Dividers trong cart, checkout |
-| `DropdownMenu` | User account menu |
-| `Sonner` | Toast notifications (success/error) |
+| `Button` | CTA, actions (variant: default=pink, outline, ghost, destructive) |
+| `Card`, `CardContent`, `CardHeader` | KPI cards, forms, info panels |
+| `Input`, `Label` | Forms (login, POS search, order forms) |
+| `Badge` | Status tags (OrderStatus, ShiftStatus, POStatus) |
+| `Sheet` | Mobile drawer |
+| `Dialog` | Confirmation dialogs, receipt preview, approval dialogs |
+| `Table`, `TableBody`, `TableRow` | Order lists, inventory tables, audit logs |
+| `Sonner` | Toast notifications (success/error/warning) |
+| `Select` | Dropdowns (filter, role selector) |
+| `Tabs` | Role-based views, report periods |
 
 ---
 
-## 5. Danh sách màn hình
+## 5. Danh sách màn hình theo role
 
-| Route | Tên màn hình | Auth | Mô tả |
-|-------|-------------|------|-------|
-| `/` | Trang chủ | Public | Hero, danh mục nổi bật, sale banner |
-| `/products` | Danh sách sản phẩm | Public | Search, filter, phân trang |
-| `/products/[slug]` | Chi tiết sản phẩm | Public | Ảnh, mô tả, giá, thêm vào giỏ |
-| `/cart` | Giỏ hàng | Public | Danh sách, điều chỉnh SL, tóm tắt |
-| `/checkout` | Thanh toán | Required | Địa chỉ, xác nhận, đặt hàng |
-| `/login` | Đăng nhập | Guest-only | Form email/password |
-| `/register` | Đăng ký | Guest-only | Form tạo tài khoản |
-| `/sale` | Khuyến mãi | Public | Sản phẩm giảm giá |
-| `/orders` | Lịch sử đơn hàng | Required | Danh sách đơn hàng |
-| `/orders/[id]` | Chi tiết đơn hàng | Required | Trạng thái, items, tổng tiền |
-| `/account` | Tài khoản | Required | Thông tin cá nhân, đổi mật khẩu |
+### CASHIER — Wave 2 (Core POS)
+| Route | Màn hình | Status |
+|-------|---------|--------|
+| `/pos/shift` | Quản lý ca (mở/xem/đóng) | ✅ DONE |
+| `/pos/order` | POS Bán hàng | 🔲 TODO |
+| `/cashier/orders` | Lịch sử đơn hàng của cashier | 🔲 TODO |
+| `/orders/[orderId]` | Chi tiết đơn hàng | 🔲 TODO |
+| `/returns/new` | Tạo giao dịch trả hàng | 🔲 TODO |
+
+### WAREHOUSE_STAFF — Wave 3
+| Route | Màn hình | Status |
+|-------|---------|--------|
+| `/warehouse` | Dashboard kho (tồn kho thấp, PO chờ) | 🔲 TODO |
+| `/inventory/stock` | Xem tồn kho per sản phẩm | 🔲 TODO |
+| `/inventory/purchase-orders` | Danh sách Purchase Orders | 🔲 TODO |
+| `/inventory/purchase-orders/create` | Tạo PO | 🔲 TODO |
+| `/inventory/receive/[poId]` | Nhận hàng theo PO | 🔲 TODO |
+| `/inventory/adjustments` | Ghi hàng hỏng/thất thoát | 🔲 TODO |
+
+### BRANCH_MANAGER — Wave 3
+| Route | Màn hình | Status |
+|-------|---------|--------|
+| `/branch-manager` | Dashboard chi nhánh (KPI, revenue, alerts) | 🔲 TODO |
+| `/manager/orders` | Duyệt yêu cầu hủy đơn > 500k | 🔲 TODO |
+| `/manager/inventory` | Duyệt điều chỉnh kho > 10% | 🔲 TODO |
+| `/manager/products` | Quản lý sản phẩm chi nhánh | 🔲 TODO |
+| `/manager/purchase-orders` | Xem PO chi nhánh | 🔲 TODO |
+
+### ADMIN — Wave 5
+| Route | Màn hình | Status |
+|-------|---------|--------|
+| `/admin` | Admin Dashboard (KPI toàn hệ thống) | 🔲 TODO |
+| `/user-management` | CRUD tài khoản nhân viên | 🔲 TODO |
+| `/audit-logs` | Xem audit log (immutable) | 🔲 TODO |
+| `/system-configuration` | Cập nhật system_configs (threshold, rate) | 🔲 TODO |
+
+### SHARED — Wave 3–5
+| Route | Màn hình | Role | Status |
+|-------|---------|------|--------|
+| `/products` | Danh sách & CRUD sản phẩm | ADMIN + BM | 🔲 TODO |
+| `/products/create` | Tạo sản phẩm mới | ADMIN + BM | 🔲 TODO |
+| `/products/[id]/edit` | Sửa sản phẩm | ADMIN + BM | 🔲 TODO |
+| `/categories` | Quản lý danh mục 2 cấp | ADMIN + BM | 🔲 TODO |
+| `/supplier-management` | CRUD nhà cung cấp | ADMIN + WS | 🔲 TODO |
+| `/loyalty/members` | Xem thành viên loyalty | ADMIN + BM | 🔲 TODO |
+| `/promotions` | CRUD promotion | ADMIN + BM | 🔲 TODO |
+| `/coupons` | CRUD coupon | ADMIN + BM | 🔲 TODO |
+| `/revenue-report` | Báo cáo doanh thu (charts + export) | ADMIN + BM | 🔲 TODO |
+| `/inventory-report` | Báo cáo tồn kho (slow-moving, low-stock) | ADMIN + BM + WS | 🔲 TODO |
+| `/notifications` | Notification center (polling 30s) | All | 🔲 TODO |
+| `/force-change-password` | Đổi mật khẩu bắt buộc lần đầu | All | 🔲 TODO |
+| `/change-password` | Đổi mật khẩu tự nguyện | All | 🔲 TODO |
 
 ---
 
 ## 6. State Management (Zustand)
 
-### 6.1 Cart Store
-
-```typescript
-interface CartStore {
-  items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
-  clearCart: () => void;
-  totalItems: () => number;
-  totalPrice: () => number;
-}
-```
-
-- Persisted vào `localStorage` key `beautystore-cart`
-- Tính toán giỏ hàng hoàn toàn client-side, không round-trip server
-
-### 6.2 Auth Store
+### 6.1 Auth Store (`stores/auth.store.ts`) ✅ DONE
 
 ```typescript
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  setUser: (user: User) => void;
+  login: (username: string, password: string) => Promise<User>;  // username, KHÔNG phải email
+  logout: () => Promise<void>;
+  clearAuth: () => void;
+}
+```
+
+- Persist user info vào `sessionStorage` (không phải token — backend set httpOnly cookie)
+- `ROLE_REDIRECT`: ADMIN → `/admin`, BRANCH_MANAGER → `/branch-manager`, CASHIER → `/pos/shift`, WAREHOUSE_STAFF → `/warehouse`
+- Backend **không có** `GET /auth/me` — user info chỉ từ sessionStorage
+
+### 6.2 POS Store (`stores/pos.store.ts`) ✅ DONE
+
+```typescript
+interface POSStore {
+  currentShift: Shift | null;
+  cartItems: CartItem[];
+  appliedCoupon: { code: string; discountAmount: number } | null;
+  member: { id: string; name: string; code: string; phone: string; points: number } | null;
+  appliedPoints: number;
+  tenderedAmount: string;
+
+  addToCart(product, qty?): void;
+  removeFromCart(productId): void;
+  updateQuantity(productId, qty): void;
+  clearCart(): void;
+  saveDraft(): void;       // → localStorage('pos_draft')
+  loadDraft(): boolean;
+  clearDraft(): void;
+  resetForNewOrder(): void; // gọi sau khi thanh toán thành công
+}
+```
+
+- Draft autosave mỗi 10s → `localStorage('pos_draft')`
+- Xóa draft sau `resetForNewOrder()`
+- Validate stock tại client (không vượt quá available qty hiển thị)
+
+### 6.3 Notification Store (`stores/notification.store.ts`) 🔲 TODO
+
+```typescript
+interface NotificationStore {
+  unreadCount: number;
+  notifications: Notification[];
+  isPolling: boolean;
+  startPolling(): void;     // GET /unread-count mỗi 30s
+  stopPolling(): void;
+  markAsRead(id: string): void;
+  loadNotifications(page?: number): void;
 }
 ```
 
@@ -216,62 +253,180 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
 
 ```typescript
 // lib/axios.ts
-const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true,   // gửi httpOnly JWT cookie
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,  // http://localhost:8080/api/v1
+  withCredentials: true,   // tự gửi httpOnly JWT cookie trong mọi request
   timeout: 10000,
 });
+// Response interceptor: status 401 → window.location.href = "/login"
+// KHÔNG có Authorization: Bearer header — JWT qua cookie
 ```
 
-### 7.3 Endpoints chính
+### 7.3 API Gateway routing
 
-| Endpoint | Method | Mô tả |
-|----------|--------|-------|
-| `/auth/login` | POST | Đăng nhập, nhận JWT httpOnly cookie |
-| `/auth/logout` | POST | Đăng xuất, xóa cookie |
-| `/auth/register` | POST | Đăng ký tài khoản |
-| `/catalog/products` | GET | Danh sách sản phẩm (phân trang, filter) |
-| `/catalog/products/search` | GET | Tìm kiếm theo tên/SKU |
-| `/catalog/products/{slug}` | GET | Chi tiết sản phẩm |
-| `/catalog/categories` | GET | Danh mục (2 cấp) |
-| `/orders` | POST | Tạo đơn hàng |
-| `/orders` | GET | Lịch sử đơn hàng |
-| `/orders/{id}` | GET | Chi tiết đơn hàng |
-| `/promotions/coupons/validate` | POST | Validate mã coupon |
-| `/loyalty/members` | GET | Thông tin loyalty member |
+```
+Client gọi: GET /api/v1/{service}/{path}
+Gateway: strip "/api/v1" → forward /{service}/{path} → microservice (context-path /{service})
+```
+
+| FE gọi (gateway) | StripPrefix | Service nhận | Context-path | Port |
+|-----------------|-------------|-------------|-------------|------|
+| `/api/v1/auth/**` | =2 | auth-service | `/auth` | 8081 |
+| `/api/v1/catalog/**` | =2 | catalog-service | `/catalog` | 8082 |
+| `/api/v1/order/**` | =2 | order-service | `/order` | 8083 |
+| `/api/v1/inventory/**` | =2 | inventory-service | `/inventory` | 8084 |
+| `/api/v1/loyalty-promotion/**` | =2 | loyalty-promotion-service | `/loyalty-promotion` | 8085 |
+| `/api/v1/report/**` | =2 | report-service | `/report` | 8086 |
+| `/api/v1/notification-audit/**` | =2 | notification-audit-service | `/notification-audit` | 8087 |
+
+### 7.4 Endpoints theo service
+
+#### auth-service :8081 (`/api/v1/auth/**`)
+| Endpoint (relative) | Method | Mô tả | Role |
+|---------------------|--------|-------|------|
+| `/auth/login` | POST | Đăng nhập, set httpOnly cookie | Public |
+| `/auth/logout` | POST | Đăng xuất, Redis blacklist jti | All |
+| `/auth/change-password` | POST | Đổi mật khẩu (current + new) | All |
+| `/auth/accounts` | GET | Danh sách tài khoản | ADMIN |
+| `/auth/accounts` | POST | Tạo tài khoản nhân viên | ADMIN |
+| `/auth/accounts/{id}` | PUT | Cập nhật tài khoản | ADMIN |
+| `/auth/accounts/{id}` | DELETE | Vô hiệu hóa (soft-delete) | ADMIN |
+| `/auth/accounts/{id}/unlock` | POST | Mở khóa tài khoản | ADMIN |
+| `/auth/system-configs` | GET | Xem tất cả cấu hình | ADMIN |
+| `/auth/system-configs/{key}` | PUT | Cập nhật config → DEL Redis | ADMIN |
+
+#### catalog-service :8082 (`/api/v1/catalog/**`)
+| Endpoint (relative) | Method | Mô tả | Role |
+|---------------------|--------|-------|------|
+| `/catalog/products/search` | GET | Tìm kiếm full-text (q, categoryId, status, page, size) | All |
+| `/catalog/products/{id}` | GET | Chi tiết sản phẩm | All |
+| `/catalog/products` | POST | Tạo sản phẩm (multipart/form-data) | ADMIN/BM |
+| `/catalog/products/{id}` | PUT | Cập nhật sản phẩm | ADMIN/BM |
+| `/catalog/products/{id}` | DELETE | Ngừng kinh doanh (soft-delete) | ADMIN/BM |
+| `/catalog/categories` | GET | Danh sách danh mục (cây 2 cấp) | All |
+| `/catalog/categories` | POST | Tạo danh mục | ADMIN/BM |
+| `/catalog/categories/{id}` | PUT | Sửa danh mục | ADMIN/BM |
+| `/catalog/categories/{id}` | DELETE | Xóa danh mục (nếu không có sản phẩm) | ADMIN/BM |
+
+#### order-service :8083 (`/api/v1/order/**`)
+| Endpoint (relative) | Method | Mô tả | Role |
+|---------------------|--------|-------|------|
+| `/order/shifts` | POST | Mở ca (openingCash) | CASHIER |
+| `/order/shifts/current` | GET | Ca đang mở hiện tại | CASHIER |
+| `/order/shifts/{id}` | GET | Chi tiết ca | CASHIER/BM/ADMIN |
+| `/order/shifts/{id}/close` | POST | Đóng ca (closingCash + note) | CASHIER |
+| `/order/orders` | POST | Tạo đơn POS — **bắt buộc Idempotency-Key header** | CASHIER/BM/ADMIN |
+| `/order/orders/my` | GET | Đơn trong ca của cashier hiện tại | CASHIER |
+| `/order/orders/{id}` | GET | Chi tiết đơn | All |
+| `/order/orders/branch/{branchId}` | GET | Đơn của chi nhánh | BM/ADMIN |
+| `/order/orders/{id}/cancel` | POST | Yêu cầu hủy đơn | CASHIER/BM |
+| `/order/orders/{id}/cancel/approve` | POST | Duyệt hủy đơn | BM |
+| `/order/orders/{id}/cancel/reject` | POST | Từ chối hủy đơn | BM |
+| `/order/orders/receipts/{id}` | GET | Lấy receipt PDF (snapshot immutable) | CASHIER/BM/ADMIN |
+| `/order/returns` | POST | Tạo trả hàng | CASHIER |
+
+#### inventory-service :8084 (`/api/v1/inventory/**`)
+| Endpoint (relative) | Method | Mô tả | Role |
+|---------------------|--------|-------|------|
+| `/inventory/stock` | GET | Danh sách tồn kho (filter by branch) | WS/BM/ADMIN |
+| `/inventory/stock/{productId}` | GET | Tồn kho của 1 sản phẩm | WS/BM/ADMIN |
+| `/inventory/purchase-orders` | GET | Danh sách PO | WS/BM/ADMIN |
+| `/inventory/purchase-orders` | POST | Tạo PO | WS/ADMIN |
+| `/inventory/purchase-orders/{id}` | GET | Chi tiết PO | WS/BM/ADMIN |
+| `/inventory/purchase-orders/{id}/confirm` | POST | Xác nhận PO (PENDING→CONFIRMED) | BM/ADMIN |
+| `/inventory/purchase-orders/{id}/receive` | POST | Nhận hàng (qty, lot, expiryDate) | WS/ADMIN |
+| `/inventory/purchase-orders/{id}/cancel` | POST | Hủy PO | BM/ADMIN |
+| `/inventory/adjustments` | POST | Ghi nhận hàng hỏng/thất thoát | WS |
+| `/inventory/adjustments` | GET | Danh sách điều chỉnh PENDING | BM |
+| `/inventory/adjustments/{id}/approve` | POST | Duyệt điều chỉnh | BM |
+| `/inventory/adjustments/{id}/reject` | POST | Từ chối điều chỉnh | BM |
+| `/inventory/suppliers` | GET | Danh sách nhà cung cấp | WS/ADMIN |
+| `/inventory/suppliers` | POST | Tạo nhà cung cấp | WS/ADMIN |
+| `/inventory/suppliers/{id}` | PUT | Cập nhật nhà cung cấp | WS/ADMIN |
+
+#### loyalty-promotion-service :8085 (`/api/v1/loyalty-promotion/**`)
+| Endpoint (relative) | Method | Mô tả | Role |
+|---------------------|--------|-------|------|
+| `/loyalty-promotion/members` | GET | Danh sách loyalty members | BM/ADMIN |
+| `/loyalty-promotion/members/search` | GET | Tìm theo số điện thoại (POS lookup) | CASHIER |
+| `/loyalty-promotion/members` | POST | Đăng ký thành viên mới | CASHIER |
+| `/loyalty-promotion/members/{id}` | GET | Thông tin + điểm thành viên | CASHIER/BM |
+| `/loyalty-promotion/members/{id}/redeem` | POST | Đổi điểm (sync + SELECT FOR UPDATE) | CASHIER |
+| `/loyalty-promotion/coupons/validate` | POST | Validate coupon ≤ 300ms | CASHIER |
+| `/loyalty-promotion/coupons` | GET | Danh sách coupon | BM/ADMIN |
+| `/loyalty-promotion/coupons` | POST | Tạo coupon | BM/ADMIN |
+| `/loyalty-promotion/coupons/{id}` | PUT | Cập nhật coupon | BM/ADMIN |
+| `/loyalty-promotion/promotions` | GET | Danh sách promotion | BM/ADMIN |
+| `/loyalty-promotion/promotions` | POST | Tạo promotion | BM/ADMIN |
+| `/loyalty-promotion/promotions/{id}` | PUT | Cập nhật promotion | BM/ADMIN |
+
+#### report-service :8086 (`/api/v1/report/**`)
+| Endpoint (relative) | Method | Mô tả | Role |
+|---------------------|--------|-------|------|
+| `/report/dashboard` | GET | Dashboard pre-aggregated (Redis cache 1h) | BM/ADMIN |
+| `/report/revenue` | GET | Báo cáo doanh thu sync (≤ 31 ngày, ≤ 2s) | BM/ADMIN |
+| `/report/revenue/async` | POST | Yêu cầu báo cáo async (> 31 ngày) | BM/ADMIN |
+| `/report/inventory` | GET | Báo cáo tồn kho (low-stock, slow-moving) | BM/ADMIN/WS |
+
+#### notification-audit-service :8087 (`/api/v1/notification-audit/**`)
+| Endpoint (relative) | Method | Mô tả | Role |
+|---------------------|--------|-------|------|
+| `/notification-audit/notifications/unread-count` | GET | Số chưa đọc — **polling mỗi 30s** | All |
+| `/notification-audit/notifications` | GET | Danh sách notification (page, type filter) | All |
+| `/notification-audit/notifications/{id}/read` | PATCH | Đánh dấu đã đọc + điều hướng deeplink | All |
+| `/notification-audit/audit-logs` | GET | Audit log (phân trang, ADMIN only) | ADMIN |
 
 ---
 
 ## 8. Authentication Flow
 
 ```
-Khách hàng nhập email + password
+Nhân viên nhập username + password   ← KHÔNG dùng email
           │
           ▼
-   POST /auth/login
+   POST /api/v1/auth/login
           │
-   ┌──────┴──────┐
-   │   Success   │ → httpOnly cookie JWT được set
-   └──────┬──────┘   → Zustand: setUser(userData)
-          │           → Redirect về trang chủ / trang trước đó
+   ┌──────┴──────────────┐
+   │   200 OK            │ → Backend set httpOnly cookie 'jwt' (8h TTL)
+   └──────┬──────────────┘   → Response body: ApiResponse<{ user: User }>
+          │                  → auth.store.login() → setUser + sessionStorage
+          │                  → Redirect theo ROLE_REDIRECT map
           │
-   ┌──────┴──────┐
-   │   Failed    │ → Toast error "Email hoặc mật khẩu không đúng"
-   └─────────────┘
+   ┌──────┴──────────────┐
+   │   401               │ → "Sai tên đăng nhập hoặc mật khẩu"
+   └──────┬──────────────┘
+          │
+   ┌──────┴──────────────┐
+   │   423 / 403         │ → forceChangePassword=true → redirect /force-change-password
+   └─────────────────────┘   hoặc isLocked=true → "Tài khoản bị khóa, liên hệ Admin"
 
-Mọi request sau đó: httpOnly cookie tự động gửi kèm
-→ Backend verify JWT tại API Gateway
-→ Nếu 401: redirect về /login
+Mọi request sau đó:
+  → Cookie 'jwt' tự gửi kèm (withCredentials: true)
+  → API Gateway verify JWT + Redis blacklist
+  → Inject X-User-Id, X-Role, X-Branch-Id → forward đến service
+  → 401 từ bất kỳ API nào → axios interceptor → redirect /login
+
+Page refresh trong cùng tab:
+  → Cookie 'jwt' tự gửi
+  → User info từ sessionStorage → restore auth state
+  → Cookie hết hạn (8h) → API 401 → redirect /login
+
+LƯU Ý: Backend KHÔNG có GET /auth/me endpoint.
+        Mở tab mới → sessionStorage trống → cần đăng nhập lại.
 ```
 
 ---
 
 ## 9. Các nguyên tắc bắt buộc
 
-1. **Tuân thủ thiết kế `src/`:** Mọi trang và component phải tham chiếu và khớp 100% với thiết kế trong thư mục `src/` tại root workspace.
-2. **Client-side cart:** Giỏ hàng tính toán hoàn toàn phía client (Zustand + localStorage), không round-trip server.
-3. **Responsive:** Mọi trang phải responsive từ mobile (375px) đến desktop (1440px).
-4. **Vietnamese UI:** Toàn bộ text giao diện bằng tiếng Việt.
-5. **Pink brand:** Primary color là `pink-600` (#DB2777), hover là `pink-700`.
-6. **httpOnly cookie:** Không lưu JWT vào localStorage — để backend set cookie.
-7. **Service layer:** Không gọi Axios trực tiếp trong component — luôn qua `services/`.
+1. **Tuân thủ thiết kế `src/`:** Mọi trang và component khớp 100% với thiết kế trong thư mục `src/` tại root workspace.
+2. **Phân layer nghiêm ngặt:** Page → Hooks/Stores → Services → Axios. **KHÔNG gọi Axios trực tiếp trong component.**
+3. **Không lưu JWT vào localStorage/sessionStorage** — backend set httpOnly cookie.
+4. **Không có refresh token flow** — hết phiên (8h) → redirect `/login`.
+5. **Idempotency-Key bắt buộc** khi `POST /order/orders` — generate UUID v4 phía client (đã tích hợp trong order.service.ts).
+6. **POS draft autosave:** `localStorage('pos_draft')` mỗi 10s, xóa sau `resetForNewOrder()`.
+7. **Notification polling:** `GET /notification-audit/notifications/unread-count` mỗi 30s — **KHÔNG dùng WebSocket.**
+8. **Branch isolation:** KHÔNG truyền branchId từ client body/param — backend tự lấy từ JWT header.
+9. **Responsive:** Mọi trang responsive từ mobile (375px) đến desktop (1440px). Desktop-first vì đây là ERP.
+10. **Vietnamese UI:** Toàn bộ text giao diện bằng tiếng Việt.
+11. **Không có customer features:** Không có `/register`, không có customer cart, không có customer checkout.

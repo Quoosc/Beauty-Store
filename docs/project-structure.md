@@ -20,88 +20,88 @@ beautystore-fe/
 │   │   │   └── page.tsx                ✅ DONE — ERP login (username + 4 roles + quick login)
 │   │   │
 │   │   ├── force-change-password/
-│   │   │   └── page.tsx                ← [TODO] Force đổi mật khẩu lần đầu
+│   │   │   └── page.tsx                ✅ DONE — Force đổi mật khẩu lần đầu
 │   │   ├── change-password/
-│   │   │   └── page.tsx                ← [TODO] Đổi mật khẩu tự nguyện
+│   │   │   └── page.tsx                ✅ DONE — Đổi mật khẩu tự nguyện
 │   │   │
 │   │   ├── admin/                      ← ADMIN only
-│   │   │   └── page.tsx                ← [TODO] Admin Dashboard (KPI, Revenue, Alerts)
+│   │   │   └── page.tsx                ✅ DONE — Admin Dashboard (KPI, Revenue, Alerts)
 │   │   │
 │   │   ├── branch-manager/             ← BRANCH_MANAGER only
-│   │   │   └── page.tsx                ← [TODO] Branch Manager Dashboard
+│   │   │   └── page.tsx                ✅ DONE — Branch Manager Dashboard
 │   │   │
 │   │   ├── pos/                        ← CASHIER (+ BRANCH_MANAGER)
 │   │   │   ├── shift/
 │   │   │   │   └── page.tsx            ✅ DONE — Mở/đóng ca, kết nối shiftService thực
 │   │   │   └── order/
-│   │   │       └── page.tsx            ← [TODO] POS Order (bán hàng)
+│   │   │       └── page.tsx            ✅ DONE — POS Order (bán hàng)
 │   │   │
 │   │   ├── cashier/
 │   │   │   └── orders/
-│   │   │       └── page.tsx            ← [TODO] Lịch sử đơn hàng của cashier
+│   │   │       └── page.tsx            ✅ DONE — Lịch sử đơn hàng của cashier
 │   │   │
 │   │   ├── orders/
 │   │   │   └── [orderId]/
-│   │   │       └── page.tsx            ← [TODO] Chi tiết đơn hàng
+│   │   │       └── page.tsx            ✅ DONE — Chi tiết đơn hàng
 │   │   │
 │   │   ├── returns/
 │   │   │   └── new/
-│   │   │       └── page.tsx            ← [TODO] Trả hàng có hóa đơn
+│   │   │       └── page.tsx            ✅ DONE — Trả hàng có hóa đơn
 │   │   │
 │   │   ├── products/                   ← ADMIN + BRANCH_MANAGER
-│   │   │   ├── page.tsx                ← [TODO] Danh sách sản phẩm
+│   │   │   ├── page.tsx                ✅ DONE — Danh sách sản phẩm
 │   │   │   ├── create/
-│   │   │   │   └── page.tsx            ← [TODO] Tạo sản phẩm mới
+│   │   │   │   └── page.tsx            ✅ DONE — Tạo sản phẩm mới
 │   │   │   └── [id]/edit/
-│   │   │       └── page.tsx            ← [TODO] Chỉnh sửa sản phẩm
+│   │   │       └── page.tsx            ✅ DONE — Chỉnh sửa sản phẩm
 │   │   │
 │   │   ├── categories/
-│   │   │   └── page.tsx                ← [TODO] Quản lý danh mục 2 cấp
+│   │   │   └── page.tsx                ✅ DONE — Quản lý danh mục 2 cấp
 │   │   │
 │   │   ├── supplier-management/
-│   │   │   └── page.tsx                ← [TODO] Quản lý nhà cung cấp
+│   │   │   └── page.tsx                ✅ DONE — Quản lý nhà cung cấp
 │   │   │
 │   │   ├── inventory/                  ← WAREHOUSE_STAFF + BRANCH_MANAGER
-│   │   │   ├── stock/page.tsx          ← [TODO] Tồn kho
+│   │   │   ├── stock/page.tsx          ✅ DONE — Tồn kho
 │   │   │   ├── purchase-orders/
-│   │   │   │   ├── page.tsx            ← [TODO] Danh sách Purchase Orders
-│   │   │   │   └── create/page.tsx     ← [TODO] Tạo Purchase Order
-│   │   │   ├── receive/[poId]/page.tsx ← [TODO] Nhận hàng theo PO
-│   │   │   └── adjustments/page.tsx    ← [TODO] Điều chỉnh kho
+│   │   │   │   ├── page.tsx            ✅ DONE — Danh sách Purchase Orders
+│   │   │   │   └── create/page.tsx     ✅ DONE — Tạo Purchase Order
+│   │   │   ├── receive/[poId]/page.tsx ✅ DONE — Nhận hàng theo PO
+│   │   │   └── adjustments/page.tsx    ✅ DONE — Điều chỉnh kho
 │   │   │
 │   │   ├── warehouse/
-│   │   │   └── page.tsx                ← [TODO] Warehouse Staff Dashboard
+│   │   │   └── page.tsx                ✅ DONE — Warehouse Staff Dashboard
 │   │   │
 │   │   ├── manager/                    ← BRANCH_MANAGER view
-│   │   │   ├── products/page.tsx       ← [TODO]
-│   │   │   ├── inventory/page.tsx      ← [TODO]
-│   │   │   ├── orders/page.tsx         ← [TODO] Duyệt hủy đơn giá trị cao
-│   │   │   └── purchase-orders/page.tsx ← [TODO]
+│   │   │   ├── products/page.tsx       ✅ DONE
+│   │   │   ├── inventory/page.tsx      ✅ DONE
+│   │   │   ├── orders/page.tsx         ✅ DONE — Duyệt hủy đơn giá trị cao
+│   │   │   └── purchase-orders/page.tsx ✅ DONE
 │   │   │
-│   │   ├── loyalty/members/page.tsx    ← [TODO] Loyalty Members
-│   │   ├── promotions/page.tsx         ← [TODO] Quản lý khuyến mãi
-│   │   ├── coupons/page.tsx            ← [TODO] Quản lý coupon
-│   │   ├── revenue-report/page.tsx     ← [TODO] Báo cáo doanh thu
-│   │   ├── inventory-report/page.tsx   ← [TODO] Báo cáo tồn kho
-│   │   ├── notifications/page.tsx      ← [TODO] Notification Center (polling 30s)
-│   │   ├── audit-logs/page.tsx         ← [TODO] Audit Logs (ADMIN only)
-│   │   ├── user-management/page.tsx    ← [TODO] Quản lý tài khoản (ADMIN only)
-│   │   └── system-configuration/page.tsx ← [TODO] Cấu hình hệ thống
+│   │   ├── loyalty/members/page.tsx    ✅ DONE — Loyalty Members
+│   │   ├── promotions/page.tsx         ✅ DONE — Quản lý khuyến mãi
+│   │   ├── coupons/page.tsx            ✅ DONE — Quản lý coupon
+│   │   ├── revenue-report/page.tsx     ✅ DONE — Báo cáo doanh thu
+│   │   ├── inventory-report/page.tsx   ✅ DONE — Báo cáo tồn kho
+│   │   ├── notifications/page.tsx      ✅ DONE — Notification Center (polling 30s)
+│   │   ├── audit-logs/page.tsx         ✅ DONE — Audit Logs (ADMIN only)
+│   │   ├── user-management/page.tsx    ✅ DONE — Quản lý tài khoản (ADMIN only)
+│   │   └── system-configuration/page.tsx ✅ DONE — Cấu hình hệ thống
 │   │
 │   ├── components/
 │   │   ├── layout/                     ← Layout per-role (port từ src/)
-│   │   │   ├── AdminSidebar.tsx        ← [TODO]
-│   │   │   ├── BranchManagerSidebar.tsx ← [TODO]
+│   │   │   ├── AdminSidebar.tsx        ✅ DONE
+│   │   │   ├── BranchManagerSidebar.tsx ✅ DONE
 │   │   │   ├── CashierSidebar.tsx      ✅ DONE — Next.js Link, active detection
-│   │   │   ├── WarehouseStaffSidebar.tsx ← [TODO]
-│   │   │   ├── Header.tsx              ← [TODO] Notifications badge, user info
-│   │   │   └── ERPLayout.tsx           ← [TODO] Wrapper: sidebar + header + main
+│   │   │   ├── WarehouseStaffSidebar.tsx ✅ DONE
+│   │   │   ├── Header.tsx              ✅ DONE — Notifications badge, user info
+│   │   │   └── ERPLayout.tsx           ✅ DONE — Wrapper: sidebar + header + main
 │   │   ├── shared/                     ← Reusable business components
-│   │   │   ├── KPICard.tsx             ← [TODO]
-│   │   │   ├── RevenueChart.tsx        ← [TODO]
-│   │   │   ├── AlertsPanel.tsx         ← [TODO]
-│   │   │   ├── NotificationBadge.tsx   ← [TODO]
-│   │   │   └── StatusBadge.tsx         ← [TODO]
+│   │   │   ├── KPICard.tsx             ← (inline trong pages, không tạo riêng)
+│   │   │   ├── RevenueChart.tsx        ← (inline trong revenue-report/page.tsx)
+│   │   │   ├── AlertsPanel.tsx         ← (inline trong dashboard pages)
+│   │   │   ├── NotificationBadge.tsx   ← (tích hợp trong Header.tsx)
+│   │   │   └── StatusBadge.tsx         ← (inline trong từng page)
 │   │   └── ui/                         ← shadcn/ui — KHÔNG sửa trực tiếp
 │   │
 │   ├── services/                       ← API calls — KHÔNG gọi Axios trong component
@@ -109,34 +109,34 @@ beautystore-fe/
 │   │   ├── product.service.ts          ✅ DONE — /catalog/products/search, CRUD, getImageUrl
 │   │   ├── order.service.ts            ✅ DONE — 8 endpoints + Idempotency-Key + returnService
 │   │   ├── shift.service.ts            ✅ DONE — open, close, getCurrent, getById
-│   │   ├── inventory.service.ts        ← [TODO] stock, adjustments
-│   │   ├── purchaseOrder.service.ts    ← [TODO] PO CRUD, receiveGoods
-│   │   ├── supplier.service.ts         ← [TODO]
-│   │   ├── loyalty.service.ts          ← [TODO] members, points, redeem
-│   │   ├── coupon.service.ts           ← [TODO] validate, CRUD
-│   │   ├── promotion.service.ts        ← [TODO]
-│   │   ├── notification.service.ts     ← [TODO] polling unread-count 30s
-│   │   ├── report.service.ts           ← [TODO] dashboard, revenue, inventory
-│   │   ├── auditLog.service.ts         ← [TODO]
-│   │   └── systemConfig.service.ts     ← [TODO]
+│   │   ├── inventory.service.ts        ✅ DONE — stock, adjustments, approve/reject
+│   │   ├── purchaseOrder.service.ts    ✅ DONE — PO CRUD, receiveGoods
+│   │   ├── supplier.service.ts         ✅ DONE — CRUD suppliers
+│   │   ├── loyalty.service.ts          ✅ DONE — members, points, redeem, history
+│   │   ├── coupon.service.ts           ✅ DONE — validate, CRUD
+│   │   ├── promotion.service.ts        ✅ DONE — CRUD, deactivate
+│   │   ├── notification.service.ts     ✅ DONE — unread-count, getAll, markAsRead
+│   │   ├── report.service.ts           ✅ DONE — dashboard, revenue (sync+async), inventory
+│   │   ├── auditLog.service.ts         ✅ DONE — getAll with filters
+│   │   └── systemConfig.service.ts     ✅ DONE — getAll, update
 │   │
 │   ├── stores/
 │   │   ├── auth.store.ts               ✅ DONE — sessionStorage persist, ROLE_REDIRECT, clearAuth
 │   │   ├── pos.store.ts                ✅ DONE — cart, draft autosave 10s, shift state
-│   │   └── notification.store.ts       ← [TODO] unread count, polling
+│   │   └── notification.store.ts       ✅ DONE — unread count, polling, markAsRead/All
 │   │
 │   ├── hooks/
-│   │   ├── useAuth.ts                  ← [TODO] auth guard helper
-│   │   ├── useNotificationPolling.ts   ← [TODO] polling 30s
-│   │   └── usePOSDraft.ts              ← [TODO] autosave hook (logic đã có trong pos.store)
+│   │   ├── useAuth.ts                  ← (auth guard tích hợp trong middleware.ts)
+│   │   ├── useNotificationPolling.ts   ✅ DONE — polling 30s, pause on visibilitychange
+│   │   └── usePOSDraft.ts              ← (autosave logic có trong pos.store)
 │   │
 │   ├── lib/
 │   │   ├── axios.ts                    ✅ DONE — withCredentials:true, 401→/login
 │   │   └── utils.ts                    ← có sẵn (shadcn)
 │   │
 │   ├── constants/
-│   │   ├── routes.ts                   ← [TODO] Tất cả route paths
-│   │   └── config.ts                   ← [TODO] App constants
+│   │   ├── routes.ts                   ← (routes inline trong middleware.ts và sidebars)
+│   │   └── config.ts                   ← (config qua NEXT_PUBLIC_API_URL env)
 │   │
 │   └── types/
 │       └── index.ts                    ✅ DONE — Đầy đủ types cho 7 microservices
@@ -229,9 +229,9 @@ LƯU Ý QUAN TRỌNG: Backend KHÔNG có GET /auth/me endpoint.
 | `/api/v1/catalog/**` | =2 | catalog-service :8082 | `/catalog` | `/products/search`, `/products/:id` |
 | `/api/v1/order/**` | =2 | order-service :8083 | `/order` | `/orders/**`, `/shifts/**`, `/returns/**` |
 | `/api/v1/inventory/**` | =2 | inventory-service :8084 | `/inventory` | `/stock/**`, `/purchase-orders/**` |
-| `/api/v1/loyalty-promotion/**` | =2 | loyalty :8085 | cần xác nhận | — |
-| `/api/v1/report/**` | =2 | report :8086 | cần xác nhận | — |
-| `/api/v1/notification-audit/**` | =2 | notification :8087 | cần xác nhận | — |
+| `/api/v1/loyalty-promotion/**` | =2 | loyalty-promotion-service :8085 | `/loyalty-promotion` | `/members/**`, `/coupons/**`, `/promotions/**` |
+| `/api/v1/report/**` | =2 | report-service :8086 | `/report` | `/dashboard`, `/revenue`, `/inventory` |
+| `/api/v1/notification-audit/**` | =2 | notification-audit-service :8087 | `/notification-audit` | `/notifications/**`, `/audit-logs` |
 
 ---
 
@@ -242,19 +242,20 @@ LƯU Ý QUAN TRỌNG: Backend KHÔNG có GET /auth/me endpoint.
 | `auth.service.ts` | ✅ Done | auth-service :8081 | login, logout, changePassword |
 | `account.service.ts` (trong auth) | ✅ Done | auth-service :8081 | CRUD accounts (ADMIN only) |
 | `product.service.ts` | ✅ Done | catalog-service :8082 | search, CRUD `/catalog/products` |
+| `category.service.ts` | ✅ Done | catalog-service :8082 | CRUD `/catalog/categories` |
 | `shift.service.ts` | ✅ Done | order-service :8083 | open, close, getCurrent |
 | `order.service.ts` | ✅ Done | order-service :8083 | create (+Idempotency-Key), 8 endpoints |
 | `returnService` (trong order) | ✅ Done | order-service :8083 | POST /order/returns |
-| `inventory.service.ts` | 🔲 TODO | inventory-service :8084 | stock, adjustments |
-| `purchaseOrder.service.ts` | 🔲 TODO | inventory-service :8084 | CRUD PO, receiveGoods |
-| `supplier.service.ts` | 🔲 TODO | inventory-service :8084 | CRUD suppliers |
-| `loyalty.service.ts` | 🔲 TODO | loyalty-promotion :8085 | members, points |
-| `coupon.service.ts` | 🔲 TODO | loyalty-promotion :8085 | validate, CRUD |
-| `promotion.service.ts` | 🔲 TODO | loyalty-promotion :8085 | CRUD |
-| `report.service.ts` | 🔲 TODO | report-service :8086 | dashboard, revenue, inventory |
-| `notification.service.ts` | 🔲 TODO | notification-audit :8087 | unread-count (poll 30s), read |
-| `auditLog.service.ts` | 🔲 TODO | notification-audit :8087 | getAll (ADMIN only) |
-| `systemConfig.service.ts` | 🔲 TODO | auth-service :8081 | getAll, update |
+| `inventory.service.ts` | ✅ Done | inventory-service :8084 | stock, adjustments, approve/reject |
+| `purchaseOrder.service.ts` | ✅ Done | inventory-service :8084 | CRUD PO, receiveGoods |
+| `supplier.service.ts` | ✅ Done | inventory-service :8084 | CRUD suppliers |
+| `loyalty.service.ts` | ✅ Done | loyalty-promotion :8085 | members, points, redeem, history |
+| `coupon.service.ts` | ✅ Done | loyalty-promotion :8085 | validate, CRUD |
+| `promotion.service.ts` | ✅ Done | loyalty-promotion :8085 | CRUD, deactivate |
+| `report.service.ts` | ✅ Done | report-service :8086 | dashboard, revenue (sync+async), inventory |
+| `notification.service.ts` | ✅ Done | notification-audit :8087 | unread-count (poll 30s), read |
+| `auditLog.service.ts` | ✅ Done | notification-audit :8087 | getAll (ADMIN only) |
+| `systemConfig.service.ts` | ✅ Done | auth-service :8081 | getAll, update |
 
 ---
 
@@ -286,79 +287,59 @@ LƯU Ý QUAN TRỌNG: Backend KHÔNG có GET /auth/me endpoint.
 | `components/layout/CashierSidebar.tsx` | Next.js Link, pathname active detection |
 | `docs/project-structure.md` | File này |
 
-### Còn lại (TODO 🔲)
+### Tất cả đã hoàn thành ✅
 
-| File | Wave | Mức độ ưu tiên |
-|------|------|---------------|
-| `app/pos/order/page.tsx` | Wave 2 | 🔴 Cao nhất |
-| `app/cashier/orders/page.tsx` | Wave 2 | 🔴 Cao |
-| `app/orders/[orderId]/page.tsx` | Wave 2 | 🔴 Cao |
-| `app/returns/new/page.tsx` | Wave 2 | 🔴 Cao |
-| `app/force-change-password/page.tsx` | Wave 1 | 🟡 Medium |
-| `app/change-password/page.tsx` | Wave 1 | 🟡 Medium |
-| `components/layout/AdminSidebar.tsx` | Wave 3 | 🟡 Medium |
-| `components/layout/BranchManagerSidebar.tsx` | Wave 3 | 🟡 Medium |
-| `components/layout/WarehouseStaffSidebar.tsx` | Wave 3 | 🟡 Medium |
-| `components/layout/Header.tsx` | Wave 3 | 🟡 Medium |
-| `components/layout/ERPLayout.tsx` | Wave 3 | 🟡 Medium |
-| `app/admin/page.tsx` | Wave 3 | 🟡 Medium |
-| `app/branch-manager/page.tsx` | Wave 3 | 🟡 Medium |
-| `app/warehouse/page.tsx` | Wave 3 | 🟡 Medium |
-| `app/products/*` (3 pages) | Wave 3 | 🟢 Normal |
-| `app/categories/page.tsx` | Wave 3 | 🟢 Normal |
-| `app/inventory/*` (4 pages) | Wave 3 | 🟢 Normal |
-| `app/supplier-management/page.tsx` | Wave 3 | 🟢 Normal |
-| `app/manager/*` (4 pages) | Wave 3 | 🟢 Normal |
-| `app/loyalty/members/page.tsx` | Wave 4 | 🟢 Normal |
-| `app/promotions/page.tsx` | Wave 4 | 🟢 Normal |
-| `app/coupons/page.tsx` | Wave 4 | 🟢 Normal |
-| `app/revenue-report/page.tsx` | Wave 4 | 🟢 Normal |
-| `app/inventory-report/page.tsx` | Wave 4 | 🟢 Normal |
-| `app/notifications/page.tsx` | Wave 5 | 🟢 Normal |
-| `app/audit-logs/page.tsx` | Wave 5 | 🟢 Normal |
-| `app/user-management/page.tsx` | Wave 5 | 🟢 Normal |
-| `app/system-configuration/page.tsx` | Wave 5 | 🟢 Normal |
-| 8 service files còn lại | Wave 3-5 | 🟢 Normal |
+Tất cả 5 Wave đã được implement xong. Không còn file nào ở trạng thái TODO.
+
+**Tổng kết:**
+- 29 pages đã tạo (bao gồm dynamic routes)
+- 14 service files đã tạo/cập nhật
+- 3 stores đã tạo
+- 6 layout components đã tạo
+- 1 hook đã tạo
+- TypeScript: 0 errors (`npx tsc --noEmit`)
 
 ---
 
 ## 8. Thứ tự port pages từ src/ (Wave plan)
 
 ```
-Wave 1 — Auth + Shell
+Wave 1 — Auth + Shell ✅ HOÀN THÀNH
   ✅ middleware.ts (auth guard)
   ✅ CashierSidebar.tsx
-  🔲 AdminSidebar.tsx + BranchManagerSidebar.tsx + WarehouseStaffSidebar.tsx
-  🔲 Header.tsx + ERPLayout.tsx
-  🔲 app/force-change-password/page.tsx
-  🔲 app/change-password/page.tsx
+  ✅ AdminSidebar.tsx + BranchManagerSidebar.tsx + WarehouseStaffSidebar.tsx
+  ✅ Header.tsx + ERPLayout.tsx
+  ✅ app/force-change-password/page.tsx
+  ✅ app/change-password/page.tsx
 
-Wave 2 — POS Core (Cashier)
+Wave 2 — POS Core (Cashier) ✅ HOÀN THÀNH
   ✅ stores/pos.store.ts
   ✅ services/shift.service.ts + order.service.ts
   ✅ app/pos/shift/page.tsx
-  🔲 app/pos/order/page.tsx          ← TIẾP THEO
-  🔲 app/cashier/orders/page.tsx + app/orders/[orderId]/page.tsx
-  🔲 app/returns/new/page.tsx
+  ✅ app/pos/order/page.tsx
+  ✅ app/cashier/orders/page.tsx + app/orders/[orderId]/page.tsx
+  ✅ app/returns/new/page.tsx
 
-Wave 3 — Catalog + Inventory
-  🔲 app/admin/page.tsx + app/branch-manager/page.tsx + app/warehouse/page.tsx
-  🔲 app/products/* + app/categories/page.tsx
-  🔲 app/inventory/* (4 pages) + app/supplier-management/page.tsx
-  🔲 services/inventory.service.ts + purchaseOrder.service.ts + supplier.service.ts
+Wave 3 — Catalog + Inventory ✅ HOÀN THÀNH
+  ✅ app/admin/page.tsx + app/branch-manager/page.tsx + app/warehouse/page.tsx
+  ✅ app/products/* + app/categories/page.tsx
+  ✅ app/inventory/* (4 pages) + app/supplier-management/page.tsx
+  ✅ services/category.service.ts + inventory.service.ts + purchaseOrder.service.ts + supplier.service.ts
+  ✅ app/manager/* (4 pages: products, inventory, orders, purchase-orders)
 
-Wave 4 — Loyalty + Reports
-  🔲 app/loyalty/members/page.tsx
-  🔲 app/promotions/page.tsx + app/coupons/page.tsx
-  🔲 app/revenue-report/page.tsx + app/inventory-report/page.tsx
-  🔲 services/loyalty.service.ts + coupon.service.ts + report.service.ts
+Wave 4 — Loyalty + Reports ✅ HOÀN THÀNH
+  ✅ app/loyalty/members/page.tsx
+  ✅ app/promotions/page.tsx + app/coupons/page.tsx
+  ✅ app/revenue-report/page.tsx + app/inventory-report/page.tsx
+  ✅ services/loyalty.service.ts + coupon.service.ts + promotion.service.ts + report.service.ts
 
-Wave 5 — Admin Tools
-  🔲 app/notifications/page.tsx + stores/notification.store.ts
-  🔲 app/user-management/page.tsx
-  🔲 app/audit-logs/page.tsx
-  🔲 app/system-configuration/page.tsx
-  🔲 services/notification.service.ts + auditLog.service.ts + systemConfig.service.ts
+Wave 5 — Admin Tools ✅ HOÀN THÀNH
+  ✅ app/notifications/page.tsx + stores/notification.store.ts
+  ✅ hooks/useNotificationPolling.ts
+  ✅ app/user-management/page.tsx
+  ✅ app/audit-logs/page.tsx
+  ✅ app/system-configuration/page.tsx
+  ✅ services/notification.service.ts + auditLog.service.ts + systemConfig.service.ts
 ```
 
 ---
@@ -367,8 +348,11 @@ Wave 5 — Admin Tools
 
 ```
 Foundation:  ████████████████████  100% (11/11 files) ✅
-Pages:       ██░░░░░░░░░░░░░░░░░░   10% (3/29 pages)
-Services:    ████████░░░░░░░░░░░░   40% (6/14 services) ✅
-Stores:      ██████████████░░░░░░   66% (2/3 stores) ✅
-Layout:      ████░░░░░░░░░░░░░░░░   17% (1/6 components)
+Pages:       ████████████████████  100% (29/29 pages) ✅
+Services:    ████████████████████  100% (14/14 services) ✅
+Stores:      ████████████████████  100% (3/3 stores) ✅
+Layout:      ████████████████████  100% (6/6 components) ✅
+Hooks:       ████████████████████  100% (1/1 hooks) ✅
 ```
+
+> Toàn bộ Wave 1–5 hoàn thành. TypeScript: 0 errors. Cập nhật lần cuối: 2026-05-07.
