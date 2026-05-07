@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -11,8 +9,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "BeautyStore - Mỹ phẩm chính hãng",
-  description: "Mua sắm mỹ phẩm chính hãng, chất lượng cao tại BeautyStore",
+  title: "BeautyERP — Hệ thống quản lý bán lẻ",
+  description: "Hệ thống ERP nội bộ cho chuỗi cửa hàng mỹ phẩm",
 };
 
 export default function RootLayout({
@@ -22,10 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className="min-h-full">
+        {children}
         <Toaster />
       </body>
     </html>
