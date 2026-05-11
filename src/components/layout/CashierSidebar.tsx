@@ -1,6 +1,14 @@
 "use client";
 
-import { CreditCard, Receipt, Undo2, Star, Bell, KeyRound, Sparkles } from "lucide-react";
+import {
+  CreditCard,
+  Receipt,
+  Undo2,
+  Star,
+  Bell,
+  KeyRound,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,11 +17,32 @@ interface CashierSidebarProps {
 }
 
 const MENU_ITEMS = [
-  { id: "pos-shift", label: "POS / Ca làm việc", icon: CreditCard, href: "/pos/shift" },
-  { id: "my-orders", label: "Đơn hàng của tôi", icon: Receipt, href: "/cashier/orders" },
+  {
+    id: "pos-shift",
+    label: "POS / Ca làm việc",
+    icon: CreditCard,
+    href: "/pos/shift",
+  },
+  {
+    id: "my-orders",
+    label: "Đơn hàng của tôi",
+    icon: Receipt,
+    href: "/cashier/orders",
+  },
   { id: "returns", label: "Trả hàng", icon: Undo2, href: "/returns/new" },
-  { id: "loyalty-members", label: "Thành viên", icon: Star, href: "/loyalty/members" },
-  { id: "notifications", label: "Thông báo", icon: Bell, href: "/cashier/notifications", badge: true },
+  {
+    id: "loyalty-members",
+    label: "Thành viên",
+    icon: Star,
+    href: "/loyalty/members",
+  },
+  {
+    id: "notifications",
+    label: "Thông báo",
+    icon: Bell,
+    href: "/notifications",
+    badge: true,
+  },
 ];
 
 export function CashierSidebar({ notificationCount = 0 }: CashierSidebarProps) {
@@ -25,9 +54,20 @@ export function CashierSidebar({ notificationCount = 0 }: CashierSidebarProps) {
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="hex-cashier" x="0" y="0" width="80" height="70" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 74.6 20 L 74.6 50 L 40 70 L 5.4 50 L 5.4 20 Z"
-                fill="none" stroke="#FF69B4" strokeWidth="1" />
+            <pattern
+              id="hex-cashier"
+              x="0"
+              y="0"
+              width="80"
+              height="70"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 40 0 L 74.6 20 L 74.6 50 L 40 70 L 5.4 50 L 5.4 20 Z"
+                fill="none"
+                stroke="#FF69B4"
+                strokeWidth="1"
+              />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#hex-cashier)" />
@@ -36,6 +76,7 @@ export function CashierSidebar({ notificationCount = 0 }: CashierSidebarProps) {
       <div className="absolute top-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       <div className="absolute top-1/3 -right-8 w-40 h-40 bg-pink-300/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-20 -left-12 w-36 h-36 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-2/3 right-4 w-24 h-24 bg-pink-200/10 rounded-full blur-xl pointer-events-none"></div>
 
       {/* Logo */}
       <div className="p-6 border-b border-white/10 relative z-10">
