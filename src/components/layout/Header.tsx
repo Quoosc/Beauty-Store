@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LogOut, Sparkles } from "lucide-react";
+import { Bell, LogOut, Sparkles, ChevronDown, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
@@ -35,6 +35,30 @@ export function Header() {
         <span className="font-bold text-gray-900 text-lg">BeautyERP</span>
       </div>
 
+      {/* Center controls - only for ADMIN */}
+      {user?.role === "ADMIN" && (
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <select
+              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF69B4] focus:border-transparent cursor-pointer"
+              defaultValue="all"
+            >
+              <option value="all">Tất cả chi nhánh</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
+
+          <div className="relative">
+            <input
+              type="date"
+              defaultValue={new Date().toISOString().split("T")[0]}
+              className="appearance-none bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF69B4] focus:border-transparent cursor-pointer"
+            />
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
+        </div>
+      )}
+
       {/* Right: Notifications + User */}
       <div className="flex items-center gap-4">
         {/* Notification Bell */}
@@ -56,8 +80,12 @@ export function Header() {
             <span className="text-white text-sm font-bold">{initials}</span>
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-semibold text-gray-900">{user?.fullName}</p>
-            <p className="text-xs text-gray-500">{user?.role?.replace(/_/g, " ")}</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {user?.fullName}
+            </p>
+            <p className="text-xs text-gray-500">
+              {user?.role?.replace(/_/g, " ")}
+            </p>
           </div>
           <button
             onClick={handleLogout}
