@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, Package, AlertTriangle } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Package,
+  AlertTriangle,
+  Clock,
+  MoreVertical,
+  Edit2,
+  Copy,
+  Ban,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ERPLayout } from "@/components/layout/ERPLayout";
 import { productService } from "@/services/product.service";
@@ -10,7 +20,15 @@ import { categoryService } from "@/services/category.service";
 import type { Product, Category, ProductStatus } from "@/types";
 
 const formatVND = (n: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    n,
+  );
+
+const STATUS_TABS: { key: ProductStatus | "ALL"; label: string }[] = [
+  { key: "ALL", label: "Tất cả" },
+  { key: "ACTIVE", label: "Đang bán" },
+  { key: "DISCONTINUED", label: "Ngừng bán" },
+];
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -18,13 +36,18 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
-  const [statusFilter, setStatusFilter] = useState<ProductStatus | "ALL">("ALL");
+  const [statusFilter, setStatusFilter] = useState<ProductStatus | "ALL">(
+    "ALL",
+  );
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    categoryService.getAll().then(setCategories).catch(() => {});
+    categoryService
+      .getAll()
+      .then(setCategories)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -49,12 +72,15 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [search, categoryFilter, statusFilter, page]);
 
-  async function handleDiscontinue(id: string, name: string) {
-    if (!confirm(`Ngừng kinh doanh sản phẩm "${name}"?`)) return;
+  async function handleDiscontinue(id: string) {
+    const name = products.find((p) => p.id === id)?.name ?? "sản phẩm này";
+    if (!confirm(`Ngừng kinh doanh ${name}?`)) return;
     try {
       await productService.discontinue(id);
       toast.success("Đã ngừng kinh doanh sản phẩm");
-      setProducts((ps) => ps.map((p) => p.id === id ? { ...p, status: "DISCONTINUED" } : p));
+      setProducts((ps) =>
+        ps.map((p) => (p.id === id ? { ...p, status: "DISCONTINUED" } : p)),
+      );
     } catch {
       toast.error("Thao tác thất bại");
     }
@@ -83,39 +109,71 @@ export default function ProductsPage() {
             <input
               type="text"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
               placeholder="Tìm tên, SKU..."
-              className="h-10 w-full pl-9 pr-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
+              className="h-10 w-full pl-9 pr-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF69B4]"
             />
           </div>
           <select
             value={categoryFilter}
-            onChange={(e) => { setCategoryFilter(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setPage(0);
+            }}
             className="h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none"
           >
             <option value="ALL">Tất cả danh mục</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value as ProductStatus | "ALL"); setPage(0); }}
-            className="h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none"
-          >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang bán</option>
-            <option value="DISCONTINUED">Ngừng bán</option>
-          </select>
+          <div className="flex gap-2 flex-wrap">
+            {STATUS_TABS.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => {
+                  setStatusFilter(t.key);
+                  setPage(0);
+                }}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  statusFilter === t.key
+                    ? "bg-[#D946A6] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Table */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
-              <svg className="animate-spin w-6 h-6 text-pink-500" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              <svg
+                className="animate-spin w-6 h-6 text-pink-500"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
               </svg>
             </div>
           ) : products.length === 0 ? (
@@ -132,6 +190,7 @@ export default function ProductsPage() {
                   <th className="text-left px-4 py-3">Danh mục</th>
                   <th className="text-right px-4 py-3">Giá bán</th>
                   <th className="text-right px-4 py-3">Giá vốn</th>
+                  <th className="text-center px-4 py-3">Hạn dùng</th>
                   <th className="text-center px-4 py-3">Trạng thái</th>
                   <th className="text-center px-4 py-3">Thao tác</th>
                 </tr>
@@ -140,11 +199,16 @@ export default function ProductsPage() {
                 {products.map((product) => {
                   const costWarning = product.costPrice > product.sellingPrice;
                   return (
-                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={product.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-4 py-3">
                         {product.imageUrls.length > 0 ? (
                           <img
-                            src={productService.getImageUrl(product.imageUrls[0])}
+                            src={productService.getImageUrl(
+                              product.imageUrls[0],
+                            )}
                             alt={product.name}
                             className="w-12 h-12 rounded-lg object-cover"
                           />
@@ -155,7 +219,9 @@ export default function ProductsPage() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {product.name}
+                        </p>
                         <p className="text-xs text-gray-500">{product.sku}</p>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
@@ -167,33 +233,81 @@ export default function ProductsPage() {
                       <td className="px-4 py-3 text-right text-sm text-gray-600">
                         <span>{formatVND(product.costPrice)}</span>
                         {costWarning && (
-                          <span className="ml-1 inline-flex items-center" title="Giá vốn > Giá bán">
+                          <span
+                            className="ml-1 inline-flex items-center"
+                            title="Giá vốn > Giá bán"
+                          >
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium
-                          ${product.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                          {product.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
+                        {product.expiryDate ? (
+                          (() => {
+                            const days = Math.ceil(
+                              (new Date(product.expiryDate).getTime() -
+                                Date.now()) /
+                                86400000,
+                            );
+                            return (
+                              <span
+                                className={`flex items-center justify-center gap-1 text-xs font-medium ${
+                                  days <= 7
+                                    ? "text-red-600"
+                                    : days <= 30
+                                      ? "text-amber-600"
+                                      : "text-gray-500"
+                                }`}
+                              >
+                                {days <= 30 && <Clock className="w-3 h-3" />}
+                                {new Date(
+                                  product.expiryDate,
+                                ).toLocaleDateString("vi-VN")}
+                              </span>
+                            );
+                          })()
+                        ) : (
+                          <span className="text-gray-300 text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium
+                          ${product.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                        >
+                          {product.status === "ACTIVE"
+                            ? "Đang bán"
+                            : "Ngừng bán"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => router.push(`/products/${product.id}/edit`)}
-                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50"
-                          >
-                            Sửa
+                        <div className="relative group flex justify-center">
+                          <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
+                            <MoreVertical className="w-4 h-4" />
                           </button>
-                          {product.status === "ACTIVE" && (
+                          <div className="absolute right-0 top-8 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-50 hidden group-hover:block">
                             <button
-                              onClick={() => handleDiscontinue(product.id, product.name)}
-                              className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                              onClick={() =>
+                                router.push(`/products/${product.id}/edit`)
+                              }
+                              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl"
                             >
-                              Ngừng KD
+                              <Edit2 className="w-4 h-4" /> Chỉnh sửa
                             </button>
-                          )}
+                            <button
+                              onClick={() => router.push("/products/create")}
+                              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Copy className="w-4 h-4" /> Nhân bản
+                            </button>
+                            <button
+                              onClick={() => handleDiscontinue(product.id)}
+                              disabled={product.status === "DISCONTINUED"}
+                              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-b-xl disabled:opacity-40"
+                            >
+                              <Ban className="w-4 h-4" /> Ngừng kinh doanh
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -207,18 +321,24 @@ export default function ProductsPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">Trang {page + 1} / {totalPages}</p>
+            <p className="text-sm text-gray-500">
+              Trang {page + 1} / {totalPages}
+            </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
-              >Trước</button>
+              >
+                Trước
+              </button>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
-              >Sau</button>
+              >
+                Sau
+              </button>
             </div>
           </div>
         )}
