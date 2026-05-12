@@ -2,27 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  Plus,
-  Package,
-  AlertTriangle,
-  Clock,
-  MoreVertical,
-  Edit2,
-  Copy,
-  Ban,
-} from "lucide-react";
+import { Search, Plus, Package, AlertTriangle, Clock, MoreVertical, Edit2, Copy, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { ERPLayout } from "@/components/layout/ERPLayout";
 import { productService } from "@/services/product.service";
 import { categoryService } from "@/services/category.service";
 import type { Product, Category, ProductStatus } from "@/types";
+import { CelaButton, CelaCard, CelaInput, CelaSpinner, CelaEmptyState } from "@/components/ui/cela-primitives";
 
 const formatVND = (n: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-    n,
-  );
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
 const STATUS_TABS: { key: ProductStatus | "ALL"; label: string }[] = [
   { key: "ALL", label: "Tất cả" },
@@ -36,18 +25,13 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
-  const [statusFilter, setStatusFilter] = useState<ProductStatus | "ALL">(
-    "ALL",
-  );
+  const [statusFilter, setStatusFilter] = useState<ProductStatus | "ALL">("ALL");
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    categoryService
-      .getAll()
-      .then(setCategories)
-      .catch(() => {});
+    categoryService.getAll().then(setCategories).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -78,9 +62,7 @@ export default function ProductsPage() {
     try {
       await productService.discontinue(id);
       toast.success("Đã ngừng kinh doanh sản phẩm");
-      setProducts((ps) =>
-        ps.map((p) => (p.id === id ? { ...p, status: "DISCONTINUED" } : p)),
-      );
+      setProducts((ps) => ps.map((p) => (p.id === id ? { ...p, status: "DISCONTINUED" } : p)));
     } catch {
       toast.error("Thao tác thất bại");
     }
@@ -88,224 +70,191 @@ export default function ProductsPage() {
 
   return (
     <ERPLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Package className="w-6 h-6 text-pink-500" />
-            <h1 className="text-2xl font-bold text-gray-900">Sản phẩm</h1>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--cela-cocoa)", margin: "0 0 4px" }}>
+              Danh mục sản phẩm
+            </p>
+            <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 500, color: "var(--cela-espresso)", margin: 0, letterSpacing: "-0.01em" }}>
+              Quản lý <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>sản phẩm</span>
+            </h1>
           </div>
-          <button
-            onClick={() => router.push("/products/create")}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-          >
-            <Plus className="w-4 h-4" /> Thêm sản phẩm
-          </button>
+          <CelaButton variant="primary" onClick={() => router.push("/products/create")}>
+            <Plus style={{ width: 16, height: 16 }} /> Thêm sản phẩm
+          </CelaButton>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-4 flex gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-48">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
+        <CelaCard style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
+            <Search style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "var(--cela-stone)" }} />
+            <CelaInput
               type="text"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-              }}
+              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
               placeholder="Tìm tên, SKU..."
-              className="h-10 w-full pl-9 pr-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF69B4]"
+              style={{ paddingLeft: 38 }}
             />
           </div>
           <select
             value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value);
-              setPage(0);
-            }}
-            className="h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none"
+            onChange={(e) => { setCategoryFilter(e.target.value); setPage(0); }}
+            style={{ height: 40, border: "1.5px solid var(--cela-mist)", borderRadius: 10, padding: "0 12px", fontSize: 13, color: "var(--cela-espresso)", background: "var(--cela-paper)", outline: "none", fontFamily: "var(--cela-body)" }}
           >
             <option value="ALL">Tất cả danh mục</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <div className="flex gap-2 flex-wrap">
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {STATUS_TABS.map((t) => (
               <button
                 key={t.key}
-                onClick={() => {
-                  setStatusFilter(t.key);
-                  setPage(0);
+                onClick={() => { setStatusFilter(t.key); setPage(0); }}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 20,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "var(--cela-body)",
+                  background: statusFilter === t.key ? "var(--cela-espresso)" : "var(--cela-mist)",
+                  color: statusFilter === t.key ? "var(--cela-champagne)" : "var(--cela-stone)",
+                  transition: "background 0.15s",
                 }}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                  statusFilter === t.key
-                    ? "bg-[#D946A6] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
               >
                 {t.label}
               </button>
             ))}
           </div>
-        </div>
+        </CelaCard>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <CelaCard style={{ padding: 0, overflow: "hidden" }}>
           {isLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <svg
-                className="animate-spin w-6 h-6 text-pink-500"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                />
-              </svg>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "64px 0" }}>
+              <CelaSpinner padding="0" />
             </div>
           ) : products.length === 0 ? (
-            <div className="flex flex-col items-center py-16 text-center">
-              <Package className="w-12 h-12 text-gray-200 mb-3" />
-              <p className="text-gray-500">Không có sản phẩm nào</p>
-            </div>
+            <CelaEmptyState icon={<Package style={{ width: 40, height: 40 }} />} title="Không có sản phẩm nào" />
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase">
-                <tr>
-                  <th className="text-left px-4 py-3 w-16">Ảnh</th>
-                  <th className="text-left px-4 py-3">Tên / SKU</th>
-                  <th className="text-left px-4 py-3">Danh mục</th>
-                  <th className="text-right px-4 py-3">Giá bán</th>
-                  <th className="text-right px-4 py-3">Giá vốn</th>
-                  <th className="text-center px-4 py-3">Hạn dùng</th>
-                  <th className="text-center px-4 py-3">Trạng thái</th>
-                  <th className="text-center px-4 py-3">Thao tác</th>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "var(--cela-fog)", borderBottom: "1px solid var(--cela-mist)" }}>
+                  {["Ảnh", "Tên / SKU", "Danh mục", "Giá bán", "Giá vốn", "Hạn dùng", "Trạng thái", "Thao tác"].map((h, i) => (
+                    <th
+                      key={h}
+                      style={{
+                        padding: "10px 16px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        color: "var(--cela-cocoa)",
+                        textAlign: i === 0 || i === 7 ? "center" : i >= 3 && i <= 5 ? "right" : "left",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody>
                 {products.map((product) => {
                   const costWarning = product.costPrice > product.sellingPrice;
                   return (
-                    <tr
-                      key={product.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-4 py-3">
+                    <tr key={product.id} style={{ borderBottom: "1px solid var(--cela-fog)" }}>
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
                         {product.imageUrls.length > 0 ? (
                           <img
-                            src={productService.getImageUrl(
-                              product.imageUrls[0],
-                            )}
+                            src={productService.getImageUrl(product.imageUrls[0])}
                             alt={product.name}
-                            className="w-12 h-12 rounded-lg object-cover"
+                            style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover" }}
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <Package className="w-5 h-5 text-gray-400" />
+                          <div style={{ width: 48, height: 48, background: "var(--cela-fog)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Package style={{ width: 20, height: 20, color: "var(--cela-stone)" }} />
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-gray-900">
-                          {product.name}
-                        </p>
-                        <p className="text-xs text-gray-500">{product.sku}</p>
+                      <td style={{ padding: "12px 16px" }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--cela-espresso)" }}>{product.name}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--cela-stone)", fontFamily: "var(--cela-mono)" }}>{product.sku}</p>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td style={{ padding: "12px 16px", fontSize: 13, color: "var(--cela-stone)" }}>
                         {product.category?.name ?? "—"}
                       </td>
-                      <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                      <td style={{ padding: "12px 16px", textAlign: "right", fontSize: 13, fontWeight: 600, color: "var(--cela-espresso)", fontFamily: "var(--cela-mono)" }}>
                         {formatVND(product.sellingPrice)}
                       </td>
-                      <td className="px-4 py-3 text-right text-sm text-gray-600">
+                      <td style={{ padding: "12px 16px", textAlign: "right", fontSize: 13, color: "var(--cela-stone)", fontFamily: "var(--cela-mono)" }}>
                         <span>{formatVND(product.costPrice)}</span>
                         {costWarning && (
-                          <span
-                            className="ml-1 inline-flex items-center"
-                            title="Giá vốn > Giá bán"
-                          >
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                          <span title="Giá vốn > Giá bán" style={{ marginLeft: 4 }}>
+                            <AlertTriangle style={{ width: 14, height: 14, color: "var(--cela-gold)", display: "inline-block", verticalAlign: "middle" }} />
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
                         {product.expiryDate ? (
                           (() => {
-                            const days = Math.ceil(
-                              (new Date(product.expiryDate).getTime() -
-                                Date.now()) /
-                                86400000,
-                            );
+                            const days = Math.ceil((new Date(product.expiryDate).getTime() - Date.now()) / 86400000);
+                            const color = days <= 7 ? "var(--cela-danger)" : days <= 30 ? "var(--cela-gold)" : "var(--cela-stone)";
                             return (
-                              <span
-                                className={`flex items-center justify-center gap-1 text-xs font-medium ${
-                                  days <= 7
-                                    ? "text-red-600"
-                                    : days <= 30
-                                      ? "text-amber-600"
-                                      : "text-gray-500"
-                                }`}
-                              >
-                                {days <= 30 && <Clock className="w-3 h-3" />}
-                                {new Date(
-                                  product.expiryDate,
-                                ).toLocaleDateString("vi-VN")}
+                              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: 12, fontWeight: 500, color }}>
+                                {days <= 30 && <Clock style={{ width: 12, height: 12 }} />}
+                                {new Date(product.expiryDate).toLocaleDateString("vi-VN")}
                               </span>
                             );
                           })()
                         ) : (
-                          <span className="text-gray-300 text-xs">—</span>
+                          <span style={{ color: "var(--cela-mist)", fontSize: 12 }}>—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium
-                          ${product.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
-                        >
-                          {product.status === "ACTIVE"
-                            ? "Đang bán"
-                            : "Ngừng bán"}
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <span style={{
+                          display: "inline-flex",
+                          padding: "4px 10px",
+                          borderRadius: 20,
+                          fontSize: 12,
+                          fontWeight: 500,
+                          background: product.status === "ACTIVE" ? "rgba(107,142,106,0.15)" : "var(--cela-fog)",
+                          color: product.status === "ACTIVE" ? "var(--cela-success)" : "var(--cela-stone)",
+                        }}>
+                          {product.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="relative group flex justify-center">
-                          <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
-                            <MoreVertical className="w-4 h-4" />
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ position: "relative", display: "flex", justifyContent: "center" }} className="group">
+                          <button style={{ padding: 6, borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", color: "var(--cela-stone)" }} className="hover:bg-[var(--cela-fog)]">
+                            <MoreVertical style={{ width: 16, height: 16 }} />
                           </button>
-                          <div className="absolute right-0 top-8 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-50 hidden group-hover:block">
+                          <div style={{ position: "absolute", right: 0, top: 32, width: 160, background: "var(--cela-paper)", borderRadius: 12, boxShadow: "var(--cela-shadow-md)", border: "1px solid var(--cela-mist)", zIndex: 50 }} className="hidden group-hover:block">
                             <button
-                              onClick={() =>
-                                router.push(`/products/${product.id}/edit`)
-                              }
-                              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl"
+                              onClick={() => router.push(`/products/${product.id}/edit`)}
+                              style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", fontSize: 13, color: "var(--cela-espresso)", background: "transparent", border: "none", cursor: "pointer", borderRadius: "12px 12px 0 0", fontFamily: "var(--cela-body)" }}
+                              className="hover:bg-[var(--cela-fog)]"
                             >
-                              <Edit2 className="w-4 h-4" /> Chỉnh sửa
+                              <Edit2 style={{ width: 14, height: 14 }} /> Chỉnh sửa
                             </button>
                             <button
                               onClick={() => router.push("/products/create")}
-                              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                              style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", fontSize: 13, color: "var(--cela-espresso)", background: "transparent", border: "none", cursor: "pointer", fontFamily: "var(--cela-body)" }}
+                              className="hover:bg-[var(--cela-fog)]"
                             >
-                              <Copy className="w-4 h-4" /> Nhân bản
+                              <Copy style={{ width: 14, height: 14 }} /> Nhân bản
                             </button>
                             <button
                               onClick={() => handleDiscontinue(product.id)}
                               disabled={product.status === "DISCONTINUED"}
-                              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-b-xl disabled:opacity-40"
+                              style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", fontSize: 13, color: "var(--cela-danger)", background: "transparent", border: "none", cursor: "pointer", borderRadius: "0 0 12px 12px", fontFamily: "var(--cela-body)", opacity: product.status === "DISCONTINUED" ? 0.4 : 1 }}
+                              className="hover:bg-[var(--cela-fog)]"
                             >
-                              <Ban className="w-4 h-4" /> Ngừng kinh doanh
+                              <Ban style={{ width: 14, height: 14 }} /> Ngừng kinh doanh
                             </button>
                           </div>
                         </div>
@@ -316,29 +265,21 @@ export default function ProductsPage() {
               </tbody>
             </table>
           )}
-        </div>
+        </CelaCard>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <p style={{ fontSize: 13, color: "var(--cela-stone)", margin: 0 }}>
               Trang {page + 1} / {totalPages}
             </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
-              >
+            <div style={{ display: "flex", gap: 8 }}>
+              <CelaButton variant="secondary" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
                 Trước
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
-              >
+              </CelaButton>
+              <CelaButton variant="secondary" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
                 Sau
-              </button>
+              </CelaButton>
             </div>
           </div>
         )}

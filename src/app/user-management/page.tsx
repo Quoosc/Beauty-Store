@@ -8,12 +8,13 @@ import { ERPLayout } from "@/components/layout/ERPLayout";
 import { accountService } from "@/services/auth.service";
 import { useAuthStore } from "@/stores/auth.store";
 import type { User, UserRole } from "@/types";
+import { CelaButton, CelaCard, CelaInput, CelaSpinner, CelaEmptyState } from "@/components/ui/cela-primitives";
 
-const ROLE_CONFIG: Record<UserRole, { label: string; className: string }> = {
-  ADMIN:           { label: "Admin",           className: "bg-red-100 text-red-700" },
-  BRANCH_MANAGER:  { label: "Branch Manager",  className: "bg-amber-100 text-amber-700" },
-  CASHIER:         { label: "Cashier",         className: "bg-green-100 text-green-700" },
-  WAREHOUSE_STAFF: { label: "Warehouse Staff", className: "bg-blue-100 text-blue-700" },
+const ROLE_STYLE: Record<UserRole, { bg: string; color: string; label: string }> = {
+  ADMIN:           { bg: "rgba(183,110,121,0.15)", color: "var(--cela-rose)",    label: "Admin" },
+  BRANCH_MANAGER:  { bg: "rgba(201,168,122,0.20)", color: "var(--cela-gold)",    label: "Branch Manager" },
+  CASHIER:         { bg: "rgba(107,142,106,0.15)", color: "var(--cela-success)", label: "Cashier" },
+  WAREHOUSE_STAFF: { bg: "rgba(120,140,180,0.18)", color: "#6080b0",             label: "Warehouse Staff" },
 };
 
 interface AccountForm {
@@ -23,12 +24,7 @@ interface AccountForm {
   branchId: string;
 }
 
-const emptyForm: AccountForm = {
-  fullName: "",
-  username: "",
-  role: "CASHIER",
-  branchId: "",
-};
+const emptyForm: AccountForm = { fullName: "", username: "", role: "CASHIER", branchId: "" };
 
 export default function UserManagementPage() {
   const router = useRouter();
@@ -54,9 +50,9 @@ export default function UserManagementPage() {
   if (!currentUser || currentUser.role !== "ADMIN") {
     return (
       <ERPLayout>
-        <div className="flex flex-col items-center justify-center h-64 gap-4">
-          <ShieldOff className="w-16 h-16 text-gray-300" />
-          <p className="text-gray-500 font-medium">Không có quyền truy cập</p>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 256, gap: 16 }}>
+          <ShieldOff style={{ width: 64, height: 64, color: "var(--cela-mist)" }} />
+          <p style={{ color: "var(--cela-stone)", fontWeight: 500, margin: 0 }}>Không có quyền truy cập</p>
         </div>
       </ERPLayout>
     );
@@ -92,12 +88,7 @@ export default function UserManagementPage() {
 
   function openEdit(u: User) {
     setEditingUser(u);
-    setForm({
-      fullName: u.fullName,
-      username: u.username,
-      role: u.role,
-      branchId: u.branchId ?? "",
-    });
+    setForm({ fullName: u.fullName, username: u.username, role: u.role, branchId: u.branchId ?? "" });
     setShowDialog(true);
   }
 
@@ -172,32 +163,51 @@ export default function UserManagementPage() {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    height: 40,
+    border: "1.5px solid var(--cela-mist)",
+    borderRadius: 10,
+    padding: "0 12px",
+    fontSize: 13,
+    color: "var(--cela-espresso)",
+    background: "var(--cela-paper)",
+    outline: "none",
+    fontFamily: "var(--cela-body)",
+    boxSizing: "border-box",
+  };
+
   return (
     <ERPLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 text-pink-500" />
-            <h1 className="text-2xl font-bold text-gray-900">Quản lý tài khoản</h1>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--cela-cocoa)", margin: "0 0 4px" }}>
+              Hệ thống
+            </p>
+            <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 500, color: "var(--cela-espresso)", margin: 0, letterSpacing: "-0.01em" }}>
+              Quản lý <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>tài khoản</span>
+            </h1>
           </div>
-          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white text-sm font-semibold rounded-xl hover:opacity-90">
-            <Plus className="w-4 h-4" /> Tạo tài khoản
-          </button>
+          <CelaButton variant="primary" onClick={openCreate}>
+            <Plus style={{ width: 16, height: 16 }} /> Tạo tài khoản
+          </CelaButton>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-4 flex gap-3 flex-wrap">
-          <input
+        <CelaCard style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <CelaInput
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm tên hoặc username..."
-            className="h-10 flex-1 min-w-48 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
+            style={{ flex: 1, minWidth: 200 }}
           />
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value as UserRole | "ALL")}
-            className="h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none"
+            style={{ height: 40, border: "1.5px solid var(--cela-mist)", borderRadius: 10, padding: "0 12px", fontSize: 13, color: "var(--cela-espresso)", background: "var(--cela-paper)", outline: "none", fontFamily: "var(--cela-body)" }}
           >
             <option value="ALL">Tất cả vai trò</option>
             <option value="ADMIN">Admin</option>
@@ -205,74 +215,67 @@ export default function UserManagementPage() {
             <option value="CASHIER">Cashier</option>
             <option value="WAREHOUSE_STAFF">Warehouse Staff</option>
           </select>
-        </div>
+        </CelaCard>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <CelaCard style={{ padding: 0, overflow: "hidden" }}>
           {isLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <svg className="animate-spin w-6 h-6 text-pink-500" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "64px 0" }}>
+              <CelaSpinner padding="0" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center py-16">
-              <Users className="w-12 h-12 text-gray-200 mb-3" />
-              <p className="text-gray-500">Không có tài khoản nào</p>
-            </div>
+            <CelaEmptyState icon={<Users style={{ width: 40, height: 40 }} />} title="Không có tài khoản nào" />
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase">
-                <tr>
-                  <th className="text-left px-6 py-3">Họ tên</th>
-                  <th className="text-left px-4 py-3">Username</th>
-                  <th className="text-left px-4 py-3">Vai trò</th>
-                  <th className="text-left px-4 py-3">Chi nhánh</th>
-                  <th className="text-center px-4 py-3">Trạng thái</th>
-                  <th className="text-center px-4 py-3">Thao tác</th>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "var(--cela-fog)", borderBottom: "1px solid var(--cela-mist)" }}>
+                  {["Họ tên", "Username", "Vai trò", "Chi nhánh", "Trạng thái", "Thao tác"].map((h, i) => (
+                    <th key={h} style={{ padding: "10px 16px", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--cela-cocoa)", textAlign: i >= 4 ? "center" : "left" }}>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody>
                 {filtered.map((u) => {
-                  const roleConf = ROLE_CONFIG[u.role];
+                  const rs = ROLE_STYLE[u.role];
                   return (
-                    <tr key={u.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{u.fullName}</td>
-                      <td className="px-4 py-4 text-sm font-mono text-gray-600">{u.username}</td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${roleConf.className}`}>
-                          {roleConf.label}
+                    <tr key={u.id} style={{ borderBottom: "1px solid var(--cela-fog)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: 13, fontWeight: 600, color: "var(--cela-espresso)" }}>{u.fullName}</td>
+                      <td style={{ padding: "14px 16px", fontSize: 13, fontFamily: "var(--cela-mono)", color: "var(--cela-stone)" }}>{u.username}</td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <span style={{ display: "inline-flex", padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 500, background: rs.bg, color: rs.color }}>
+                          {rs.label}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-sm text-gray-500">
+                      <td style={{ padding: "14px 16px", fontSize: 13, color: "var(--cela-stone)", fontFamily: "var(--cela-mono)" }}>
                         {u.branchId ? u.branchId.slice(-8).toUpperCase() : "—"}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td style={{ padding: "14px 16px", textAlign: "center" }}>
                         {u.isLocked ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 500, background: "rgba(183,110,121,0.15)", color: "var(--cela-danger)" }}>
                             🔒 Bị khóa
                           </span>
                         ) : (
-                          <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <span style={{ display: "inline-flex", padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 500, background: "rgba(107,142,106,0.15)", color: "var(--cela-success)" }}>
                             Hoạt động
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button onClick={() => openEdit(u)} className="px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50">
+                      <td style={{ padding: "14px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                          <CelaButton variant="secondary" onClick={() => openEdit(u)} style={{ padding: "4px 12px", fontSize: 12, height: 30 }}>
                             Sửa
-                          </button>
+                          </CelaButton>
                           {u.isLocked && (
-                            <button onClick={() => handleUnlock(u)} className="px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg">
+                            <CelaButton variant="ghost" onClick={() => handleUnlock(u)} style={{ padding: "4px 12px", fontSize: 12, height: 30, color: "var(--cela-success)" }}>
                               Mở khóa
-                            </button>
+                            </CelaButton>
                           )}
                           {!u.isLocked && u.id !== currentUser.id && (
-                            <button onClick={() => handleDeactivate(u)} className="px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg">
+                            <CelaButton variant="danger" onClick={() => handleDeactivate(u)} style={{ padding: "4px 12px", fontSize: 12, height: 30 }}>
                               Vô hiệu
-                            </button>
+                            </CelaButton>
                           )}
                         </div>
                       </td>
@@ -282,60 +285,58 @@ export default function UserManagementPage() {
               </tbody>
             </table>
           )}
-        </div>
+        </CelaCard>
       </div>
 
       {/* Create/Edit Dialog */}
       {showDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(60,46,42,0.45)" }}>
+          <div style={{ background: "var(--cela-paper)", borderRadius: 16, boxShadow: "var(--cela-shadow-md)", width: "100%", maxWidth: 440 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: "1px solid var(--cela-mist)" }}>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "var(--cela-espresso)", fontFamily: "var(--cela-display)" }}>
                 {editingUser ? "Cập nhật tài khoản" : "Tạo tài khoản mới"}
               </h2>
-              <button onClick={closeDialog} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <X className="w-5 h-5 text-gray-500" />
+              <button onClick={closeDialog} style={{ padding: 6, borderRadius: 8, border: "none", background: "transparent", cursor: "pointer" }}>
+                <X style={{ width: 20, height: 20, color: "var(--cela-stone)" }} />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-4">
+            <form onSubmit={handleSave} style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Họ tên đầy đủ <span className="text-red-500">*</span>
-                </label>
+                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--cela-cocoa)" }}>
+                  Họ tên đầy đủ <span style={{ color: "var(--cela-danger)" }}>*</span>
+                </p>
                 <input
                   type="text"
                   value={form.fullName}
                   onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-                  className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
+                  style={inputStyle}
                 />
               </div>
 
               {!editingUser && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Tên đăng nhập <span className="text-red-500">*</span>
-                  </label>
+                  <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--cela-cocoa)" }}>
+                    Tên đăng nhập <span style={{ color: "var(--cela-danger)" }}>*</span>
+                  </p>
                   <input
                     type="text"
                     value={form.username}
                     onChange={(e) => setForm((f) => ({ ...f, username: e.target.value.toLowerCase().replace(/\s/g, "") }))}
                     placeholder="nguyen.van.a"
-                    className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
+                    style={{ ...inputStyle, fontFamily: "var(--cela-mono)" }}
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Vai trò</label>
+                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--cela-cocoa)" }}>
+                  Vai trò
+                </p>
                 <select
                   value={form.role}
-                  onChange={(e) => setForm((f) => ({
-                    ...f,
-                    role: e.target.value as UserRole,
-                    branchId: e.target.value === "ADMIN" ? "" : f.branchId,
-                  }))}
-                  className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none"
+                  onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as UserRole, branchId: e.target.value === "ADMIN" ? "" : f.branchId }))}
+                  style={inputStyle}
                 >
                   <option value="CASHIER">Cashier</option>
                   <option value="WAREHOUSE_STAFF">Warehouse Staff</option>
@@ -343,8 +344,8 @@ export default function UserManagementPage() {
                   <option value="ADMIN">Admin</option>
                 </select>
                 {editingUser && (
-                  <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                    <Info className="w-3.5 h-3.5" />
+                  <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--cela-gold)", display: "flex", alignItems: "center", gap: 4 }}>
+                    <Info style={{ width: 14, height: 14 }} />
                     Thay đổi vai trò có hiệu lực từ phiên đăng nhập tiếp theo.
                   </p>
                 )}
@@ -352,33 +353,35 @@ export default function UserManagementPage() {
 
               {form.role !== "ADMIN" && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Chi nhánh (Branch ID)</label>
+                  <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--cela-cocoa)" }}>
+                    Chi nhánh (Branch ID)
+                  </p>
                   <input
                     type="text"
                     value={form.branchId}
                     onChange={(e) => setForm((f) => ({ ...f, branchId: e.target.value }))}
                     placeholder="UUID chi nhánh"
-                    className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
+                    style={{ ...inputStyle, fontFamily: "var(--cela-mono)" }}
                   />
                 </div>
               )}
 
               {!editingUser && (
-                <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-700">
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(120,140,180,0.12)", border: "1px solid rgba(120,140,180,0.3)", borderRadius: 10, padding: "10px 14px" }}>
+                  <Info style={{ width: 16, height: 16, color: "#6080b0", flexShrink: 0, marginTop: 1 }} />
+                  <p style={{ margin: 0, fontSize: 12, color: "#5070a0" }}>
                     Tài khoản mới sẽ yêu cầu đổi mật khẩu khi đăng nhập lần đầu.
                   </p>
                 </div>
               )}
 
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeDialog} className="flex-1 h-10 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
+                <CelaButton type="button" variant="secondary" onClick={closeDialog} style={{ flex: 1, height: 42 }}>
                   Hủy
-                </button>
-                <button type="submit" disabled={isSaving} className="flex-1 h-10 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 text-sm">
+                </CelaButton>
+                <CelaButton type="submit" variant="primary" disabled={isSaving} style={{ flex: 1, height: 42 }}>
                   {isSaving ? "Đang lưu..." : (editingUser ? "Cập nhật" : "Tạo tài khoản")}
-                </button>
+                </CelaButton>
               </div>
             </form>
           </div>

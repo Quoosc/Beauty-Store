@@ -18,6 +18,7 @@ import { ERPLayout } from "@/components/layout/ERPLayout";
 import { useNotificationStore } from "@/stores/notification.store";
 import { useAuthStore } from "@/stores/auth.store";
 import type { Notification, NotificationType } from "@/types";
+import { CelaButton, CelaSpinner } from "@/components/ui/cela-primitives";
 
 const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString("vi-VN", {
@@ -30,51 +31,51 @@ const NOTIFICATION_CONFIG: Record<
   {
     label: string;
     icon: typeof AlertTriangle;
-    color: string;
-    bgColor: string;
+    iconColor: string;
+    iconBg: string;
   }
 > = {
   LOW_STOCK: {
     label: "Tồn kho thấp",
     icon: AlertTriangle,
-    color: "text-red-600",
-    bgColor: "bg-red-100",
+    iconColor: "var(--cela-danger)",
+    iconBg: "rgba(183,110,121,0.15)",
   },
   NEAR_EXPIRY: {
     label: "Sắp hết hạn",
     icon: Clock,
-    color: "text-amber-600",
-    bgColor: "bg-amber-100",
+    iconColor: "var(--cela-gold)",
+    iconBg: "rgba(201,168,122,0.18)",
   },
   SHIFT_VARIANCE: {
     label: "Chênh lệch ca",
     icon: AlertCircle,
-    color: "text-orange-600",
-    bgColor: "bg-orange-100",
+    iconColor: "var(--cela-gold)",
+    iconBg: "rgba(201,168,122,0.18)",
   },
   CANCEL_APPROVAL: {
     label: "Chờ duyệt hủy đơn",
     icon: CheckSquare,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    iconColor: "#6080b0",
+    iconBg: "rgba(120,140,180,0.18)",
   },
   PO_PARTIAL: {
     label: "Nhận hàng thiếu",
     icon: Package,
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
+    iconColor: "var(--cela-cocoa)",
+    iconBg: "rgba(140,100,80,0.15)",
   },
   REPORT_READY: {
     label: "Báo cáo sẵn sàng",
     icon: FileText,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
+    iconColor: "var(--cela-success)",
+    iconBg: "rgba(107,142,106,0.15)",
   },
   ACCOUNT_LOCKED: {
     label: "Tài khoản bị khóa",
     icon: Lock,
-    color: "text-gray-600",
-    bgColor: "bg-gray-100",
+    iconColor: "var(--cela-stone)",
+    iconBg: "var(--cela-fog)",
   },
 };
 
@@ -97,63 +98,147 @@ function NotificationDetailPanel({
   onClose: () => void;
 }) {
   const router = useRouter();
+  const config = NOTIFICATION_CONFIG[notification.type] ?? {
+    label: notification.type,
+    icon: Bell,
+    iconColor: "var(--cela-stone)",
+    iconBg: "var(--cela-fog)",
+  };
+  const Icon = config.icon;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
-        <h3 className="text-lg font-bold text-gray-900">Chi tiết thông báo</h3>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div
+        style={{
+          padding: "16px 24px",
+          borderBottom: "1px solid var(--cela-mist)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <h3
+          style={{
+            margin: 0,
+            fontSize: 15,
+            fontWeight: 700,
+            color: "var(--cela-espresso)",
+            fontFamily: "var(--cela-display)",
+            letterSpacing: "0.18em",
+          }}
+        >
+          Chi tiết thông báo
+        </h3>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
+          style={{
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: 4,
+          }}
         >
-          <X className="w-5 h-5" />
+          <X style={{ width: 20, height: 20, color: "var(--cela-stone)" }} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {(() => {
-          const config = NOTIFICATION_CONFIG[notification.type] ?? {
-            label: notification.type,
-            icon: Bell,
-            color: "text-gray-600",
-            bgColor: "bg-gray-100",
-          };
-          const Icon = config.icon;
-          return (
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-              <div
-                className={`w-12 h-12 ${config.bgColor} rounded-full flex items-center justify-center`}
-              >
-                <Icon className={`w-6 h-6 ${config.color}`} />
-              </div>
-              <div>
-                <h4 className="text-lg font-bold text-gray-900">
-                  {notification.title}
-                </h4>
-                <p className="text-sm text-gray-600">
-                  {formatDateTime(notification.createdAt)}
-                </p>
-              </div>
-            </div>
-          );
-        })()}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: 24,
+          display: "flex",
+          flexDirection: "column",
+          gap: 20,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            paddingBottom: 20,
+            borderBottom: "1px solid var(--cela-mist)",
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              background: config.iconBg,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Icon style={{ width: 24, height: 24, color: config.iconColor }} />
+          </div>
+          <div>
+            <h4
+              style={{
+                margin: 0,
+                fontSize: 15,
+                fontWeight: 700,
+                color: "var(--cela-espresso)",
+              }}
+            >
+              {notification.title}
+            </h4>
+            <p
+              style={{
+                margin: "4px 0 0",
+                fontSize: 12,
+                color: "var(--cela-stone)",
+              }}
+            >
+              {formatDateTime(notification.createdAt)}
+            </p>
+          </div>
+        </div>
 
-        <div className="bg-gray-50 rounded-lg p-4">
-          <p className="text-sm text-gray-700">{notification.message}</p>
+        <div
+          style={{
+            background: "var(--cela-fog)",
+            borderRadius: 10,
+            padding: "14px 16px",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: 13,
+              color: "var(--cela-espresso)",
+              lineHeight: 1.6,
+            }}
+          >
+            {notification.message}
+          </p>
         </div>
 
         {notification.type === "LOW_STOCK" && (
-          <button
+          <CelaButton
+            variant="primary"
             onClick={() => router.push("/inventory/purchase-orders/create")}
-            className="w-full px-4 py-3 bg-[#D946A6] text-white rounded-lg hover:bg-[#C026D3] font-medium flex items-center justify-center gap-2"
+            style={{ width: "100%", justifyContent: "center" }}
           >
-            TẠO PHIẾU NHẬP HÀNG <ChevronRight className="w-5 h-5" />
-          </button>
+            TẠO PHIẾU NHẬP HÀNG{" "}
+            <ChevronRight style={{ width: 18, height: 18 }} />
+          </CelaButton>
         )}
 
         {notification.type === "NEAR_EXPIRY" && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-amber-800">
+          <div
+            style={{
+              background: "rgba(201,168,122,0.14)",
+              border: "1px solid rgba(201,168,122,0.4)",
+              borderRadius: 10,
+              padding: "12px 16px",
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 13, color: "var(--cela-cocoa)" }}>
               Vui lòng xem xét giảm giá hoặc xử lý sản phẩm này trước khi hết
               hạn.
             </p>
@@ -161,47 +246,49 @@ function NotificationDetailPanel({
         )}
 
         {notification.type === "SHIFT_VARIANCE" && (
-          <button
+          <CelaButton
+            variant="primary"
             onClick={() => router.push(notification.deepLinkPath)}
-            className="w-full px-4 py-3 bg-[#D946A6] text-white rounded-lg hover:bg-[#C026D3] font-medium flex items-center justify-center gap-2"
+            style={{ width: "100%", justifyContent: "center" }}
           >
-            XEM CA LÀM VIỆC <ChevronRight className="w-5 h-5" />
-          </button>
+            XEM CA LÀM VIỆC <ChevronRight style={{ width: 18, height: 18 }} />
+          </CelaButton>
         )}
 
         {notification.type === "CANCEL_APPROVAL" && (
-          <div className="flex gap-3">
-            <button
+          <div style={{ display: "flex", gap: 10 }}>
+            <CelaButton
+              variant="danger"
               onClick={() => router.push(notification.deepLinkPath)}
-              className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+              style={{ flex: 1, justifyContent: "center" }}
             >
               TỪ CHỐI
-            </button>
-            <button
+            </CelaButton>
+            <CelaButton
+              variant="success"
               onClick={() => router.push(notification.deepLinkPath)}
-              className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              style={{ flex: 1, justifyContent: "center" }}
             >
               DUYỆT HỦY
-            </button>
+            </CelaButton>
           </div>
         )}
 
-        {notification.type === "PO_PARTIAL" && (
-          <button
+        {(notification.type === "PO_PARTIAL" ||
+          notification.type === "REPORT_READY") && (
+          <CelaButton
+            variant="primary"
             onClick={() => router.push(notification.deepLinkPath)}
-            className="w-full px-4 py-3 bg-[#D946A6] text-white rounded-lg hover:bg-[#C026D3] font-medium flex items-center justify-center gap-2"
+            style={{ width: "100%", justifyContent: "center" }}
           >
-            XEM PHIẾU NHẬP <ChevronRight className="w-5 h-5" />
-          </button>
-        )}
-
-        {notification.type === "REPORT_READY" && (
-          <button
-            onClick={() => router.push(notification.deepLinkPath)}
-            className="w-full px-4 py-3 bg-[#D946A6] text-white rounded-lg hover:bg-[#C026D3] font-medium flex items-center justify-center gap-2"
-          >
-            <FileText className="w-5 h-5" /> XEM BÁO CÁO
-          </button>
+            {notification.type === "REPORT_READY" && (
+              <FileText style={{ width: 18, height: 18 }} />
+            )}
+            {notification.type === "PO_PARTIAL"
+              ? "XEM PHIẾU NHẬP"
+              : "XEM BÁO CÁO"}
+            <ChevronRight style={{ width: 18, height: 18 }} />
+          </CelaButton>
         )}
 
         {![
@@ -212,12 +299,13 @@ function NotificationDetailPanel({
           "PO_PARTIAL",
           "REPORT_READY",
         ].includes(notification.type) && (
-          <button
+          <CelaButton
+            variant="secondary"
             onClick={() => router.push(notification.deepLinkPath)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium flex items-center justify-center gap-2"
+            style={{ width: "100%", justifyContent: "center" }}
           >
-            XEM CHI TIẾT <ChevronRight className="w-5 h-5" />
-          </button>
+            XEM CHI TIẾT <ChevronRight style={{ width: 18, height: 18 }} />
+          </CelaButton>
         )}
       </div>
     </div>
@@ -254,14 +342,57 @@ export default function NotificationsPage() {
 
   return (
     <ERPLayout>
-      <div className="flex h-full gap-0 -m-6">
-        <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-200 min-w-0">
-          <div className="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <Bell className="w-5 h-5 text-pink-500" />
-              <h2 className="text-lg font-bold text-gray-900">Thông báo</h2>
+      <div style={{ display: "flex", height: "100%", gap: 0, margin: "-24px" }}>
+        {/* Left panel — list */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            borderRight: "1px solid var(--cela-mist)",
+            minWidth: 0,
+          }}
+        >
+          {/* Panel header */}
+          <div
+            style={{
+              padding: "16px 24px",
+              background: "var(--cela-paper)",
+              borderBottom: "1px solid var(--cela-mist)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Bell
+                style={{ width: 20, height: 20, color: "var(--cela-rose)" }}
+              />
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: "var(--cela-espresso)",
+                  fontFamily: "var(--cela-display)",
+                  letterSpacing: "0.18em",
+                }}
+              >
+                Thông báo
+              </h2>
               {unreadCount > 0 && (
-                <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                <span
+                  style={{
+                    padding: "2px 8px",
+                    background: "rgba(183,110,121,0.15)",
+                    color: "var(--cela-danger)",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    borderRadius: 12,
+                  }}
+                >
                   {unreadCount} chưa đọc
                 </span>
               )}
@@ -269,24 +400,55 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllAsRead()}
-                className="text-sm text-[#D946A6] hover:text-[#C026D3] font-medium"
+                style={{
+                  fontSize: 13,
+                  color: "var(--cela-rose)",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                  fontFamily: "var(--cela-body)",
+                }}
               >
                 Đánh dấu tất cả đã đọc
               </button>
             )}
           </div>
 
-          <div className="px-6 py-3 bg-white border-b border-gray-200 overflow-x-auto flex-shrink-0">
-            <div className="flex gap-2">
+          {/* Type filter tabs */}
+          <div
+            style={{
+              padding: "10px 24px",
+              background: "var(--cela-paper)",
+              borderBottom: "1px solid var(--cela-mist)",
+              overflowX: "auto",
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: "flex", gap: 8 }}>
               {visibleTypes.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setActiveType(t.key)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-                    activeType === t.key
-                      ? "bg-[#D946A6] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: 20,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    border: "none",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    fontFamily: "var(--cela-body)",
+                    background:
+                      activeType === t.key
+                        ? "var(--cela-espresso)"
+                        : "var(--cela-fog)",
+                    color:
+                      activeType === t.key
+                        ? "var(--cela-champagne)"
+                        : "var(--cela-stone)",
+                    transition: "background 0.15s",
+                  }}
                 >
                   {t.label}
                 </button>
@@ -294,41 +456,46 @@ export default function NotificationsPage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-gray-200">
+          {/* Notification list */}
+          <div style={{ flex: 1, overflowY: "auto" }}>
             {isLoading ? (
-              <div className="flex justify-center py-16">
-                <svg
-                  className="animate-spin w-6 h-6 text-pink-500"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  />
-                </svg>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: "64px 0",
+                }}
+              >
+                <CelaSpinner padding="0" />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center py-20">
-                <Bell className="w-16 h-16 text-gray-200 mb-4" />
-                <p className="text-gray-500">Không có thông báo nào</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  padding: "80px 0",
+                }}
+              >
+                <Bell
+                  style={{
+                    width: 56,
+                    height: 56,
+                    color: "var(--cela-mist)",
+                    marginBottom: 16,
+                  }}
+                />
+                <p style={{ color: "var(--cela-stone)", margin: 0 }}>
+                  Không có thông báo nào
+                </p>
               </div>
             ) : (
               notifications.map((n) => {
                 const config = NOTIFICATION_CONFIG[n.type] ?? {
                   label: n.type,
                   icon: Bell,
-                  color: "text-gray-600",
-                  bgColor: "bg-gray-100",
+                  iconColor: "var(--cela-stone)",
+                  iconBg: "var(--cela-fog)",
                 };
                 const Icon = config.icon;
                 const isSelected = selectedNotification?.id === n.id;
@@ -339,32 +506,110 @@ export default function NotificationsPage() {
                       await markAsRead(n.id);
                       setSelectedNotification(n);
                     }}
-                    className={`w-full px-6 py-4 flex items-start gap-4 hover:bg-gray-50 transition-colors ${
-                      !n.isRead ? "bg-white" : "bg-gray-50/50"
-                    } ${isSelected ? "border-l-4 border-[#D946A6]" : "border-l-4 border-transparent"}`}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 16,
+                      padding: "16px 24px",
+                      background: isSelected
+                        ? "var(--cela-fog)"
+                        : n.isRead
+                          ? "transparent"
+                          : "var(--cela-paper)",
+                      borderBottom: "1px solid var(--cela-fog)",
+                      borderLeft: `4px solid ${isSelected ? "var(--cela-rose)" : "transparent"}`,
+                      border: "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      transition: "background 0.15s",
+                    }}
                   >
                     <div
-                      className={`w-10 h-10 rounded-full ${config.bgColor} flex items-center justify-center flex-shrink-0`}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: config.iconBg,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
                     >
-                      <Icon className={`w-5 h-5 ${config.color}`} />
+                      <Icon
+                        style={{
+                          width: 20,
+                          height: 20,
+                          color: config.iconColor,
+                        }}
+                      />
                     </div>
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className="text-sm font-bold text-gray-900">
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          marginBottom: 4,
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: "var(--cela-espresso)",
+                          }}
+                        >
                           {n.title}
                         </p>
                         {!n.isRead && (
-                          <div className="w-2 h-2 bg-blue-600 rounded-full mt-1 flex-shrink-0" />
+                          <div
+                            style={{
+                              width: 8,
+                              height: 8,
+                              background: "var(--cela-rose)",
+                              borderRadius: "50%",
+                              marginTop: 4,
+                              flexShrink: 0,
+                            }}
+                          />
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-1 line-clamp-2">
+                      <p
+                        style={{
+                          margin: "0 0 4px",
+                          fontSize: 13,
+                          color: "var(--cela-stone)",
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical" as const,
+                        }}
+                      >
                         {n.message}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 11,
+                          color: "var(--cela-stone)",
+                        }}
+                      >
                         {formatDateTime(n.createdAt)}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
+                    <ChevronRight
+                      style={{
+                        width: 18,
+                        height: 18,
+                        color: "var(--cela-mist)",
+                        flexShrink: 0,
+                        marginTop: 4,
+                      }}
+                    />
                   </button>
                 );
               })
@@ -372,8 +617,18 @@ export default function NotificationsPage() {
           </div>
         </div>
 
+        {/* Right panel — detail */}
         {selectedNotification && (
-          <div className="w-[480px] bg-white flex flex-col border-l border-gray-200 flex-shrink-0">
+          <div
+            style={{
+              width: 480,
+              background: "var(--cela-paper)",
+              display: "flex",
+              flexDirection: "column",
+              borderLeft: "1px solid var(--cela-mist)",
+              flexShrink: 0,
+            }}
+          >
             <NotificationDetailPanel
               notification={selectedNotification}
               onClose={() => setSelectedNotification(null)}

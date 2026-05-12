@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authService } from "@/services/auth.service";
 import { ERPLayout } from "@/components/layout/ERPLayout";
+import { CelaButton, CelaCard, CelaInput, CelaPageHeader } from "@/components/ui/cela-primitives";
 
 function validatePassword(pwd: string): string | null {
   if (pwd.length < 8) return "Mật khẩu phải có ít nhất 8 ký tự";
@@ -37,33 +39,52 @@ function PasswordField({
 }: PasswordFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
-      <div className="relative">
-        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: "var(--cela-cocoa)",
+          margin: "0 0 8px",
+        }}
+      >
+        {label}
+      </p>
+      <div style={{ position: "relative" }}>
+        <CelaInput
           type={show ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           placeholder={placeholder}
-          className="h-11 w-full pl-10 pr-10 border border-gray-300 rounded-lg text-sm
-            focus:outline-none focus:ring-2 focus:ring-[#FFDAE8] focus:border-[#D946A6]
-            transition-colors"
+          style={{ paddingRight: 38 }}
         />
         <button
           type="button"
           onClick={onToggleShow}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          style={{
+            position: "absolute",
+            right: 10,
+            top: "50%",
+            transform: "translateY(-50%)",
+            border: 0,
+            background: "transparent",
+            color: "var(--cela-stone)",
+            cursor: "pointer",
+          }}
         >
-          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {show ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
         </button>
       </div>
-      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
+      {error && <p style={{ fontSize: 11, color: "var(--cela-danger)", margin: "4px 0 0" }}>{error}</p>}
     </div>
   );
 }
 
 export default function ChangePasswordPage() {
+  const router = useRouter();
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -109,63 +130,64 @@ export default function ChangePasswordPage() {
 
   return (
     <ERPLayout>
-      <div className="max-w-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Đổi mật khẩu</h1>
+      <div>
+        <CelaPageHeader eyebrow="Tài khoản" title="Đổi mật khẩu" />
 
-        <div className="bg-white rounded-xl shadow-sm p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <PasswordField
-              label="Mật khẩu hiện tại"
-              value={currentPassword}
-              onChange={setCurrentPassword}
-              show={showCurrent}
-              onToggleShow={() => setShowCurrent((v) => !v)}
-              error={errors.currentPassword}
-              placeholder="Nhập mật khẩu hiện tại"
-            />
+        <div style={{ maxWidth: 480, margin: "0 auto" }}>
+          <CelaCard>
+            <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
+              <PasswordField
+                label="Mật khẩu hiện tại"
+                value={currentPassword}
+                onChange={setCurrentPassword}
+                show={showCurrent}
+                onToggleShow={() => setShowCurrent((v) => !v)}
+                error={errors.currentPassword}
+                placeholder="Nhập mật khẩu hiện tại"
+              />
 
-            <PasswordField
-              label="Mật khẩu mới"
-              value={newPassword}
-              onChange={setNewPassword}
-              onBlur={validate}
-              show={showNew}
-              onToggleShow={() => setShowNew((v) => !v)}
-              error={errors.newPassword}
-              placeholder="Nhập mật khẩu mới"
-            />
+              <PasswordField
+                label="Mật khẩu mới"
+                value={newPassword}
+                onChange={setNewPassword}
+                onBlur={validate}
+                show={showNew}
+                onToggleShow={() => setShowNew((v) => !v)}
+                error={errors.newPassword}
+                placeholder="Nhập mật khẩu mới"
+              />
 
-            <PasswordField
-              label="Xác nhận mật khẩu mới"
-              value={confirmPassword}
-              onChange={setConfirmPassword}
-              onBlur={validate}
-              show={showConfirm}
-              onToggleShow={() => setShowConfirm((v) => !v)}
-              error={errors.confirmPassword}
-              placeholder="Nhập lại mật khẩu mới"
-            />
+              <PasswordField
+                label="Xác nhận mật khẩu mới"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                onBlur={validate}
+                show={showConfirm}
+                onToggleShow={() => setShowConfirm((v) => !v)}
+                error={errors.confirmPassword}
+                placeholder="Nhập lại mật khẩu mới"
+              />
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-11 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white font-semibold rounded-lg
-                hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed
-                flex items-center justify-center gap-2 mt-2"
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Đang xử lý...
-                </>
-              ) : (
-                "Đổi mật khẩu"
-              )}
-            </button>
-          </form>
+              <CelaButton type="submit" variant="primary" disabled={isLoading} style={{ width: "100%", height: 42, marginTop: 4 }}>
+                {isLoading ? "Đang xử lý..." : "Đổi mật khẩu"}
+              </CelaButton>
+            </form>
+          </CelaCard>
+
+          <button
+            type="button"
+            onClick={() => router.back()}
+            style={{
+              marginTop: 14,
+              border: 0,
+              background: "transparent",
+              fontSize: 13,
+              color: "var(--cela-stone)",
+              cursor: "pointer",
+            }}
+          >
+            ← Quay lại trang trước
+          </button>
         </div>
       </div>
     </ERPLayout>

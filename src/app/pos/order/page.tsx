@@ -1,11 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Sparkles, Search, ShoppingCart, Trash2, CheckCircle, X,
-  ChevronDown, ChevronUp, User, Heart, AlertTriangle, Clock,
+  Star,
+  Search,
+  ShoppingCart,
+  Trash2,
+  CheckCircle,
+  X,
+  ChevronDown,
+  ChevronUp,
+  User,
+  Heart,
+  AlertTriangle,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePOSStore } from "@/stores/pos.store";
@@ -16,7 +26,9 @@ import { loyaltyService } from "@/services/loyalty.service";
 import type { Product, Order } from "@/types";
 
 const formatVND = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    amount,
+  );
 
 // ─── Cancel Modal ─────────────────────────────────────────────────────────────
 
@@ -35,58 +47,173 @@ const CANCEL_REASONS = [
   "Khác",
 ];
 
-function CancelModal({ open, total, onClose, onConfirm, isLoading }: CancelModalProps) {
+function CancelModal({
+  open,
+  total,
+  onClose,
+  onConfirm,
+  isLoading,
+}: CancelModalProps) {
   const [reason, setReason] = useState("");
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-              <X className="w-5 h-5 text-red-600" />
-            </div>
-            <h2 className="text-lg font-bold text-gray-900">Hủy đơn hàng</h2>
-          </div>
-
-          {total > 500000 && (
-            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-700">
-                Đơn hàng &gt; 500.000đ sẽ được gửi đến Branch Manager để phê duyệt.
-              </p>
-            </div>
-          )}
-
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Lý do hủy <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(60,46,42,0.45)",
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          background: "var(--cela-paper)",
+          borderRadius: 16,
+          boxShadow: "var(--cela-shadow-md)",
+          width: "100%",
+          maxWidth: 440,
+          padding: "24px 28px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              background: "rgba(183,110,110,0.14)",
+              display: "grid",
+              placeItems: "center",
+              flexShrink: 0,
+            }}
           >
-            <option value="">-- Chọn lý do --</option>
-            {CANCEL_REASONS.map((r) => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
-
-          <div className="flex gap-3 mt-6">
-            <button
-              onClick={onClose}
-              className="flex-1 h-10 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Quay lại
-            </button>
-            <button
-              onClick={() => reason && onConfirm(reason)}
-              disabled={!reason || isLoading}
-              className="flex-1 h-10 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Đang xử lý..." : "Xác nhận hủy"}
-            </button>
+            <X style={{ width: 18, height: 18, color: "var(--cela-danger)" }} />
           </div>
+          <h2
+            style={{
+              fontFamily: "var(--cela-display)",
+              fontSize: 20,
+              fontWeight: 500,
+              color: "var(--cela-espresso)",
+              margin: 0,
+            }}
+          >
+            Hủy đơn hàng
+          </h2>
+        </div>
+
+        {total > 500000 && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+              background: "rgba(201,168,122,0.14)",
+              border: "1px solid rgba(201,168,122,0.4)",
+              borderRadius: 10,
+              padding: "10px 14px",
+              marginBottom: 16,
+            }}
+          >
+            <AlertTriangle
+              style={{
+                width: 15,
+                height: 15,
+                color: "var(--cela-gold)",
+                flexShrink: 0,
+                marginTop: 2,
+              }}
+            />
+            <p
+              style={{ fontSize: 12, color: "var(--cela-espresso)", margin: 0 }}
+            >
+              Đơn hàng &gt; 500.000đ sẽ được gửi đến Branch Manager để phê
+              duyệt.
+            </p>
+          </div>
+        )}
+
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "var(--cela-cocoa)",
+            margin: "0 0 8px",
+          }}
+        >
+          Lý do hủy <span style={{ color: "var(--cela-danger)" }}>*</span>
+        </p>
+        <select
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "9px 12px",
+            border: "1px solid var(--cela-mist)",
+            borderRadius: 8,
+            fontSize: 13,
+            color: "var(--cela-espresso)",
+            background: "var(--cela-ivory)",
+            outline: "none",
+            fontFamily: "var(--cela-sans)",
+          }}
+        >
+          <option value="">-- Chọn lý do --</option>
+          {CANCEL_REASONS.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              border: "1px solid var(--cela-mist)",
+              borderRadius: 10,
+              fontSize: 13,
+              fontWeight: 500,
+              color: "var(--cela-espresso)",
+              background: "var(--cela-ivory)",
+              cursor: "pointer",
+            }}
+          >
+            Quay lại
+          </button>
+          <button
+            onClick={() => reason && onConfirm(reason)}
+            disabled={!reason || isLoading}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              border: 0,
+              borderRadius: 10,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#fff",
+              background: "var(--cela-danger)",
+              cursor: !reason || isLoading ? "not-allowed" : "pointer",
+              opacity: !reason || isLoading ? 0.5 : 1,
+            }}
+          >
+            {isLoading ? "Đang xử lý..." : "Xác nhận hủy"}
+          </button>
         </div>
       </div>
     </div>
@@ -113,25 +240,85 @@ function SuccessOverlay({ order, change, onNewOrder }: SuccessOverlayProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-green-600/95 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-12 h-12 text-green-600" />
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(107,142,106,0.96)",
+        backdropFilter: "blur(4px)",
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: 80,
+            height: 80,
+            background: "var(--cela-paper)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 24px",
+          }}
+        >
+          <CheckCircle
+            style={{ width: 48, height: 48, color: "var(--cela-success)" }}
+          />
         </div>
-        <h2 className="text-3xl font-bold text-white mb-2">Thanh toán thành công!</h2>
+        <h2
+          style={{
+            fontSize: 28,
+            fontWeight: 700,
+            color: "var(--cela-paper)",
+            marginBottom: 8,
+            fontFamily: "var(--cela-display)",
+          }}
+        >
+          Thanh toán thành công!
+        </h2>
         {change > 0 && (
-          <p className="text-xl text-white/90 mb-8">Tiền thối: {formatVND(change)}</p>
+          <p
+            style={{
+              fontSize: 20,
+              color: "rgba(255,255,255,0.9)",
+              marginBottom: 32,
+            }}
+          >
+            Tiền thối: {formatVND(change)}
+          </p>
         )}
-        <div className="flex gap-4 justify-center">
+        <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
           <button
             onClick={handlePrint}
-            className="px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-medium rounded-xl transition-colors"
+            style={{
+              padding: "12px 24px",
+              background: "rgba(255,255,255,0.2)",
+              border: "none",
+              color: "var(--cela-paper)",
+              fontWeight: 500,
+              borderRadius: 12,
+              cursor: "pointer",
+              fontFamily: "var(--cela-body)",
+            }}
           >
             In hóa đơn
           </button>
           <button
             onClick={onNewOrder}
-            className="px-6 py-3 bg-white text-green-700 font-bold rounded-xl hover:bg-white/90 transition-colors"
+            style={{
+              padding: "12px 24px",
+              background: "var(--cela-paper)",
+              border: "none",
+              color: "var(--cela-success)",
+              fontWeight: 700,
+              borderRadius: 12,
+              cursor: "pointer",
+              fontFamily: "var(--cela-body)",
+            }}
           >
             ĐƠN MỚI →
           </button>
@@ -202,7 +389,10 @@ export default function POSOrderPage() {
   const [draftDismissed, setDraftDismissed] = useState(false);
 
   // Pricing
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
   const couponDiscount = appliedCoupon?.discountAmount ?? 0;
   const pointsDiscount = appliedPoints * 100; // 100 points = 10,000đ → 100 points * 100 = 10,000đ? No: 100 points = 10,000đ → 1 point = 100đ
   const total = Math.max(0, subtotal - couponDiscount - pointsDiscount);
@@ -210,7 +400,9 @@ export default function POSOrderPage() {
   const change = tendered - total;
 
   const maxRedeemableByPercent = Math.floor((total * 0.5) / 100) * 100;
-  const maxRedeemable = member ? Math.min(member.points, maxRedeemableByPercent) : 0;
+  const maxRedeemable = member
+    ? Math.min(member.points, maxRedeemableByPercent)
+    : 0;
 
   // Mount: check draft
   useEffect(() => {
@@ -236,7 +428,11 @@ export default function POSOrderPage() {
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await productService.search({ q: searchQuery, status: "ACTIVE", size: 20 });
+        const res = await productService.search({
+          q: searchQuery,
+          status: "ACTIVE",
+          size: 20,
+        });
         setSearchResults(res.data.data.content);
         setShowResults(true);
       } catch {
@@ -275,9 +471,15 @@ export default function POSOrderPage() {
     if (!couponInput.trim() || cartItems.length === 0) return;
     setIsValidatingCoupon(true);
     try {
-      const result = await couponService.validate({ code: couponInput, orderTotal: subtotal });
+      const result = await couponService.validate({
+        code: couponInput,
+        orderTotal: subtotal,
+      });
       if (result.isValid) {
-        setAppliedCoupon({ code: couponInput, discountAmount: result.discountAmount });
+        setAppliedCoupon({
+          code: couponInput,
+          discountAmount: result.discountAmount,
+        });
         toast.success("Áp dụng coupon thành công!");
         setCouponInput("");
       } else {
@@ -296,7 +498,13 @@ export default function POSOrderPage() {
     setMemberNotFound(false);
     try {
       const found = await loyaltyService.searchByPhone(phoneInput);
-      setMember({ id: found.id, name: found.fullName, code: found.memberCode, phone: found.phone, points: found.pointBalance });
+      setMember({
+        id: found.id,
+        name: found.fullName,
+        code: found.memberCode,
+        phone: found.phone,
+        points: found.pointBalance,
+      });
       setMemberNotFound(false);
     } catch {
       setMemberNotFound(true);
@@ -322,12 +530,22 @@ export default function POSOrderPage() {
     }
     setIsRegistering(true);
     try {
-      const newMember = await loyaltyService.register({ fullName: registerName, phone: registerPhone });
-      setMember({ id: newMember.id, name: newMember.fullName, code: newMember.memberCode, phone: newMember.phone, points: newMember.pointBalance });
+      const newMember = await loyaltyService.register({
+        fullName: registerName,
+        phone: registerPhone,
+      });
+      setMember({
+        id: newMember.id,
+        name: newMember.fullName,
+        code: newMember.memberCode,
+        phone: newMember.phone,
+        points: newMember.pointBalance,
+      });
       setShowRegisterForm(false);
       toast.success("Đăng ký thành viên thành công!");
     } catch (err: unknown) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const message = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
       toast.error(message || "Đăng ký thất bại");
     } finally {
       setIsRegistering(false);
@@ -355,7 +573,9 @@ export default function POSOrderPage() {
       setShowSuccess(true);
       resetForNewOrder();
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+      const axiosErr = err as {
+        response?: { status?: number; data?: { message?: string } };
+      };
       const msg = axiosErr?.response?.data?.message ?? "Thanh toán thất bại";
       if (axiosErr?.response?.status === 422) {
         toast.error("Tồn kho không đủ: " + msg);
@@ -383,14 +603,52 @@ export default function POSOrderPage() {
   // No shift guard
   if (!currentShift || currentShift.status !== "OPEN") {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-700 mb-2">Bạn chưa mở ca</h2>
-          <p className="text-gray-500 mb-6">Vui lòng mở ca trước khi bán hàng.</p>
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--cela-ivory)",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <Clock
+            style={{
+              width: 64,
+              height: 64,
+              color: "var(--cela-mist)",
+              margin: "0 auto 16px",
+            }}
+          />
+          <h2
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: "var(--cela-espresso)",
+              margin: "0 0 8px",
+              fontFamily: "var(--cela-display)",
+            }}
+          >
+            Bạn chưa mở ca
+          </h2>
+          <p style={{ color: "var(--cela-stone)", margin: "0 0 24px" }}>
+            Vui lòng mở ca trước khi bán hàng.
+          </p>
           <Link
             href="/pos/shift"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white font-semibold rounded-xl"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 24px",
+              background: "var(--cela-espresso)",
+              color: "var(--cela-champagne)",
+              fontWeight: 600,
+              borderRadius: 12,
+              textDecoration: "none",
+              fontSize: 14,
+            }}
           >
             Đi đến trang ca
           </Link>
@@ -399,14 +657,60 @@ export default function POSOrderPage() {
     );
   }
 
+  const posInputStyle: React.CSSProperties = {
+    height: 40,
+    border: "1.5px solid var(--cela-mist)",
+    borderRadius: 10,
+    padding: "0 12px",
+    fontSize: 13,
+    color: "var(--cela-espresso)",
+    background: "var(--cela-paper)",
+    outline: "none",
+    fontFamily: "var(--cela-body)",
+    width: "100%",
+    boxSizing: "border-box",
+  };
+
+  const sectionCardStyle: React.CSSProperties = {
+    background: "var(--cela-paper)",
+    borderRadius: 14,
+    boxShadow: "var(--cela-shadow-soft)",
+    overflow: "hidden",
+  };
+
+  const actionBtnStyle: React.CSSProperties = {
+    width: 28,
+    height: 28,
+    border: "1.5px solid var(--cela-mist)",
+    borderRadius: 6,
+    background: "transparent",
+    cursor: "pointer",
+    fontSize: 16,
+    color: "var(--cela-espresso)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
   return (
-    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        background: "var(--cela-ivory)",
+        overflow: "hidden",
+      }}
+    >
       {/* Success overlay */}
       {showSuccess && lastOrder && (
         <SuccessOverlay
           order={lastOrder}
           change={change}
-          onNewOrder={() => { setShowSuccess(false); setLastOrder(null); }}
+          onNewOrder={() => {
+            setShowSuccess(false);
+            setLastOrder(null);
+          }}
         />
       )}
 
@@ -420,23 +724,83 @@ export default function POSOrderPage() {
       />
 
       {/* POS Top Bar */}
-      <div className="bg-gradient-to-r from-[#FF69B4] to-[#D946A6] px-6 py-3 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
+      <div
+        style={{
+          background: "var(--cela-espresso)",
+          padding: "10px 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              background: "rgba(255,255,255,0.15)",
+              borderRadius: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Star
+              style={{ width: 18, height: 18, color: "var(--cela-champagne)" }}
+            />
           </div>
-          <span className="font-bold text-white text-lg">BeautyERP POS</span>
+          <span
+            style={{
+              fontWeight: 700,
+              color: "var(--cela-champagne)",
+              fontSize: 16,
+              fontFamily: "var(--cela-display)",
+            }}
+          >
+            BeautyERP POS
+          </span>
         </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-white text-sm">Ca đang mở</span>
-            <span className="text-white/70 text-sm">|</span>
-            <span className="text-white text-sm font-medium">{currentShift.cashierName}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                background: "var(--cela-success)",
+                borderRadius: "50%",
+              }}
+              className="animate-pulse"
+            />
+            <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 13 }}>
+              Ca đang mở
+            </span>
+            <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+              |
+            </span>
+            <span
+              style={{
+                color: "var(--cela-champagne)",
+                fontSize: 13,
+                fontWeight: 500,
+              }}
+            >
+              {currentShift.cashierName}
+            </span>
           </div>
           <button
             onClick={() => router.push("/pos/shift")}
-            className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors"
+            style={{
+              padding: "6px 14px",
+              background: "rgba(201,168,122,0.25)",
+              border: "1px solid rgba(201,168,122,0.4)",
+              color: "var(--cela-champagne)",
+              fontSize: 13,
+              fontWeight: 500,
+              borderRadius: 8,
+              cursor: "pointer",
+              fontFamily: "var(--cela-body)",
+            }}
           >
             Đóng ca
           </button>
@@ -445,20 +809,52 @@ export default function POSOrderPage() {
 
       {/* Draft recovery banner */}
       {hasDraft && !draftDismissed && (
-        <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between flex-shrink-0">
-          <span className="text-amber-700 text-sm">
+        <div
+          style={{
+            background: "rgba(201,168,122,0.14)",
+            borderBottom: "1px solid rgba(201,168,122,0.4)",
+            padding: "10px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ color: "var(--cela-cocoa)", fontSize: 13 }}>
             ♻️ Có đơn hàng chưa hoàn tất từ trước
           </span>
-          <div className="flex gap-2">
+          <div style={{ display: "flex", gap: 8 }}>
             <button
               onClick={() => setDraftDismissed(true)}
-              className="px-4 py-1.5 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors"
+              style={{
+                padding: "5px 14px",
+                background: "var(--cela-gold)",
+                border: "none",
+                color: "#fff",
+                fontSize: 13,
+                fontWeight: 500,
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
             >
               Tiếp tục đơn cũ
             </button>
             <button
-              onClick={() => { clearCart(); setHasDraft(false); setDraftDismissed(true); }}
-              className="px-4 py-1.5 border border-amber-300 text-amber-700 text-sm font-medium rounded-lg hover:bg-amber-100 transition-colors"
+              onClick={() => {
+                clearCart();
+                setHasDraft(false);
+                setDraftDismissed(true);
+              }}
+              style={{
+                padding: "5px 14px",
+                background: "transparent",
+                border: "1px solid rgba(201,168,122,0.5)",
+                color: "var(--cela-cocoa)",
+                fontSize: 13,
+                fontWeight: 500,
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
             >
               Tạo đơn mới
             </button>
@@ -467,117 +863,361 @@ export default function POSOrderPage() {
       )}
 
       {/* Main content */}
-      <div className="flex flex-1 gap-4 p-4 overflow-hidden">
-
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          gap: 16,
+          padding: 16,
+          overflow: "hidden",
+        }}
+      >
         {/* LEFT PANEL — 55% */}
-        <div className="flex flex-col gap-4" style={{ width: "55%" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            width: "55%",
+          }}
+        >
           {/* Product search */}
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <div className="relative" ref={searchRef}>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm sản phẩm theo tên hoặc SKU..."
-                className="h-11 w-full pl-10 pr-10 border border-gray-300 rounded-lg text-sm
-                  focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-              />
-              {isSearching && (
-                <svg className="animate-spin absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-              )}
-
-              {/* Search results */}
-              {showResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
-                  {searchResults.map((product) => (
-                    <button
-                      key={product.id}
-                      onClick={() => handleAddProduct(product)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-pink-50 transition-colors text-left border-b border-gray-50 last:border-0"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.sku}</p>
-                      </div>
-                      <span className="text-sm font-semibold text-pink-600 flex-shrink-0">
-                        {formatVND(product.sellingPrice)}
-                      </span>
-                      <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full flex-shrink-0">
-                        Thêm
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
+          <div style={sectionCardStyle}>
+            <div style={{ padding: 16 }}>
+              <div style={{ position: "relative" }} ref={searchRef}>
+                <Search
+                  style={{
+                    position: "absolute",
+                    left: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: 16,
+                    height: 16,
+                    color: "var(--cela-stone)",
+                  }}
+                />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Tìm sản phẩm theo tên hoặc SKU..."
+                  style={{
+                    ...posInputStyle,
+                    paddingLeft: 38,
+                    paddingRight: 38,
+                    height: 44,
+                  }}
+                />
+                {isSearching && (
+                  <svg
+                    style={{
+                      position: "absolute",
+                      right: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: 16,
+                      height: 16,
+                      color: "var(--cela-stone)",
+                      animation: "spin 1s linear infinite",
+                    }}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    />
+                  </svg>
+                )}
+                {showResults && searchResults.length > 0 && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      marginTop: 4,
+                      background: "var(--cela-paper)",
+                      border: "1px solid var(--cela-mist)",
+                      borderRadius: 12,
+                      boxShadow: "var(--cela-shadow-md)",
+                      zIndex: 50,
+                      maxHeight: 320,
+                      overflowY: "auto",
+                    }}
+                  >
+                    {searchResults.map((product) => (
+                      <button
+                        key={product.id}
+                        onClick={() => handleAddProduct(product)}
+                        style={{
+                          width: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          padding: "10px 16px",
+                          background: "transparent",
+                          border: "none",
+                          borderBottom: "1px solid var(--cela-fog)",
+                          cursor: "pointer",
+                          textAlign: "left",
+                        }}
+                        className="hover:bg-[var(--cela-fog)]"
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "var(--cela-espresso)",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {product.name}
+                          </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 11,
+                              color: "var(--cela-stone)",
+                            }}
+                          >
+                            {product.sku}
+                          </p>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: "var(--cela-rose)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {formatVND(product.sellingPrice)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            background: "rgba(183,110,121,0.15)",
+                            color: "var(--cela-rose)",
+                            padding: "2px 8px",
+                            borderRadius: 10,
+                            flexShrink: 0,
+                          }}
+                        >
+                          Thêm
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Cart */}
-          <div className="bg-white rounded-xl shadow-sm flex-1 overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900">
+          <div
+            style={{
+              ...sectionCardStyle,
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "12px 16px",
+                borderBottom: "1px solid var(--cela-fog)",
+              }}
+            >
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "var(--cela-espresso)",
+                }}
+              >
                 Giỏ hàng ({cartItems.length} sản phẩm)
               </h2>
             </div>
 
             {cartItems.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
-                <ShoppingCart className="w-16 h-16 text-gray-200 mb-3" />
-                <p className="text-gray-500">Chưa có sản phẩm nào</p>
-                <p className="text-xs text-gray-400 mt-1">Tìm kiếm sản phẩm để thêm vào đơn</p>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  padding: 48,
+                }}
+              >
+                <ShoppingCart
+                  style={{
+                    width: 56,
+                    height: 56,
+                    color: "var(--cela-mist)",
+                    marginBottom: 12,
+                  }}
+                />
+                <p style={{ color: "var(--cela-stone)", margin: "0 0 4px" }}>
+                  Chưa có sản phẩm nào
+                </p>
+                <p
+                  style={{ fontSize: 12, color: "var(--cela-mist)", margin: 0 }}
+                >
+                  Tìm kiếm sản phẩm để thêm vào đơn
+                </p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
-                    <tr>
-                      <th className="text-left px-4 py-2">Sản phẩm</th>
-                      <th className="text-center px-2 py-2">SL</th>
-                      <th className="text-right px-3 py-2">Đơn giá</th>
-                      <th className="text-right px-3 py-2">Thành tiền</th>
-                      <th className="px-2 py-2" />
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "var(--cela-fog)" }}>
+                      {["Sản phẩm", "SL", "Đơn giá", "Thành tiền", ""].map(
+                        (h, i) => (
+                          <th
+                            key={i}
+                            style={{
+                              padding: "8px 12px",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              letterSpacing: "0.1em",
+                              textTransform: "uppercase",
+                              color: "var(--cela-cocoa)",
+                              textAlign:
+                                i === 1 || i === 4
+                                  ? "center"
+                                  : i >= 2
+                                    ? "right"
+                                    : "left",
+                            }}
+                          >
+                            {h}
+                          </th>
+                        ),
+                      )}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody>
                     {cartItems.map((item) => (
-                      <tr key={item.productId}>
-                        <td className="px-4 py-3">
-                          <p className="text-sm font-medium text-gray-900">{item.name}</p>
-                          <p className="text-xs text-gray-500">{item.sku}</p>
+                      <tr
+                        key={item.productId}
+                        style={{ borderBottom: "1px solid var(--cela-fog)" }}
+                      >
+                        <td style={{ padding: "10px 12px" }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "var(--cela-espresso)",
+                            }}
+                          >
+                            {item.name}
+                          </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 11,
+                              color: "var(--cela-stone)",
+                              fontFamily: "var(--cela-mono)",
+                            }}
+                          >
+                            {item.sku}
+                          </p>
                         </td>
-                        <td className="px-2 py-3">
-                          <div className="flex items-center gap-1 justify-center">
+                        <td style={{ padding: "10px 8px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                              justifyContent: "center",
+                            }}
+                          >
                             <button
                               onClick={() => updateQuantity(item.productId, -1)}
-                              className="w-7 h-7 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 text-sm flex items-center justify-center"
+                              style={actionBtnStyle}
                             >
                               −
                             </button>
-                            <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                            <span
+                              style={{
+                                width: 28,
+                                textAlign: "center",
+                                fontSize: 13,
+                                fontWeight: 600,
+                                color: "var(--cela-espresso)",
+                              }}
+                            >
+                              {item.quantity}
+                            </span>
                             <button
                               onClick={() => updateQuantity(item.productId, 1)}
-                              className="w-7 h-7 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 text-sm flex items-center justify-center"
+                              style={actionBtnStyle}
                             >
                               +
                             </button>
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-right text-sm text-gray-600">
+                        <td
+                          style={{
+                            padding: "10px 12px",
+                            textAlign: "right",
+                            fontSize: 13,
+                            color: "var(--cela-stone)",
+                            fontFamily: "var(--cela-mono)",
+                          }}
+                        >
                           {formatVND(item.price)}
                         </td>
-                        <td className="px-3 py-3 text-right text-sm font-medium text-pink-600">
+                        <td
+                          style={{
+                            padding: "10px 12px",
+                            textAlign: "right",
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: "var(--cela-rose)",
+                            fontFamily: "var(--cela-mono)",
+                          }}
+                        >
                           {formatVND(item.price * item.quantity)}
                         </td>
-                        <td className="px-2 py-3">
+                        <td
+                          style={{ padding: "10px 8px", textAlign: "center" }}
+                        >
                           <button
                             onClick={() => removeFromCart(item.productId)}
-                            className="p-1 text-red-400 hover:text-red-600 transition-colors"
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: 4,
+                            }}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2
+                              style={{
+                                width: 15,
+                                height: 15,
+                                color: "var(--cela-danger)",
+                              }}
+                            />
                           </button>
                         </td>
                       </tr>
@@ -590,73 +1230,219 @@ export default function POSOrderPage() {
         </div>
 
         {/* RIGHT PANEL — 45% */}
-        <div className="flex flex-col gap-3 overflow-y-auto" style={{ width: "45%" }}>
-
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            width: "45%",
+            overflowY: "auto",
+          }}
+        >
           {/* Pricing summary */}
-          <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
+          <div
+            style={{
+              background: "var(--cela-fog)",
+              borderRadius: 14,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 13,
+                color: "var(--cela-stone)",
+              }}
+            >
               <span>Tạm tính</span>
-              <span>{formatVND(subtotal)}</span>
+              <span style={{ fontFamily: "var(--cela-mono)" }}>
+                {formatVND(subtotal)}
+              </span>
             </div>
             {couponDiscount > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 13,
+                  color: "var(--cela-success)",
+                }}
+              >
                 <span>Giảm (Coupon)</span>
-                <span>- {formatVND(couponDiscount)}</span>
+                <span style={{ fontFamily: "var(--cela-mono)" }}>
+                  - {formatVND(couponDiscount)}
+                </span>
               </div>
             )}
             {pointsDiscount > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 13,
+                  color: "var(--cela-success)",
+                }}
+              >
                 <span>Giảm (Điểm TL)</span>
-                <span>- {formatVND(pointsDiscount)}</span>
+                <span style={{ fontFamily: "var(--cela-mono)" }}>
+                  - {formatVND(pointsDiscount)}
+                </span>
               </div>
             )}
-            <div className="border-t border-gray-200 pt-2 flex justify-between items-baseline">
-              <span className="font-semibold text-gray-900">Tổng cộng</span>
-              <span className="text-2xl font-bold text-pink-600">{formatVND(total)}</span>
+            <div
+              style={{
+                borderTop: "1px solid var(--cela-mist)",
+                paddingTop: 10,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: "var(--cela-espresso)",
+                  fontSize: 14,
+                }}
+              >
+                Tổng cộng
+              </span>
+              <span
+                style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: "var(--cela-rose)",
+                  fontFamily: "var(--cela-mono)",
+                }}
+              >
+                {formatVND(total)}
+              </span>
             </div>
           </div>
 
           {/* Coupon section */}
-          <div className="bg-white rounded-xl shadow-sm">
+          <div style={sectionCardStyle}>
             <button
               onClick={() => setCouponOpen((v) => !v)}
-              className="w-full flex items-center justify-between p-4 text-sm font-medium text-gray-900"
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--cela-espresso)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+              }}
             >
-              <span className="flex items-center gap-2">
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 🏷️ Mã giảm giá
                 {appliedCoupon && (
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                  <span
+                    style={{
+                      fontSize: 11,
+                      background: "rgba(107,142,106,0.15)",
+                      color: "var(--cela-success)",
+                      padding: "2px 8px",
+                      borderRadius: 10,
+                    }}
+                  >
                     {appliedCoupon.code}
                   </span>
                 )}
               </span>
-              {couponOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {couponOpen ? (
+                <ChevronUp style={{ width: 16, height: 16 }} />
+              ) : (
+                <ChevronDown style={{ width: 16, height: 16 }} />
+              )}
             </button>
             {couponOpen && (
-              <div className="px-4 pb-4">
+              <div style={{ padding: "0 16px 16px" }}>
                 {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      background: "rgba(107,142,106,0.12)",
+                      border: "1px solid rgba(107,142,106,0.3)",
+                      borderRadius: 10,
+                      padding: "10px 14px",
+                    }}
+                  >
                     <div>
-                      <p className="text-sm font-medium text-green-700">{appliedCoupon.code}</p>
-                      <p className="text-xs text-green-600">Giảm {formatVND(appliedCoupon.discountAmount)}</p>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "var(--cela-success)",
+                        }}
+                      >
+                        {appliedCoupon.code}
+                      </p>
+                      <p
+                        style={{
+                          margin: "2px 0 0",
+                          fontSize: 12,
+                          color: "var(--cela-success)",
+                        }}
+                      >
+                        Giảm {formatVND(appliedCoupon.discountAmount)}
+                      </p>
                     </div>
-                    <button onClick={() => setAppliedCoupon(null)} className="text-green-600 hover:text-green-800">
-                      <X className="w-4 h-4" />
+                    <button
+                      onClick={() => setAppliedCoupon(null)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <X
+                        style={{
+                          width: 16,
+                          height: 16,
+                          color: "var(--cela-success)",
+                        }}
+                      />
                     </button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
+                  <div style={{ display: "flex", gap: 8 }}>
                     <input
                       type="text"
                       value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      onChange={(e) =>
+                        setCouponInput(e.target.value.toUpperCase())
+                      }
                       placeholder="Nhập mã coupon..."
-                      className="flex-1 h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
+                      style={{ ...posInputStyle, flex: 1, width: "auto" }}
                     />
                     <button
                       onClick={handleApplyCoupon}
                       disabled={isValidatingCoupon || !couponInput.trim()}
-                      className="px-4 h-10 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white text-xs font-semibold rounded-lg disabled:opacity-50"
+                      style={{
+                        padding: "0 14px",
+                        height: 40,
+                        background: "var(--cela-espresso)",
+                        border: "none",
+                        color: "var(--cela-champagne)",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        borderRadius: 10,
+                        cursor: "pointer",
+                        opacity:
+                          isValidatingCoupon || !couponInput.trim() ? 0.5 : 1,
+                      }}
                     >
                       {isValidatingCoupon ? "..." : "ÁP DỤNG"}
                     </button>
@@ -667,56 +1453,183 @@ export default function POSOrderPage() {
           </div>
 
           {/* Loyalty member section */}
-          <div className="bg-white rounded-xl shadow-sm">
+          <div style={sectionCardStyle}>
             <button
               onClick={() => setMemberOpen((v) => !v)}
-              className="w-full flex items-center justify-between p-4 text-sm font-medium text-gray-900"
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--cela-espresso)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+              }}
             >
-              <span className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-pink-500" />
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Heart
+                  style={{ width: 15, height: 15, color: "var(--cela-rose)" }}
+                />
                 Thành viên loyalty
                 {member && (
-                  <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
+                  <span
+                    style={{
+                      fontSize: 11,
+                      background: "rgba(183,110,121,0.15)",
+                      color: "var(--cela-rose)",
+                      padding: "2px 8px",
+                      borderRadius: 10,
+                    }}
+                  >
                     {member.name}
                   </span>
                 )}
               </span>
-              {memberOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {memberOpen ? (
+                <ChevronUp style={{ width: 16, height: 16 }} />
+              ) : (
+                <ChevronDown style={{ width: 16, height: 16 }} />
+              )}
             </button>
             {memberOpen && (
-              <div className="px-4 pb-4 space-y-3">
+              <div
+                style={{
+                  padding: "0 16px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
                 {member ? (
                   <>
-                    <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
-                      <div className="flex items-start justify-between">
+                    <div
+                      style={{
+                        background: "rgba(183,110,121,0.08)",
+                        border: "1px solid rgba(183,110,121,0.22)",
+                        borderRadius: 10,
+                        padding: "10px 14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{member.name}</p>
-                          <p className="text-xs text-gray-500">Mã: {member.code}</p>
-                          <p className="text-xs text-pink-600 font-medium mt-1">
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "var(--cela-espresso)",
+                            }}
+                          >
+                            {member.name}
+                          </p>
+                          <p
+                            style={{
+                              margin: "2px 0 0",
+                              fontSize: 11,
+                              color: "var(--cela-stone)",
+                            }}
+                          >
+                            Mã: {member.code}
+                          </p>
+                          <p
+                            style={{
+                              margin: "4px 0 0",
+                              fontSize: 12,
+                              color: "var(--cela-rose)",
+                              fontWeight: 500,
+                            }}
+                          >
                             {member.points.toLocaleString("vi-VN")} điểm
                           </p>
                         </div>
-                        <button onClick={() => { setMember(null); setAppliedPoints(0); setPointsInput(""); }} className="text-gray-400 hover:text-gray-600">
-                          <X className="w-4 h-4" />
+                        <button
+                          onClick={() => {
+                            setMember(null);
+                            setAppliedPoints(0);
+                            setPointsInput("");
+                          }}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <X
+                            style={{
+                              width: 15,
+                              height: 15,
+                              color: "var(--cela-stone)",
+                            }}
+                          />
                         </button>
                       </div>
                     </div>
 
                     {appliedPoints > 0 ? (
-                      <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
-                        <p className="text-sm text-green-700">
-                          Đã dùng {appliedPoints} điểm (giảm {formatVND(appliedPoints * 100)})
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          background: "rgba(107,142,106,0.12)",
+                          border: "1px solid rgba(107,142,106,0.3)",
+                          borderRadius: 10,
+                          padding: "10px 14px",
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: 13,
+                            color: "var(--cela-success)",
+                          }}
+                        >
+                          Đã dùng {appliedPoints} điểm (giảm{" "}
+                          {formatVND(appliedPoints * 100)})
                         </p>
-                        <button onClick={() => { setAppliedPoints(0); setPointsInput(""); }} className="text-green-600 hover:text-green-800">
-                          <X className="w-4 h-4" />
+                        <button
+                          onClick={() => {
+                            setAppliedPoints(0);
+                            setPointsInput("");
+                          }}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <X
+                            style={{
+                              width: 15,
+                              height: 15,
+                              color: "var(--cela-success)",
+                            }}
+                          />
                         </button>
                       </div>
                     ) : (
                       <div>
-                        <p className="text-xs text-gray-500 mb-2">
-                          100 điểm = 10.000đ | Tối đa {maxRedeemable} điểm ({formatVND(maxRedeemable * 100)})
+                        <p
+                          style={{
+                            margin: "0 0 8px",
+                            fontSize: 12,
+                            color: "var(--cela-stone)",
+                          }}
+                        >
+                          100 điểm = 10.000đ | Tối đa {maxRedeemable} điểm (
+                          {formatVND(maxRedeemable * 100)})
                         </p>
-                        <div className="flex gap-2">
+                        <div style={{ display: "flex", gap: 8 }}>
                           <input
                             type="number"
                             value={pointsInput}
@@ -724,11 +1637,21 @@ export default function POSOrderPage() {
                             placeholder="Số điểm muốn dùng"
                             max={maxRedeemable}
                             min={0}
-                            className="flex-1 h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                            style={{ ...posInputStyle, flex: 1, width: "auto" }}
                           />
                           <button
                             onClick={handleApplyPoints}
-                            className="px-4 h-10 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white text-xs font-semibold rounded-lg"
+                            style={{
+                              padding: "0 14px",
+                              height: 40,
+                              background: "var(--cela-espresso)",
+                              border: "none",
+                              color: "var(--cela-champagne)",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              borderRadius: 10,
+                              cursor: "pointer",
+                            }}
                           >
                             ÁP DỤNG
                           </button>
@@ -737,32 +1660,54 @@ export default function POSOrderPage() {
                     )}
                   </>
                 ) : showRegisterForm ? (
-                  <div className="space-y-2">
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  >
                     <input
                       type="text"
                       value={registerName}
                       onChange={(e) => setRegisterName(e.target.value)}
                       placeholder="Họ tên thành viên"
-                      className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                      style={posInputStyle}
                     />
                     <input
                       type="tel"
                       value={registerPhone}
                       onChange={(e) => setRegisterPhone(e.target.value)}
                       placeholder="Số điện thoại"
-                      className="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                      style={posInputStyle}
                     />
-                    <div className="flex gap-2">
+                    <div style={{ display: "flex", gap: 8 }}>
                       <button
                         onClick={() => setShowRegisterForm(false)}
-                        className="flex-1 h-9 border border-gray-300 rounded-lg text-sm text-gray-600"
+                        style={{
+                          flex: 1,
+                          height: 36,
+                          border: "1.5px solid var(--cela-mist)",
+                          borderRadius: 10,
+                          fontSize: 13,
+                          color: "var(--cela-espresso)",
+                          background: "transparent",
+                          cursor: "pointer",
+                        }}
                       >
                         Hủy
                       </button>
                       <button
                         onClick={handleRegisterMember}
                         disabled={isRegistering}
-                        className="flex-1 h-9 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white text-sm font-medium rounded-lg disabled:opacity-50"
+                        style={{
+                          flex: 1,
+                          height: 36,
+                          background: "var(--cela-espresso)",
+                          border: "none",
+                          color: "var(--cela-champagne)",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          borderRadius: 10,
+                          cursor: "pointer",
+                          opacity: isRegistering ? 0.5 : 1,
+                        }}
                       >
                         {isRegistering ? "Đang đăng ký..." : "Đăng ký"}
                       </button>
@@ -770,30 +1715,60 @@ export default function POSOrderPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex gap-2">
+                    <div style={{ display: "flex", gap: 8 }}>
                       <input
                         type="tel"
                         value={phoneInput}
                         onChange={(e) => setPhoneInput(e.target.value)}
                         placeholder="Số điện thoại..."
-                        className="flex-1 h-10 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                        style={{ ...posInputStyle, flex: 1, width: "auto" }}
                       />
                       <button
                         onClick={handleSearchMember}
                         disabled={isSearchingMember}
-                        className="px-4 h-10 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white text-xs font-semibold rounded-lg disabled:opacity-50"
+                        style={{
+                          padding: "0 14px",
+                          height: 40,
+                          background: "var(--cela-espresso)",
+                          border: "none",
+                          color: "var(--cela-champagne)",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          borderRadius: 10,
+                          cursor: "pointer",
+                          opacity: isSearchingMember ? 0.5 : 1,
+                        }}
                       >
                         {isSearchingMember ? "..." : "TRA CỨU"}
                       </button>
                     </div>
                     {memberNotFound && (
-                      <p className="text-red-500 text-xs">Không tìm thấy thành viên</p>
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: "var(--cela-danger)",
+                          margin: 0,
+                        }}
+                      >
+                        Không tìm thấy thành viên
+                      </p>
                     )}
                     <button
                       onClick={() => setShowRegisterForm(true)}
-                      className="text-xs text-pink-600 hover:text-pink-800 flex items-center gap-1"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        fontSize: 12,
+                        color: "var(--cela-rose)",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        fontFamily: "var(--cela-body)",
+                      }}
                     >
-                      <User className="w-3 h-3" /> Đăng ký thành viên mới
+                      <User style={{ width: 12, height: 12 }} /> Đăng ký thành
+                      viên mới
                     </button>
                   </>
                 )}
@@ -802,58 +1777,153 @@ export default function POSOrderPage() {
           </div>
 
           {/* Payment section */}
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tiền khách đưa</label>
-            <input
-              type="number"
-              value={tenderedAmount}
-              onChange={(e) => setTenderedAmount(e.target.value)}
-              placeholder="0"
-              className="w-full h-14 border border-gray-300 rounded-lg px-4 text-right text-2xl font-bold
-                focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-            />
-            {/* Quick amount buttons */}
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={() => setTenderedAmount(String(total))}
-                className="flex-1 h-8 text-xs border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          <div style={sectionCardStyle}>
+            <div style={{ padding: 16 }}>
+              <p
+                style={{
+                  margin: "0 0 8px",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "var(--cela-cocoa)",
+                }}
               >
-                Đúng tiền
-              </button>
-              {[10000, 50000, 100000].map((amt) => (
+                Tiền khách đưa
+              </p>
+              <input
+                type="number"
+                value={tenderedAmount}
+                onChange={(e) => setTenderedAmount(e.target.value)}
+                placeholder="0"
+                style={{
+                  ...posInputStyle,
+                  height: 56,
+                  textAlign: "right",
+                  fontSize: 24,
+                  fontWeight: 700,
+                  fontFamily: "var(--cela-mono)",
+                }}
+              />
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <button
-                  key={amt}
-                  onClick={() => setTenderedAmount(String((Number(tenderedAmount) || 0) + amt))}
-                  className="flex-1 h-8 text-xs border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  onClick={() => setTenderedAmount(String(total))}
+                  style={{
+                    flex: 1,
+                    height: 32,
+                    fontSize: 12,
+                    border: "1.5px solid var(--cela-mist)",
+                    borderRadius: 8,
+                    background: "transparent",
+                    cursor: "pointer",
+                    color: "var(--cela-espresso)",
+                  }}
                 >
-                  +{(amt / 1000).toFixed(0)}k
+                  Đúng tiền
                 </button>
-              ))}
-            </div>
-
-            {tenderedAmount && (
-              <div className={`mt-3 p-3 rounded-lg text-center font-semibold ${change >= 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-                {change >= 0
-                  ? `Tiền thối: ${formatVND(change)}`
-                  : `Còn thiếu: ${formatVND(Math.abs(change))}`}
+                {[10000, 50000, 100000].map((amt) => (
+                  <button
+                    key={amt}
+                    onClick={() =>
+                      setTenderedAmount(
+                        String((Number(tenderedAmount) || 0) + amt),
+                      )
+                    }
+                    style={{
+                      flex: 1,
+                      height: 32,
+                      fontSize: 12,
+                      border: "1.5px solid var(--cela-mist)",
+                      borderRadius: 8,
+                      background: "transparent",
+                      cursor: "pointer",
+                      color: "var(--cela-espresso)",
+                    }}
+                  >
+                    +{(amt / 1000).toFixed(0)}k
+                  </button>
+                ))}
               </div>
-            )}
+
+              {tenderedAmount && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: "10px 14px",
+                    borderRadius: 10,
+                    textAlign: "center",
+                    fontWeight: 600,
+                    fontSize: 14,
+                    background:
+                      change >= 0
+                        ? "rgba(107,142,106,0.12)"
+                        : "rgba(183,110,121,0.12)",
+                    color:
+                      change >= 0
+                        ? "var(--cela-success)"
+                        : "var(--cela-danger)",
+                  }}
+                >
+                  {change >= 0
+                    ? `Tiền thối: ${formatVND(change)}`
+                    : `Còn thiếu: ${formatVND(Math.abs(change))}`}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Action buttons */}
-          <div className="space-y-2">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <button
               onClick={handlePayment}
-              disabled={cartItems.length === 0 || tendered < total || isProcessing}
-              className="w-full h-12 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white font-bold rounded-xl
-                hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed
-                flex items-center justify-center gap-2"
+              disabled={
+                cartItems.length === 0 || tendered < total || isProcessing
+              }
+              style={{
+                width: "100%",
+                height: 48,
+                background: "var(--cela-espresso)",
+                border: "none",
+                color: "var(--cela-champagne)",
+                fontWeight: 700,
+                fontSize: 14,
+                borderRadius: 14,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                opacity:
+                  cartItems.length === 0 || tendered < total || isProcessing
+                    ? 0.5
+                    : 1,
+                letterSpacing: "0.05em",
+              }}
             >
               {isProcessing ? (
                 <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  <svg
+                    style={{
+                      width: 16,
+                      height: 16,
+                      animation: "spin 1s linear infinite",
+                    }}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    />
                   </svg>
                   Đang xử lý...
                 </>
@@ -865,7 +1935,17 @@ export default function POSOrderPage() {
             {cartItems.length > 0 && (
               <button
                 onClick={() => setShowCancel(true)}
-                className="w-full h-10 border border-red-300 text-red-600 hover:bg-red-50 rounded-xl text-sm font-medium transition-colors"
+                style={{
+                  width: "100%",
+                  height: 40,
+                  border: "1.5px solid rgba(183,110,121,0.4)",
+                  color: "var(--cela-danger)",
+                  background: "transparent",
+                  borderRadius: 14,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
               >
                 HỦY ĐƠN HÀNG
               </button>
