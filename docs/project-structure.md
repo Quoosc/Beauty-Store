@@ -102,7 +102,8 @@ beautystore-fe/
 │   │   │   ├── AlertsPanel.tsx         ← (inline trong dashboard pages)
 │   │   │   ├── NotificationBadge.tsx   ← (tích hợp trong Header.tsx)
 │   │   │   └── StatusBadge.tsx         ← (inline trong từng page)
-│   │   └── ui/                         ← shadcn/ui — KHÔNG sửa trực tiếp
+│   │   └── ui/                         ← shadcn/ui generated
+│   │       └── cela-primitives.tsx     ✅ DONE — CelaCard, CelaButton, CelaInput, CelaSpinner, CelaEmptyState
 │   │
 │   ├── services/                       ← API calls — KHÔNG gọi Axios trong component
 │   │   ├── auth.service.ts             ✅ DONE — login, logout, changePassword + accountService
@@ -142,7 +143,12 @@ beautystore-fe/
 │       └── index.ts                    ✅ DONE — Đầy đủ types cho 7 microservices
 │
 ├── docs/
-│   └── project-structure.md            ✅ File này
+│   ├── project-structure.md            ✅ File này
+│   ├── cela-ui-refactor.md             ✅ CÉLA design spec + task tracker (32/32 pages ✅)
+│   ├── coding-convention.md            ✅ Coding standards (CÉLA styling rules)
+│   ├── system-overview.md              ✅ Architecture, tech stack, API routing
+│   ├── api-spec.md                     ✅ Tất cả endpoints theo từng service
+│   └── user-stories.md                 ✅ User stories gốc
 │
 ├── middleware.ts                       ✅ DONE — Auth guard cookie 'jwt', 20 protected routes
 ├── .env.local                          ✅ DONE — NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
@@ -190,7 +196,7 @@ lib/axios.ts  →  Backend api-gateway :8080
 1. **KHÔNG gọi Axios trực tiếp trong component** — luôn qua `services/`
 2. **KHÔNG lưu JWT vào `localStorage`** — backend set httpOnly cookie
 3. **KHÔNG có refresh token flow** — hết phiên (8h) → redirect `/login`
-4. **KHÔNG sửa file trong `components/ui/`** — chỉ dùng, không sửa shadcn
+4. **KHÔNG sửa shadcn files trong `components/ui/`** — ngoại trừ `cela-primitives.tsx` là file của project (được phép sửa)
 5. **POS draft autosave** — `localStorage('pos_draft')` mỗi 10s, xóa sau payment thành công
 6. **Idempotency-Key** — bắt buộc khi `POST /order/orders`, generate UUID phía client (đã tích hợp sẵn)
 
@@ -355,4 +361,4 @@ Layout:      ████████████████████  100% 
 Hooks:       ████████████████████  100% (1/1 hooks) ✅
 ```
 
-> Toàn bộ Wave 1–5 hoàn thành. TypeScript: 0 errors. Cập nhật lần cuối: 2026-05-07.
+> Toàn bộ Wave 1–5 hoàn thành. CÉLA Design System 100%. TypeScript: 0 errors. Cập nhật lần cuối: 2026-05-13.

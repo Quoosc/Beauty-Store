@@ -73,7 +73,7 @@ src/
 | Service object | `camelCase` + `Service` | `productService`, `authService` |
 | Utility function | `camelCase` | `formatPrice`, `slugify`, `cn` |
 | Constant | `UPPER_SNAKE_CASE` | `MAX_CART_ITEMS`, `API_TIMEOUT` |
-| CSS class (Tailwind) | Tailwind utilities | `text-pink-600`, `bg-white` |
+| CSS variable (CÉLA) | `var(--cela-*)` | `var(--cela-rose)`, `var(--cela-espresso)` |
 
 ### 2.2 Đặt tên component theo loại
 
@@ -165,72 +165,40 @@ const status: OrderStatus = OrderStatus.PENDING;
 ### 4.1 Cấu trúc component chuẩn
 
 ```typescript
-// components/shared/ProductCard.tsx
+// components/shared/StatusBadge.tsx — ví dụ component CÉLA chuẩn
 import type { FC } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { ShoppingCart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/lib/utils";
-import type { Product } from "@/types";
+import type { OrderStatus } from "@/types";
 
-interface ProductCardProps {
-  product: Product;
-  onAddToCart?: (product: Product) => void;
+const STATUS_STYLE: Record<OrderStatus, { bg: string; color: string; label: string }> = {
+  COMPLETED: { bg: "rgba(107,142,106,0.15)", color: "var(--cela-success)", label: "Hoàn thành" },
+  PENDING:   { bg: "rgba(201,168,122,0.20)", color: "var(--cela-gold)",    label: "Chờ xử lý" },
+  CANCELLED: { bg: "rgba(183,110,121,0.15)", color: "var(--cela-danger)",  label: "Đã hủy" },
+  RETURNED:  { bg: "rgba(201,168,122,0.20)", color: "var(--cela-gold)",    label: "Trả hàng" },
+};
+
+interface StatusBadgeProps {
+  status: OrderStatus;
 }
 
-const ProductCard: FC<ProductCardProps> = ({ product, onAddToCart }) => {
-  const displayPrice = product.salePrice ?? product.price;
-  const hasDiscount = product.salePrice !== undefined && product.salePrice < product.price;
-
+const StatusBadge: FC<StatusBadgeProps> = ({ status }) => {
+  const s = STATUS_STYLE[status] ?? { bg: "var(--cela-fog)", color: "var(--cela-stone)", label: status };
   return (
-    <div className="group rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-      <Link href={`/products/${product.slug}`}>
-        <div className="relative aspect-square bg-gray-100">
-          <Image
-            src={product.images[0] ?? "/placeholder.png"}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          {hasDiscount && (
-            <Badge className="absolute top-2 left-2 bg-pink-600">
-              -{Math.round(((product.price - displayPrice) / product.price) * 100)}%
-            </Badge>
-          )}
-        </div>
-      </Link>
-      <div className="p-3">
-        <Link href={`/products/${product.slug}`}>
-          <h3 className="font-medium text-sm text-gray-700 line-clamp-2 hover:text-pink-600 transition-colors">
-            {product.name}
-          </h3>
-        </Link>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-pink-600 font-bold text-sm">
-            {formatPrice(displayPrice)}
-          </span>
-          {hasDiscount && (
-            <span className="text-gray-400 text-xs line-through">
-              {formatPrice(product.price)}
-            </span>
-          )}
-        </div>
-        <Button
-          size="sm"
-          className="w-full mt-2 bg-pink-600 hover:bg-pink-700"
-          onClick={() => onAddToCart?.(product)}
-        >
-          <ShoppingCart className="h-4 w-4 mr-1" />
-          Thêm vào giỏ
-        </Button>
-      </div>
-    </div>
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      padding: "3px 10px",
+      borderRadius: 999,
+      fontSize: 11,
+      fontWeight: 600,
+      background: s.bg,
+      color: s.color,
+    }}>
+      {s.label}
+    </span>
   );
 };
 
-export default ProductCard;
+export default StatusBadge;
 ```
 
 ### 4.2 Server vs Client Components
@@ -483,54 +451,137 @@ export default axiosInstance;
 
 ---
 
-## 8. Styling (Tailwind CSS)
+## 8. Styling — CÉLA Design System
 
-### 8.1 Nguyên tắc
+> BeautyERP FE dùng **CÉLA design system** — thương hiệu mỹ phẩm sang trọng. Mọi màu sắc, typography, shadow đều phải dùng CÉLA tokens, không dùng Tailwind color class cũ.
 
-- **Chỉ dùng Tailwind utilities** — không viết custom CSS trừ khi Tailwind không đủ
-- **Mobile-first:** base styles cho mobile, dùng `md:`, `lg:` cho larger breakpoints
-- **Brand color:** `pink-600` là primary, `pink-50` cho background nhạt
+### 8.1 Nguyên tắc cốt lõi
 
-### 8.2 Responsive breakpoints
+- **Inline `style={{}}` là cách chính** cho mọi giá trị màu sắc, border, shadow, typography
+- **Tailwind chỉ dùng cho:** layout (`flex`, `grid`, `hidden`, `gap-*`, `p-*`, `w-*`, `h-*`), responsive breakpoints, và hover state (`hover:bg-[var(--cela-fog)]`)
+- **KHÔNG dùng:** Tailwind color classes (`bg-pink-*`, `text-gray-*`, `border-gray-*`, `shadow-sm`, `shadow-md`, v.v.)
+- **KHÔNG hardcode hex** — dùng CSS variables `var(--cela-*)`
 
-| Breakpoint | Class prefix | Min-width |
-|-----------|-------------|----------|
-| Mobile (base) | — | 375px |
-| Tablet | `md:` | 768px |
-| Desktop | `lg:` | 1024px |
-| Wide | `xl:` | 1280px |
+### 8.2 CÉLA Color Tokens
 
-### 8.3 Patterns chuẩn
+Tất cả tokens định nghĩa trong `src/app/globals.css`:
+
+| Token | Hex | Ứng dụng |
+|-------|-----|----------|
+| `--cela-ivory` | `#faf7f2` | Page background |
+| `--cela-paper` | `#ffffff` | Card background |
+| `--cela-fog` | `#ece4da` | Divider, hover bg |
+| `--cela-mist` | `#d8cec5` | Border chính |
+| `--cela-stone` | `#8a7a6f` | Secondary text |
+| `--cela-cocoa` | `#6b574f` | Tertiary text, eyebrow |
+| `--cela-espresso` | `#3c2e2a` | Primary text, primary button |
+| `--cela-rose` | `#b76e79` | Accent, CTA, active state |
+| `--cela-champagne` | `#c9a87a` | Gold accent |
+| `--cela-gold` | `#b8945c` | Gold text |
+| `--cela-success` | `#6b8e6a` | Trạng thái thành công |
+| `--cela-danger` | `#b04848` | Lỗi, hủy, nguy hiểm |
+| `--cela-shadow-soft` | — | Shadow nhẹ cho card |
+| `--cela-shadow-md` | — | Shadow modal, dropdown |
+
+### 8.3 CÉLA Typography
+
+| Ngữ cảnh | Style |
+|---------|-------|
+| Page h1 | `fontFamily: "var(--cela-display)"`, `fontSize: 28`, `fontWeight: 700`, `fontStyle: "italic"` |
+| Page eyebrow | `fontSize: 11`, `letterSpacing: "0.18em"`, `textTransform: "uppercase"`, `color: "var(--cela-cocoa)"` |
+| Section heading | `fontSize: 15`, `fontWeight: 600`, `color: "var(--cela-espresso)"` |
+| Body | `fontSize: 13`, `color: "var(--cela-espresso)"` |
+| Muted | `fontSize: 12`, `color: "var(--cela-stone)"` |
+| Mono (price, code) | `fontFamily: "var(--cela-mono)"` |
+
+### 8.4 Patterns chuẩn
 
 ```tsx
-{/* Container chuẩn */}
-<div className="container mx-auto px-4">
+{/* Page header — bắt buộc mọi trang trong ERPLayout */}
+<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+  <div>
+    <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--cela-cocoa)", margin: "0 0 4px" }}>
+      BEAUTY ERP
+    </p>
+    <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2, margin: 0 }}>
+      Tên trang <span style={{ color: "var(--cela-rose)" }}>phụ đề</span>
+    </h1>
+  </div>
+  <button style={{ background: "var(--cela-espresso)", color: "#fff", border: 0, borderRadius: 10, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+    Hành động
+  </button>
+</div>
 
-{/* Grid sản phẩm */}
-<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+{/* Card container */}
+<div style={{ background: "var(--cela-paper)", border: "1px solid var(--cela-mist)", borderRadius: 16, padding: "20px 24px", boxShadow: "var(--cela-shadow-soft)" }}>
 
-{/* Section padding */}
-<section className="py-12">
+{/* Button primary (espresso) */}
+<button style={{ background: "var(--cela-espresso)", color: "#fff", border: 0, borderRadius: 10, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
 
-{/* CTA button primary */}
-<Button className="bg-pink-600 hover:bg-pink-700">
+{/* Button rose (CTA) */}
+<button style={{ background: "var(--cela-rose)", color: "#fff", border: 0, borderRadius: 10, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
 
-{/* Hero gradient */}
-<section className="bg-gradient-to-r from-pink-50 to-rose-100">
+{/* Button secondary (outlined) */}
+<button style={{ background: "var(--cela-ivory)", color: "var(--cela-espresso)", border: "1px solid var(--cela-mist)", borderRadius: 10, padding: "9px 18px", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
 
-{/* Card */}
-<div className="rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow">
+{/* Button danger */}
+<button style={{ background: "var(--cela-danger)", color: "#fff", border: 0, borderRadius: 10, padding: "9px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
 
-{/* Link hover */}
-<Link className="hover:text-pink-600 transition-colors">
+{/* Input */}
+<input style={{ width: "100%", padding: "9px 12px", border: "1px solid var(--cela-mist)", borderRadius: 8, fontSize: 13, color: "var(--cela-espresso)", background: "var(--cela-ivory)", outline: "none", fontFamily: "var(--cela-sans)" }} />
+
+{/* Status badge */}
+<span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: "rgba(107,142,106,0.15)", color: "var(--cela-success)" }}>
+  Hoàn thành
+</span>
+
+{/* Table */}
+<table style={{ width: "100%", borderCollapse: "collapse" }}>
+  <thead>
+    <tr style={{ borderBottom: "2px solid var(--cela-fog)" }}>
+      <th style={{ padding: "10px 12px", textAlign: "left", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--cela-stone)" }}>Cột</th>
+    </tr>
+  </thead>
+  <tbody>
+    {items.map((item, i) => (
+      <tr key={item.id} style={{ borderBottom: "1px solid var(--cela-fog)" }} className="hover:bg-[var(--cela-fog)] transition-colors">
+        <td style={{ padding: "12px", fontSize: 13, color: "var(--cela-espresso)" }}>{item.value}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+{/* Loading spinner */}
+<div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
+  <div style={{ width: 24, height: 24, borderRadius: "50%", border: "2px solid var(--cela-mist)", borderTopColor: "var(--cela-rose)", animation: "spin 0.7s linear infinite" }} />
+</div>
+
+{/* Empty state */}
+<div style={{ textAlign: "center", padding: "48px 24px", color: "var(--cela-stone)" }}>
+  <Icon style={{ width: 40, height: 40, margin: "0 auto 12px", opacity: 0.4 }} />
+  <p style={{ fontSize: 14, fontWeight: 500 }}>Chưa có dữ liệu</p>
+</div>
 ```
 
-### 8.4 Không được
+### 8.5 Không được
 
-- Không dùng inline `style={{}}` trừ khi cần dynamic value không biểu diễn được bằng Tailwind
-- Không dùng `!important`
-- Không mix Tailwind với styled-components hay CSS modules
-- Không hardcode màu hex trực tiếp — dùng Tailwind color tokens hoặc CSS variables
+- **KHÔNG** dùng `bg-pink-*`, `text-gray-*`, `border-gray-*`, `shadow-sm`, `shadow-md`, `shadow-xl`, `bg-green-*`, `bg-red-*`, `text-blue-*` — đây là Tailwind color class cũ
+- **KHÔNG** dùng `style={{ color: "red" }}`, `style={{ color: "#FF0000" }}` — hardcode hex không phải CÉLA token
+- **KHÔNG** dùng `!important`
+- **KHÔNG** mix styled-components hay CSS modules
+- **KHÔNG** thêm Tailwind màu mới ngoài danh sách cho phép
+
+### 8.6 CÉLA Primitives (`components/ui/cela-primitives.tsx`)
+
+Các component dùng chung đã được tạo sẵn — ưu tiên dùng thay vì viết lại:
+
+| Component | Props chính | Dùng khi |
+|-----------|------------|---------|
+| `CelaCard` | `padding?`, `style?` | Mọi card container |
+| `CelaButton` | `variant` (`primary`/`secondary`/`rose`/`danger`/`ghost`), `size?` | Mọi button |
+| `CelaInput` | `icon?`, `...InputHTMLAttributes` | Text input, search |
+| `CelaSpinner` | — | Loading state |
+| `CelaEmptyState` | `icon?`, `title?`, `description?` | Empty list/table |
 
 ---
 
@@ -624,19 +675,23 @@ const handleCheckout = async () => {
 ### 10.2 Form validation — inline, không đợi submit
 
 ```typescript
-const [emailError, setEmailError] = useState("");
+const [passwordError, setPasswordError] = useState("");
 
-const handleEmailBlur = () => {
-  if (!email.includes("@")) {
-    setEmailError("Email không hợp lệ");
+const handlePasswordBlur = () => {
+  if (password.length < 8) {
+    setPasswordError("Mật khẩu phải có ít nhất 8 ký tự");
   } else {
-    setEmailError("");
+    setPasswordError("");
   }
 };
 
 // Trong JSX:
-<Input onBlur={handleEmailBlur} />
-{emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
+<input onBlur={handlePasswordBlur} />
+{passwordError && (
+  <p style={{ fontSize: 11, color: "var(--cela-danger)", marginTop: 4 }}>
+    {passwordError}
+  </p>
+)}
 ```
 
 ### 10.3 Error boundaries
@@ -646,9 +701,12 @@ const handleEmailBlur = () => {
 "use client";
 export default function Error({ reset }: { reset: () => void }) {
   return (
-    <div className="container mx-auto px-4 py-20 text-center">
-      <h2 className="text-2xl font-bold mb-4">Có lỗi xảy ra</h2>
-      <button onClick={reset} className="text-pink-600 hover:underline">
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: 16 }}>
+      <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--cela-espresso)" }}>Có lỗi xảy ra</h2>
+      <button
+        onClick={reset}
+        style={{ color: "var(--cela-rose)", background: "none", border: "none", cursor: "pointer", fontSize: 14 }}
+      >
         Thử lại
       </button>
     </div>
@@ -664,26 +722,43 @@ export default function Error({ reset }: { reset: () => void }) {
 
 ---
 
-## 11. Thiết kế & Design Reference
+## 11. CÉLA Design Reference
 
-> **Quy tắc tuyệt đối:** Mọi trang, component và giao diện trong BeautyStore FE  
-> **phải tham chiếu và tuân thủ 100%** theo thiết kế trong thư mục `src/` tại root workspace.
+> **Quy tắc tuyệt đối:** Mọi trang và component trong BeautyStore FE phải tuân thủ **CÉLA Design System** — thương hiệu mỹ phẩm sang trọng tông espresso/rose/champagne.
 
-### 11.1 Quy trình implement UI
+### 11.1 Tài liệu tham chiếu
 
-1. Tìm màn hình tương ứng trong `src/app/pages/` hoặc `src/app/components/`
-2. Phân tích: màu sắc, layout, spacing, typography, interactions
-3. Implement trong BeautyStore FE dùng Next.js + Tailwind + shadcn/ui
-4. Kiểm tra visual match trước khi coi là hoàn thành
+| File | Nội dung |
+|------|---------|
+| `docs/cela-ui-refactor.md` | Spec đầy đủ: tokens, patterns, từng trang (Section 2–8) |
+| `src/app/globals.css` | Toàn bộ CSS variables `--cela-*` |
+| `src/components/ui/cela-primitives.tsx` | `CelaCard`, `CelaButton`, `CelaInput`, `CelaSpinner`, `CelaEmptyState` |
 
-### 11.2 Không được tự ý thay đổi
+### 11.2 Quy trình implement UI mới
 
-- Màu sắc chính và gradient từ thiết kế `src/`
-- Layout structure (header, sidebar, main content, footer)
-- Kích thước và spacing của components
-- Typography hierarchy (font sizes, weights)
+1. Đọc spec trang tương ứng trong `docs/cela-ui-refactor.md`
+2. Dùng `CelaCard`, `CelaButton`, `CelaInput` từ `cela-primitives.tsx` làm base
+3. Màu sắc: **chỉ dùng `var(--cela-*)` trong inline `style={{}}`**
+4. Layout: Tailwind utilities (`flex`, `grid`, `gap-*`, `p-*`)
+5. Verify: không còn Tailwind color class (`text-gray-*`, `bg-pink-*`, v.v.)
 
-Xem thêm chi tiết tại [design-reference.md](./design-reference.md).
+### 11.3 Không được tự ý thay đổi
+
+- Màu sắc CÉLA — không tự thêm màu ngoài token đã định nghĩa
+- Page header pattern (`cela-display` font + eyebrow `letterSpacing: "0.18em"` + rose span)
+- Status badge pattern (`{ bg: string; color: string; label: string }` + inline style)
+- Typography scale (font sizes, weights, letter spacing)
+
+### 11.4 Checklist verify CÉLA compliance
+
+```bash
+# 0 violations → pass
+grep -rn "bg-pink-\|text-gray-\|border-gray-\|shadow-sm\b\|shadow-xl\b\|bg-green-\|bg-red-" src/app --include="*.tsx"
+
+# 32 → tất cả pages có header đúng
+grep -rn "cela-display" src/app --include="*.tsx" -l | wc -l
+grep -rn "letterSpacing.*0\.18" src/app --include="*.tsx" -l | wc -l
+```
 
 ---
 
@@ -693,10 +768,11 @@ Xem thêm chi tiết tại [design-reference.md](./design-reference.md).
 - [ ] Không gọi Axios trực tiếp trong component — qua `services/`
 - [ ] `"use client"` chỉ khi thực sự cần event handler / browser API / Zustand hook
 - [ ] Responsive đã kiểm tra trên mobile (375px) và desktop (1280px)
-- [ ] Màu sắc và layout khớp với thiết kế trong `src/`
-- [ ] Loading, empty state, error state đã xử lý
+- [ ] **CÉLA:** Không có Tailwind color class (`bg-pink-*`, `text-gray-*`, `border-gray-*`, `shadow-sm`, v.v.)
+- [ ] **CÉLA:** Màu sắc dùng `var(--cela-*)` trong inline `style={{}}`
+- [ ] **CÉLA:** Page header có `fontFamily: "var(--cela-display)"` + eyebrow `letterSpacing: "0.18em"`
+- [ ] Loading, empty state, error state đã xử lý (dùng `CelaSpinner`, `CelaEmptyState`)
 - [ ] Text giao diện bằng tiếng Việt
-- [ ] Không hardcode URL, màu sắc, magic numbers
-- [ ] Component file ≤ 150 lines
-- [ ] Lỗi form hiển thị inline (không đợi submit)
-- [ ] Toast messages bằng tiếng Việt
+- [ ] Không hardcode URL, màu sắc hex, magic numbers
+- [ ] Lỗi form hiển thị inline với `color: "var(--cela-danger)"` (không đợi submit)
+- [ ] Toast messages bằng tiếng Việt (dùng Sonner)

@@ -79,104 +79,121 @@ lib/axios.ts  →  API Gateway :8080/api/v1
 
 ---
 
-## 4. Design System
+## 4. CÉLA Design System
 
-### 4.1 Màu sắc chính
+BeautyERP FE dùng **CÉLA** — hệ thống design của thương hiệu mỹ phẩm sang trọng tông espresso/rose/champagne. Toàn bộ token định nghĩa trong `src/app/globals.css`.
 
-| Token | Tailwind class | Hex | Ứng dụng |
-|-------|----------------|-----|----------|
-| Primary | `pink-600` | `#DB2777` | CTA buttons, active states, accents |
-| Primary Hover | `pink-700` | `#BE185D` | Button hover |
-| Primary Light | `pink-50` | `#FFF1F2` | Section backgrounds, highlights |
-| Gradient | `from-[#FF69B4] to-[#D946A6]` | — | Sidebar headers, admin cards |
-| Text Primary | `gray-800` | `#1F2937` | Headings, labels |
-| Text Secondary | `gray-600` | `#4B5563` | Body text |
-| Text Muted | `gray-400` | `#9CA3AF` | Placeholder, disabled |
+### 4.1 CÉLA Color Tokens
 
-> **Bắt buộc:** Mọi màu sắc khớp 100% với thiết kế trong thư mục `src/` tại root workspace. Xem [design-reference.md](./design-reference.md).
+| Token | Hex | Ứng dụng |
+|-------|-----|----------|
+| `--cela-ivory` | `#faf7f2` | Page background |
+| `--cela-paper` | `#ffffff` | Card, modal background |
+| `--cela-fog` | `#ece4da` | Divider, table row hover |
+| `--cela-mist` | `#d8cec5` | Border chính |
+| `--cela-stone` | `#8a7a6f` | Secondary text, placeholder |
+| `--cela-cocoa` | `#6b574f` | Tertiary text, eyebrow label |
+| `--cela-espresso` | `#3c2e2a` | Primary text, primary button bg |
+| `--cela-rose` | `#b76e79` | Accent, CTA, active state, focus ring |
+| `--cela-champagne` | `#c9a87a` | Gold accent |
+| `--cela-gold` | `#b8945c` | Gold text, PENDING badge |
+| `--cela-success` | `#6b8e6a` | Trạng thái thành công (COMPLETED, OPEN) |
+| `--cela-danger` | `#b04848` | Lỗi, hủy, CANCELLED |
+| `--cela-shadow-soft` | — | Shadow card nhẹ |
+| `--cela-shadow-md` | — | Shadow modal, overlay |
 
-### 4.2 Typography
+> **Tuyệt đối không dùng:** `bg-pink-*`, `text-gray-*`, `border-gray-*`, `shadow-sm`, `shadow-xl`, `bg-green-*`, `bg-red-*`, `text-blue-*` (Tailwind color classes cũ).
 
-| Ngữ cảnh | Class | Ví dụ |
-|---------|-------|-------|
-| Page heading | `text-2xl font-bold text-gray-800` | "Quản lý ca làm việc" |
-| Section heading | `text-lg font-semibold` | "Thông tin ca" |
-| Table header | `text-sm font-medium text-gray-700` | "Trạng thái" |
-| Price / KPI | `text-pink-600 font-bold text-xl` | "5.420.000₫" |
-| Body | `text-gray-600 text-sm` | Mô tả |
-| Badge | `text-xs font-medium` | Status badge |
+### 4.2 CÉLA Typography
 
-### 4.3 shadcn/ui Components sử dụng
+| Ngữ cảnh | Style |
+|---------|-------|
+| Page h1 | `fontFamily: "var(--cela-display)"`, `fontSize: 28`, `fontStyle: "italic"`, rose span phụ đề |
+| Page eyebrow | `fontSize: 11`, `letterSpacing: "0.18em"`, `textTransform: "uppercase"`, `color: "var(--cela-cocoa)"` |
+| Section heading | `fontSize: 15`, `fontWeight: 600`, `color: "var(--cela-espresso)"` |
+| Body text | `fontSize: 13`, `color: "var(--cela-espresso)"` |
+| Muted text | `fontSize: 12`, `color: "var(--cela-stone)"` |
+| Price / KPI | `fontFamily: "var(--cela-mono)"`, `fontWeight: 700`, `color: "var(--cela-espresso)"` |
 
-| Component | Ứng dụng |
-|-----------|---------|
-| `Button` | CTA, actions (variant: default=pink, outline, ghost, destructive) |
-| `Card`, `CardContent`, `CardHeader` | KPI cards, forms, info panels |
-| `Input`, `Label` | Forms (login, POS search, order forms) |
-| `Badge` | Status tags (OrderStatus, ShiftStatus, POStatus) |
-| `Sheet` | Mobile drawer |
-| `Dialog` | Confirmation dialogs, receipt preview, approval dialogs |
-| `Table`, `TableBody`, `TableRow` | Order lists, inventory tables, audit logs |
-| `Sonner` | Toast notifications (success/error/warning) |
-| `Select` | Dropdowns (filter, role selector) |
-| `Tabs` | Role-based views, report periods |
+**Font families:**
+- `--cela-display`: Cormorant Garamond (serif, dùng cho h1 page header)
+- `--cela-sans`: Manrope (body text)
+- `--cela-mono`: JetBrains Mono (giá tiền, mã đơn, code)
+
+### 4.3 CÉLA Primitives (`components/ui/cela-primitives.tsx`)
+
+Component dùng chung — **ưu tiên dùng thay vì viết lại:**
+
+| Component | Props chính |
+|-----------|------------|
+| `CelaCard` | `padding?`, `style?` |
+| `CelaButton` | `variant` (`primary`\|`secondary`\|`rose`\|`danger`\|`ghost`), `size?` |
+| `CelaInput` | `icon?`, `...InputHTMLAttributes` |
+| `CelaSpinner` | — |
+| `CelaEmptyState` | `icon?`, `title?`, `description?` |
+
+### 4.4 Styling rule
+
+- **Inline `style={{}}`** là cách chính cho màu sắc, border, shadow, typography
+- **Tailwind** chỉ dùng cho layout: `flex`, `grid`, `gap-*`, `p-*`, `w-*`, `h-*`, `hidden`, responsive breakpoints
+- Xem chi tiết trong `docs/coding-convention.md` Section 8 và `docs/cela-ui-refactor.md`
 
 ---
 
 ## 5. Danh sách màn hình theo role
 
-### CASHIER — Wave 2 (Core POS)
+### CASHIER
 | Route | Màn hình | Status |
 |-------|---------|--------|
 | `/pos/shift` | Quản lý ca (mở/xem/đóng) | ✅ DONE |
-| `/pos/order` | POS Bán hàng | 🔲 TODO |
-| `/cashier/orders` | Lịch sử đơn hàng của cashier | 🔲 TODO |
-| `/orders/[orderId]` | Chi tiết đơn hàng | 🔲 TODO |
-| `/returns/new` | Tạo giao dịch trả hàng | 🔲 TODO |
+| `/pos/order` | POS Bán hàng | ✅ DONE |
+| `/cashier/orders` | Lịch sử đơn hàng của cashier | ✅ DONE |
+| `/orders/[orderId]` | Chi tiết đơn hàng | ✅ DONE |
+| `/returns/new` | Tạo giao dịch trả hàng | ✅ DONE |
 
-### WAREHOUSE_STAFF — Wave 3
+### WAREHOUSE_STAFF
 | Route | Màn hình | Status |
 |-------|---------|--------|
-| `/warehouse` | Dashboard kho (tồn kho thấp, PO chờ) | 🔲 TODO |
-| `/inventory/stock` | Xem tồn kho per sản phẩm | 🔲 TODO |
-| `/inventory/purchase-orders` | Danh sách Purchase Orders | 🔲 TODO |
-| `/inventory/purchase-orders/create` | Tạo PO | 🔲 TODO |
-| `/inventory/receive/[poId]` | Nhận hàng theo PO | 🔲 TODO |
-| `/inventory/adjustments` | Ghi hàng hỏng/thất thoát | 🔲 TODO |
+| `/warehouse` | Dashboard kho (tồn kho thấp, PO chờ) | ✅ DONE |
+| `/inventory/stock` | Xem tồn kho per sản phẩm | ✅ DONE |
+| `/inventory/purchase-orders` | Danh sách Purchase Orders | ✅ DONE |
+| `/inventory/purchase-orders/create` | Tạo PO | ✅ DONE |
+| `/inventory/receive/[poId]` | Nhận hàng theo PO | ✅ DONE |
+| `/inventory/adjustments` | Ghi hàng hỏng/thất thoát | ✅ DONE |
 
-### BRANCH_MANAGER — Wave 3
+### BRANCH_MANAGER
 | Route | Màn hình | Status |
 |-------|---------|--------|
-| `/branch-manager` | Dashboard chi nhánh (KPI, revenue, alerts) | 🔲 TODO |
-| `/manager/orders` | Duyệt yêu cầu hủy đơn > 500k | 🔲 TODO |
-| `/manager/inventory` | Duyệt điều chỉnh kho > 10% | 🔲 TODO |
-| `/manager/products` | Quản lý sản phẩm chi nhánh | 🔲 TODO |
-| `/manager/purchase-orders` | Xem PO chi nhánh | 🔲 TODO |
+| `/branch-manager` | Dashboard chi nhánh (KPI, revenue, alerts) | ✅ DONE |
+| `/manager/orders` | Duyệt yêu cầu hủy đơn > 500k | ✅ DONE |
+| `/manager/inventory` | Duyệt điều chỉnh kho > 10% | ✅ DONE |
+| `/manager/products` | Quản lý sản phẩm chi nhánh | ✅ DONE |
+| `/manager/purchase-orders` | Xem PO chi nhánh | ✅ DONE |
 
-### ADMIN — Wave 5
+### ADMIN
 | Route | Màn hình | Status |
 |-------|---------|--------|
-| `/admin` | Admin Dashboard (KPI toàn hệ thống) | 🔲 TODO |
-| `/user-management` | CRUD tài khoản nhân viên | 🔲 TODO |
-| `/audit-logs` | Xem audit log (immutable) | 🔲 TODO |
-| `/system-configuration` | Cập nhật system_configs (threshold, rate) | 🔲 TODO |
+| `/admin` | Admin Dashboard (KPI toàn hệ thống) | ✅ DONE |
+| `/user-management` | CRUD tài khoản nhân viên | ✅ DONE |
+| `/audit-logs` | Xem audit log (immutable) | ✅ DONE |
+| `/system-configuration` | Cập nhật system_configs (threshold, rate) | ✅ DONE |
 
-### SHARED — Wave 3–5
+### SHARED
 | Route | Màn hình | Role | Status |
 |-------|---------|------|--------|
-| `/products` | Danh sách & CRUD sản phẩm | ADMIN + BM | 🔲 TODO |
-| `/products/create` | Tạo sản phẩm mới | ADMIN + BM | 🔲 TODO |
-| `/products/[id]/edit` | Sửa sản phẩm | ADMIN + BM | 🔲 TODO |
-| `/categories` | Quản lý danh mục 2 cấp | ADMIN + BM | 🔲 TODO |
-| `/supplier-management` | CRUD nhà cung cấp | ADMIN + WS | 🔲 TODO |
-| `/loyalty/members` | Xem thành viên loyalty | ADMIN + BM | 🔲 TODO |
-| `/promotions` | CRUD promotion | ADMIN + BM | 🔲 TODO |
-| `/coupons` | CRUD coupon | ADMIN + BM | 🔲 TODO |
-| `/revenue-report` | Báo cáo doanh thu (charts + export) | ADMIN + BM | 🔲 TODO |
-| `/inventory-report` | Báo cáo tồn kho (slow-moving, low-stock) | ADMIN + BM + WS | 🔲 TODO |
-| `/notifications` | Notification center (polling 30s) | All | 🔲 TODO |
-| `/force-change-password` | Đổi mật khẩu bắt buộc lần đầu | All | 🔲 TODO |
-| `/change-password` | Đổi mật khẩu tự nguyện | All | 🔲 TODO |
+| `/products` | Danh sách & CRUD sản phẩm | ADMIN + BM | ✅ DONE |
+| `/products/create` | Tạo sản phẩm mới | ADMIN + BM | ✅ DONE |
+| `/products/[id]/edit` | Sửa sản phẩm | ADMIN + BM | ✅ DONE |
+| `/categories` | Quản lý danh mục 2 cấp | ADMIN + BM | ✅ DONE |
+| `/supplier-management` | CRUD nhà cung cấp | ADMIN + WS | ✅ DONE |
+| `/loyalty/members` | Xem thành viên loyalty | ADMIN + BM | ✅ DONE |
+| `/promotions` | CRUD promotion | ADMIN + BM | ✅ DONE |
+| `/coupons` | CRUD coupon | ADMIN + BM | ✅ DONE |
+| `/revenue-report` | Báo cáo doanh thu (charts + export) | ADMIN + BM | ✅ DONE |
+| `/inventory-report` | Báo cáo tồn kho (slow-moving, low-stock) | ADMIN + BM + WS | ✅ DONE |
+| `/notifications` | Notification center (polling 30s) | All | ✅ DONE |
+| `/force-change-password` | Đổi mật khẩu bắt buộc lần đầu | All | ✅ DONE |
+| `/change-password` | Đổi mật khẩu tự nguyện | All | ✅ DONE |
 
 ---
 
@@ -225,7 +242,7 @@ interface POSStore {
 - Xóa draft sau `resetForNewOrder()`
 - Validate stock tại client (không vượt quá available qty hiển thị)
 
-### 6.3 Notification Store (`stores/notification.store.ts`) 🔲 TODO
+### 6.3 Notification Store (`stores/notification.store.ts`) ✅ DONE
 
 ```typescript
 interface NotificationStore {
@@ -419,7 +436,7 @@ LƯU Ý: Backend KHÔNG có GET /auth/me endpoint.
 
 ## 9. Các nguyên tắc bắt buộc
 
-1. **Tuân thủ thiết kế `src/`:** Mọi trang và component khớp 100% với thiết kế trong thư mục `src/` tại root workspace.
+1. **Tuân thủ CÉLA Design System:** Mọi trang và component dùng `var(--cela-*)` tokens — không dùng Tailwind color class cũ. Xem `docs/cela-ui-refactor.md` và `docs/coding-convention.md` Section 8.
 2. **Phân layer nghiêm ngặt:** Page → Hooks/Stores → Services → Axios. **KHÔNG gọi Axios trực tiếp trong component.**
 3. **Không lưu JWT vào localStorage/sessionStorage** — backend set httpOnly cookie.
 4. **Không có refresh token flow** — hết phiên (8h) → redirect `/login`.
