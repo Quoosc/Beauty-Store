@@ -4,17 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore, ROLE_REDIRECT } from "@/stores/auth.store";
 import { toast } from "sonner";
-import {
-  User,
-  Lock,
-  Eye,
-  EyeOff,
-  Building2,
-  Store,
-  CreditCard,
-  Warehouse,
-  Sparkles,
-} from "lucide-react";
+import { Eye, EyeOff, Building2, Store, CreditCard, Warehouse } from "lucide-react";
+import { CelaLogo } from "@/components/ui/cela-logo";
 
 const DEMO_ACCOUNTS = [
   {
@@ -22,7 +13,7 @@ const DEMO_ACCOUNTS = [
     username: "admin",
     password: "Admin@123",
     description: "Toàn quyền hệ thống",
-    color: "#E53E3E",
+    labelVi: "Quản trị viên",
     Icon: Building2,
   },
   {
@@ -30,7 +21,7 @@ const DEMO_ACCOUNTS = [
     username: "manager",
     password: "Manager@123",
     description: "Quản lý chi nhánh",
-    color: "#D97706",
+    labelVi: "Quản lý CN",
     Icon: Store,
   },
   {
@@ -38,7 +29,7 @@ const DEMO_ACCOUNTS = [
     username: "cashier",
     password: "Cashier@123",
     description: "Thu ngân & POS",
-    color: "#059669",
+    labelVi: "Thu ngân",
     Icon: CreditCard,
   },
   {
@@ -46,7 +37,7 @@ const DEMO_ACCOUNTS = [
     username: "warehouse",
     password: "Warehouse@123",
     description: "Kho & nhập hàng",
-    color: "#2563EB",
+    labelVi: "Nhân viên kho",
     Icon: Warehouse,
   },
 ];
@@ -65,7 +56,6 @@ export default function LoginPage() {
     try {
       const user = await login(username, password);
       toast.success("Đăng nhập thành công!");
-      // Redirect theo role
       router.push(ROLE_REDIRECT[user.role]);
     } catch {
       setError("Sai tên đăng nhập hoặc mật khẩu");
@@ -79,161 +69,115 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* LEFT PANEL */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#FFE4F0] via-[#FFDAE8] to-[#FFB8D6] p-12 flex-col justify-between relative overflow-hidden">
-        {/* Hexagon pattern */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="hexagons" x="0" y="0" width="100" height="87" patternUnits="userSpaceOnUse">
-                <path d="M 50 0 L 93.3 25 L 93.3 62 L 50 87 L 6.7 62 L 6.7 25 Z"
-                  fill="none" stroke="#FF69B4" strokeWidth="1.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hexagons)" />
-          </svg>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* LEFT — editorial poster */}
+      <div
+        style={{
+          flex: 1,
+          background: "linear-gradient(160deg, #ead4d7 0%, #f3e3e5 40%, #c9a87a 120%)",
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          padding: 48,
+        }}
+        className="hidden lg:flex"
+      >
+        {/* Large decorative C */}
+        <div
+          style={{
+            position: "absolute",
+            right: 60,
+            top: 80,
+            fontFamily: "var(--cela-display)",
+            fontSize: 240,
+            fontStyle: "italic",
+            color: "rgba(60,46,42,0.06)",
+            lineHeight: 1,
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          C
         </div>
 
-        <div className="relative z-10 flex flex-col h-full justify-between">
-          {/* Logo */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-white/30 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/40">
-                <Sparkles className="w-7 h-7 text-[#FF1493]" />
-              </div>
-              <h1 className="text-4xl font-bold text-[#D946A6]">BeautyERP</h1>
-            </div>
-            <p className="text-[#D946A6]/80 text-sm font-medium">
-              Hệ thống quản lý bán lẻ mỹ phẩm đa chi nhánh
-            </p>
-          </div>
+        {/* Decorative circle */}
+        <div
+          style={{
+            position: "absolute",
+            right: -60,
+            bottom: -80,
+            width: 420,
+            height: 420,
+            borderRadius: "50%",
+            background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.45), transparent 60%)",
+            border: "1px solid rgba(255,255,255,0.55)",
+          }}
+        />
 
-          {/* Features */}
-          <div className="space-y-4 text-[#D946A6]">
-            {[
-              { emoji: "🏪", label: "Quản lý đa chi nhánh" },
-              { emoji: "📦", label: "Kiểm soát kho thông minh" },
-              { emoji: "💰", label: "POS tích hợp tích điểm" },
-            ].map(({ emoji, label }) => (
-              <div key={label} className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/40 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/50">
-                  <span className="text-xl">{emoji}</span>
-                </div>
-                <span className="text-lg font-semibold">{label}</span>
-              </div>
-            ))}
-          </div>
+        {/* Top: Logo */}
+        <CelaLogo size={40} color="var(--cela-espresso)" accent="var(--cela-rose-deep)" />
+
+        {/* Center: editorial headline */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--cela-rose-deep)",
+              marginBottom: 16,
+            }}
+          >
+            Édition · Printemps 2026
+          </p>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: "var(--cela-display)",
+              fontSize: 62,
+              lineHeight: 1.06,
+              fontWeight: 500,
+              color: "var(--cela-espresso)",
+              letterSpacing: "-0.02em",
+              maxWidth: 480,
+            }}
+          >
+            Vẻ đẹp{" "}
+            <span style={{ fontStyle: "italic", color: "var(--cela-rose-deep)" }}>
+              được nâng niu
+            </span>
+            <br />
+            trong từng chi tiết.
+          </h1>
+          <p
+            style={{
+              marginTop: 22,
+              maxWidth: 420,
+              fontSize: 15,
+              lineHeight: 1.7,
+              color: "var(--cela-cocoa)",
+            }}
+          >
+            Hệ thống quản trị dành cho chuỗi cửa hàng mỹ phẩm. Đăng nhập để tiếp tục với hành trình của bạn.
+          </p>
 
           {/* Demo accounts */}
-          <div>
-            <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-6 mb-4 shadow-lg">
-              <h3 className="text-[#D946A6] font-bold text-lg mb-4">Tài khoản demo</h3>
-              <div className="space-y-3">
-                {DEMO_ACCOUNTS.map((account) => (
-                  <button
-                    key={account.role}
-                    type="button"
-                    onClick={() => handleDemoClick(account)}
-                    className="w-full bg-white/30 hover:bg-white/40 border border-white/40 rounded-lg p-3 transition-all text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="text-xs font-bold px-2 py-1 rounded text-white"
-                        style={{ backgroundColor: account.color }}
-                      >
-                        {account.role.replace("_", " ")}
-                      </span>
-                      <div className="flex-1">
-                        <p className="text-[#D946A6] font-mono text-sm font-semibold">
-                          {account.username} / {account.password}
-                        </p>
-                        <p className="text-[#D946A6]/70 text-xs">{account.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <p className="text-[#D946A6]/60 text-xs text-center">
-              © 2025 BeautyERP — UIT Software Architecture
+          <div style={{ marginTop: 40 }}>
+            <p
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "var(--cela-cocoa)",
+                marginBottom: 12,
+              }}
+            >
+              Tài khoản demo
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT PANEL — Login Form */}
-      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-[380px]">
-          <div className="mb-8">
-            <p className="text-gray-600 text-sm mb-2">Chào mừng trở lại 👋</p>
-            <h2 className="text-3xl font-bold text-[#D946A6]">Đăng nhập vào hệ thống</h2>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tên đăng nhập
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Nhập tên đăng nhập"
-                  required
-                  className={`w-full h-11 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    error
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-gray-300 focus:ring-[#FFDAE8] focus:border-[#D946A6]"
-                  }`}
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Mật khẩu
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Nhập mật khẩu"
-                  required
-                  className={`w-full h-11 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    error
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-gray-300 focus:ring-[#FFDAE8] focus:border-[#D946A6]"
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg p-3">
-                <span>⚠️</span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Quick login buttons */}
-            <div className="grid grid-cols-2 gap-2">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {DEMO_ACCOUNTS.map((account) => {
                 const Icon = account.Icon;
                 return (
@@ -241,50 +185,425 @@ export default function LoginPage() {
                     key={account.role}
                     type="button"
                     onClick={() => handleDemoClick(account)}
-                    className="bg-white border-l-4 border border-gray-200 hover:shadow-md rounded-lg p-2.5 transition-all text-left"
-                    style={{ borderLeftColor: account.color }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 12px",
+                      background: "rgba(255,255,255,0.45)",
+                      border: "1px solid rgba(255,255,255,0.6)",
+                      borderRadius: 10,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      transition: "background 140ms",
+                      backdropFilter: "blur(4px)",
+                    }}
+                    className="hover:bg-white/60"
                   >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: `${account.color}20` }}
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        background: "rgba(60,46,42,0.08)",
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon style={{ width: 15, height: 15, color: "var(--cela-espresso)" }} />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <p
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: "var(--cela-espresso)",
+                          margin: 0,
+                          lineHeight: 1.2,
+                        }}
                       >
-                        <Icon className="w-4 h-4" style={{ color: account.color }} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-xs text-gray-900 truncate">
-                          {account.role.split("_")[0]}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">{account.username}</p>
-                      </div>
+                        {account.labelVi}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: "var(--cela-cocoa)",
+                          margin: 0,
+                          fontFamily: "var(--cela-mono)",
+                          marginTop: 2,
+                        }}
+                      >
+                        {account.username}
+                      </p>
                     </div>
                   </button>
                 );
               })}
             </div>
+          </div>
+        </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] hover:from-[#FF1493] hover:to-[#C026D3] disabled:opacity-60 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-pink-300/50"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Đang đăng nhập...</span>
-                </>
-              ) : (
-                "ĐĂNG NHẬP"
-              )}
-            </button>
-          </form>
-
-          <p className="text-xs text-gray-400 text-center mt-6">
-            Hệ thống sử dụng JWT (HttpOnly Cookie) — Phiên đăng nhập 8 giờ
-          </p>
+        {/* Bottom: city tags */}
+        <div
+          style={{
+            display: "flex",
+            gap: 24,
+            fontSize: 11,
+            color: "var(--cela-cocoa)",
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            fontWeight: 600,
+          }}
+        >
+          <span>Sài Gòn</span>
+          <span>Hà Nội</span>
+          <span>Đà Nẵng</span>
         </div>
       </div>
+
+      {/* RIGHT — login form */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          background: "var(--cela-paper)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "0 56px",
+        }}
+      >
+        {/* Mobile logo */}
+        <div className="lg:hidden mb-8">
+          <CelaLogo size={32} />
+        </div>
+
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "var(--cela-cocoa)",
+            marginBottom: 8,
+          }}
+        >
+          Welcome back
+        </p>
+        <h2
+          style={{
+            margin: 0,
+            fontFamily: "var(--cela-display)",
+            fontSize: 32,
+            fontWeight: 500,
+            letterSpacing: "-0.01em",
+            marginBottom: 6,
+            color: "var(--cela-espresso)",
+          }}
+        >
+          Đăng nhập{" "}
+          <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>tài khoản</span>
+        </h2>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 13,
+            color: "var(--cela-cocoa)",
+            marginBottom: 32,
+          }}
+        >
+          Chọn vai trò sau khi xác thực thành công.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {/* Username */}
+          <div>
+            <label
+              style={{
+                display: "block",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "var(--cela-cocoa)",
+                marginBottom: 8,
+              }}
+            >
+              Tên đăng nhập
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Nhập tên đăng nhập"
+              required
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: `1px solid ${error ? "var(--cela-danger)" : "var(--cela-mist)"}`,
+                background: "var(--cela-paper)",
+                fontSize: 14,
+                fontFamily: "var(--cela-sans)",
+                color: "var(--cela-espresso)",
+                outline: "none",
+                transition: "border-color 160ms",
+                boxSizing: "border-box",
+              }}
+              onFocus={(e) => { e.target.style.borderColor = "var(--cela-rose)"; e.target.style.boxShadow = "0 0 0 3px rgba(183,110,121,0.15)"; }}
+              onBlur={(e) => { e.target.style.borderColor = error ? "var(--cela-danger)" : "var(--cela-mist)"; e.target.style.boxShadow = "none"; }}
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label
+              style={{
+                display: "block",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "var(--cela-cocoa)",
+                marginBottom: 8,
+              }}
+            >
+              Mật khẩu
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Nhập mật khẩu"
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px 44px 10px 14px",
+                  borderRadius: 10,
+                  border: `1px solid ${error ? "var(--cela-danger)" : "var(--cela-mist)"}`,
+                  background: "var(--cela-paper)",
+                  fontSize: 14,
+                  fontFamily: "var(--cela-sans)",
+                  color: "var(--cela-espresso)",
+                  outline: "none",
+                  transition: "border-color 160ms",
+                  boxSizing: "border-box",
+                }}
+                onFocus={(e) => { e.target.style.borderColor = "var(--cela-rose)"; e.target.style.boxShadow = "0 0 0 3px rgba(183,110,121,0.15)"; }}
+                onBlur={(e) => { e.target.style.borderColor = error ? "var(--cela-danger)" : "var(--cela-mist)"; e.target.style.boxShadow = "none"; }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: 0,
+                  cursor: "pointer",
+                  color: "var(--cela-stone)",
+                  display: "flex",
+                  padding: 4,
+                }}
+              >
+                {showPassword ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 14px",
+                background: "rgba(176,72,72,0.08)",
+                border: "1px solid rgba(176,72,72,0.2)",
+                borderRadius: 10,
+                fontSize: 13,
+                color: "var(--cela-danger)",
+              }}
+            >
+              <span>⚠</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Quick-fill demo buttons (compact grid) */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 6 }}>
+            {DEMO_ACCOUNTS.map((account) => {
+              const Icon = account.Icon;
+              return (
+                <button
+                  key={account.role}
+                  type="button"
+                  onClick={() => handleDemoClick(account)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 10px",
+                    background: "var(--cela-ivory)",
+                    border: "1px solid var(--cela-mist)",
+                    borderLeft: "3px solid var(--cela-rose)",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "background 140ms",
+                  }}
+                  className="hover:bg-cela-cream"
+                >
+                  <div
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: 6,
+                      background: "rgba(183,110,121,0.1)",
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon style={{ width: 13, height: 13, color: "var(--cela-rose)" }} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <p
+                      style={{
+                        fontSize: 11.5,
+                        fontWeight: 700,
+                        color: "var(--cela-espresso)",
+                        margin: 0,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {account.labelVi}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: 10.5,
+                        color: "var(--cela-stone)",
+                        margin: 0,
+                        fontFamily: "var(--cela-mono)",
+                        marginTop: 1,
+                      }}
+                    >
+                      {account.username}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              width: "100%",
+              padding: "14px",
+              borderRadius: 10,
+              border: 0,
+              background: "var(--cela-espresso)",
+              color: "#fdf8f3",
+              fontSize: 14,
+              fontWeight: 600,
+              fontFamily: "var(--cela-sans)",
+              letterSpacing: "0.04em",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              opacity: isLoading ? 0.65 : 1,
+              transition: "background 160ms",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+            className="hover:bg-cela-espresso/90"
+          >
+            {isLoading ? (
+              <>
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    border: "2px solid rgba(255,255,255,0.3)",
+                    borderTopColor: "#fff",
+                    animation: "spin 0.7s linear infinite",
+                  }}
+                />
+                <span>Đang đăng nhập…</span>
+              </>
+            ) : (
+              "Tiếp tục →"
+            )}
+          </button>
+        </form>
+
+        <div
+          style={{
+            marginTop: 32,
+            paddingTop: 24,
+            borderTop: "1px solid var(--cela-fog)",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--cela-stone)",
+              marginBottom: 10,
+            }}
+          >
+            Vai trò khả dụng
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {DEMO_ACCOUNTS.map((a) => (
+              <span
+                key={a.role}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "4px 10px",
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  background: "var(--cela-cream)",
+                  color: "var(--cela-espresso)",
+                }}
+              >
+                {a.labelVi}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <p
+          style={{
+            fontSize: 11,
+            color: "var(--cela-stone-soft)",
+            marginTop: 24,
+            textAlign: "center",
+          }}
+        >
+          Hỗ trợ kỹ thuật:{" "}
+          <span style={{ fontFamily: "var(--cela-mono)", color: "var(--cela-cocoa)" }}>
+            1900 6363
+          </span>
+        </p>
+      </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

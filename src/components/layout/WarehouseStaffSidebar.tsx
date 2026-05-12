@@ -10,12 +10,12 @@ import {
   Bell,
   KeyRound,
   LogOut,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
+import { CelaLogo } from "@/components/ui/cela-logo";
 
 interface NavItemProps {
   href: string;
@@ -27,17 +27,62 @@ interface NavItemProps {
 function NavItem({ href, icon: Icon, label, badge }: NavItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(href + "/");
+
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-base font-medium
-        ${isActive ? "bg-white/15 text-white" : "text-pink-100 hover:bg-white/10 hover:text-white"}`}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "10px 14px",
+        borderRadius: 10,
+        margin: "2px 0",
+        fontSize: 13.5,
+        fontWeight: isActive ? 600 : 500,
+        color: isActive ? "#ffffff" : "rgba(243,236,225,0.72)",
+        background: isActive ? "rgba(201,168,122,0.18)" : "transparent",
+        position: "relative",
+        textDecoration: "none",
+        transition: "background 120ms ease",
+      }}
+      className={!isActive ? "hover:bg-white/[0.06]" : ""}
     >
-      <Icon className="w-5 h-5 flex-shrink-0" />
-      <span className="flex-1">{label}</span>
+      {isActive && (
+        <span
+          style={{
+            position: "absolute",
+            left: -12,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 3,
+            height: 18,
+            background: "var(--cela-rose)",
+            borderRadius: "0 3px 3px 0",
+          }}
+        />
+      )}
+      <Icon
+        style={{
+          color: isActive ? "var(--cela-rose)" : "rgba(243,236,225,0.5)",
+          flexShrink: 0,
+          width: 17,
+          height: 17,
+        }}
+      />
+      <span style={{ flex: 1 }}>{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-          {badge}
+        <span
+          style={{
+            background: "var(--cela-danger)",
+            color: "#fff",
+            fontSize: 11,
+            borderRadius: 999,
+            padding: "1px 7px",
+            fontWeight: 700,
+          }}
+        >
+          {badge > 99 ? "99+" : badge}
         </span>
       )}
     </Link>
@@ -48,22 +93,42 @@ function NavSection({
   title,
   children,
 }: {
-  title: string;
+  title?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-4">
-      <p className="text-pink-200/70 text-xs font-semibold uppercase tracking-wider px-4 mb-2">
-        {title}
-      </p>
-      <div className="space-y-1">{children}</div>
+    <div style={{ marginBottom: 16 }}>
+      {title && (
+        <p
+          style={{
+            padding: "10px 14px 6px",
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "rgba(243,236,225,0.4)",
+            margin: 0,
+          }}
+        >
+          {title}
+        </p>
+      )}
+      <div>{children}</div>
     </div>
   );
 }
 
 export function WarehouseStaffSidebar() {
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const router = useRouter();
+
+  const initials =
+    user?.fullName
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(-2)
+      .toUpperCase() ?? "??";
 
   async function handleLogout() {
     await logout();
@@ -72,78 +137,37 @@ export function WarehouseStaffSidebar() {
 
   return (
     <aside
-      className="w-64 h-screen flex-shrink-0 flex flex-col relative overflow-hidden"
-      style={{ background: "linear-gradient(to bottom, #FF85C0, #EC4899)" }}
+      className="flex-shrink-0 flex flex-col h-screen"
+      style={{
+        width: 248,
+        background: "var(--cela-espresso)",
+        borderRight: "1px solid rgba(255,255,255,0.06)",
+        color: "#f3ece1",
+        overflow: "hidden",
+      }}
     >
-      {/* Hexagon pattern overlay */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern
-              id="hex-ws"
-              x="0"
-              y="0"
-              width="80"
-              height="70"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 40 0 L 74.6 20 L 74.6 50 L 40 70 L 5.4 50 L 5.4 20 Z"
-                fill="none"
-                stroke="#FF69B4"
-                strokeWidth="1"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#hex-ws)" />
-        </svg>
-      </div>
-      <div className="absolute top-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute top-1/3 -right-8 w-40 h-40 bg-pink-300/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 -left-12 w-36 h-36 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute top-2/3 right-4 w-24 h-24 bg-pink-200/10 rounded-full blur-xl pointer-events-none" />
-
       {/* Logo */}
-      <div className="p-6 border-b border-white/10 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm">BeautyERP</p>
-            <p className="text-white/70 text-xs">Quản lý kho</p>
-          </div>
-        </div>
+      <div
+        style={{
+          padding: "28px 24px 22px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <CelaLogo color="#f3ece1" accent="var(--cela-rose)" />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto relative z-10">
+      <nav style={{ flex: 1, overflowY: "auto", padding: "16px 12px" }}>
         <NavSection title="Tổng quan">
-          <NavItem href="/warehouse" icon={LayoutDashboard} label="Dashboard" />
+          <NavItem href="/warehouse" icon={LayoutDashboard} label="Dashboard kho" />
         </NavSection>
 
-        <NavSection title="Kho hàng">
+        <NavSection title="Nghiệp vụ">
           <NavItem href="/inventory/stock" icon={Warehouse} label="Tồn kho" />
-          <NavItem
-            href="/inventory/purchase-orders"
-            icon={ShoppingBag}
-            label="Purchase Orders"
-          />
-          <NavItem
-            href="/inventory/purchase-orders"
-            icon={PackageCheck}
-            label="Nhận hàng"
-          />
-          <NavItem
-            href="/inventory/adjustments"
-            icon={ClipboardEdit}
-            label="Điều chỉnh kho"
-          />
-          <NavItem
-            href="/supplier-management"
-            icon={Truck}
-            label="Nhà cung cấp"
-          />
+          <NavItem href="/inventory/purchase-orders" icon={ShoppingBag} label="Purchase Orders" />
+          <NavItem href="/inventory/purchase-orders" icon={PackageCheck} label="Nhận hàng" />
+          <NavItem href="/inventory/adjustments" icon={ClipboardEdit} label="Điều chỉnh kho" />
+          <NavItem href="/supplier-management" icon={Truck} label="Nhà cung cấp" />
         </NavSection>
 
         <NavSection title="Thông báo">
@@ -152,21 +176,85 @@ export function WarehouseStaffSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-white/10 relative z-10 space-y-1">
+      <div style={{ padding: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: 10,
+            borderRadius: 12,
+            background: "rgba(255,255,255,0.04)",
+          }}
+        >
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: "50%",
+              background: "var(--cela-champagne)",
+              color: "var(--cela-espresso)",
+              display: "grid",
+              placeItems: "center",
+              fontFamily: "var(--cela-display)",
+              fontSize: 14,
+              fontWeight: 600,
+              flexShrink: 0,
+            }}
+          >
+            {initials}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#f3ece1",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {user?.fullName ?? "Nhân viên kho"}
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                color: "rgba(243,236,225,0.55)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              Kho
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Đăng xuất"
+            className="p-1.5 rounded-lg transition-colors hover:bg-white/[0.08]"
+            style={{ color: "rgba(243,236,225,0.55)", background: "transparent", border: 0, cursor: "pointer" }}
+          >
+            <LogOut style={{ width: 15, height: 15 }} />
+          </button>
+        </div>
         <Link
           href="/change-password"
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-pink-100 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 12px",
+            marginTop: 4,
+            borderRadius: 8,
+            fontSize: 12.5,
+            color: "rgba(243,236,225,0.55)",
+            textDecoration: "none",
+          }}
+          className="hover:bg-white/[0.06]"
         >
-          <KeyRound className="w-5 h-5 flex-shrink-0" />
+          <KeyRound style={{ width: 14, height: 14, flexShrink: 0 }} />
           <span>Đổi mật khẩu</span>
         </Link>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          <span>Đăng xuất</span>
-        </button>
       </div>
     </aside>
   );

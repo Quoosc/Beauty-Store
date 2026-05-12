@@ -12,25 +12,97 @@ const formatVND = (n: number) =>
 interface KPICardProps {
   label: string;
   value: string;
-  accent: string;
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  sub?: string;
+  icon: React.ComponentType<{ style?: React.CSSProperties }>;
   trend?: number;
+  accent?: "rose" | "champagne" | "espresso" | "success";
 }
 
-function KPICard({ label, value, accent, icon: Icon, trend }: KPICardProps) {
+function KPICard({ label, value, sub, icon: Icon, trend, accent = "rose" }: KPICardProps) {
+  const accentColors = {
+    rose: "var(--cela-rose)",
+    champagne: "var(--cela-champagne)",
+    espresso: "var(--cela-espresso)",
+    success: "var(--cela-success)",
+  };
+  const accentBgs = {
+    rose: "rgba(183,110,121,0.1)",
+    champagne: "rgba(201,168,122,0.14)",
+    espresso: "rgba(60,46,42,0.08)",
+    success: "rgba(107,142,106,0.12)",
+  };
+  const color = accentColors[accent];
+  const bg = accentBgs[accent];
+
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500 font-medium">{label}</p>
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: accent + "20" }}>
-          <Icon className="w-5 h-5" style={{ color: accent }} />
+    <div
+      style={{
+        background: "var(--cela-paper)",
+        border: "1px solid var(--cela-mist)",
+        borderRadius: 16,
+        padding: "20px 24px",
+        boxShadow: "var(--cela-shadow-sm)",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            color: "var(--cela-cocoa)",
+            margin: 0,
+          }}
+        >
+          {label}
+        </p>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: bg,
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+          <Icon style={{ width: 18, height: 18, color }} />
         </div>
       </div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      {trend !== undefined && (
-        <p className={`text-sm mt-2 flex items-center gap-1 ${trend >= 0 ? "text-green-600" : "text-red-500"}`}>
-          {trend >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-          {Math.abs(trend)}% so với hôm qua
+      <p
+        style={{
+          fontFamily: "var(--cela-display)",
+          fontSize: 28,
+          fontWeight: 600,
+          color: "var(--cela-espresso)",
+          margin: 0,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        {value}
+      </p>
+      {(trend !== undefined || sub) && (
+        <p
+          style={{
+            fontSize: 12,
+            marginTop: 8,
+            margin: "8px 0 0",
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            color: trend !== undefined ? (trend >= 0 ? "var(--cela-success)" : "var(--cela-danger)") : "var(--cela-stone)",
+          }}
+        >
+          {trend !== undefined && (
+            <>
+              {trend >= 0
+                ? <TrendingUp style={{ width: 13, height: 13 }} />
+                : <TrendingDown style={{ width: 13, height: 13 }} />}
+              <span>{Math.abs(trend)}% so với hôm qua</span>
+            </>
+          )}
+          {sub && !trend && <span style={{ color: "var(--cela-stone)" }}>{sub}</span>}
         </p>
       )}
     </div>
@@ -52,92 +124,237 @@ export default function AdminDashboardPage() {
 
   return (
     <ERPLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Tổng quan hệ thống</h1>
-          <p className="text-sm text-gray-500">{today}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        {/* Page header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "var(--cela-cocoa)",
+                margin: "0 0 4px",
+              }}
+            >
+              Tổng quan
+            </p>
+            <h1
+              style={{
+                fontFamily: "var(--cela-display)",
+                fontSize: 28,
+                fontWeight: 500,
+                color: "var(--cela-espresso)",
+                margin: 0,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              Dashboard <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>hệ thống</span>
+            </h1>
+          </div>
+          <p style={{ fontSize: 13, color: "var(--cela-stone)", fontFamily: "var(--cela-mono)" }}>
+            {today}
+          </p>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <svg className="animate-spin w-6 h-6 text-pink-500" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
+          <div style={{ display: "flex", justifyContent: "center", padding: "64px 0" }}>
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                border: "2px solid var(--cela-mist)",
+                borderTopColor: "var(--cela-rose)",
+                animation: "spin 0.7s linear infinite",
+              }}
+            />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : (
           <>
             {/* KPI row */}
-            <div className="grid grid-cols-4 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
               <KPICard
                 label="Doanh thu hôm nay"
                 value={formatVND(dashboard?.totalRevenue ?? 0)}
-                accent="#EC4899"
+                accent="rose"
                 icon={DollarSign}
                 trend={dashboard?.revenueGrowth}
               />
               <KPICard
                 label="Số đơn hàng"
                 value={String(dashboard?.totalOrders ?? 0)}
-                accent="#2563EB"
+                accent="espresso"
                 icon={ShoppingBag}
               />
               <KPICard
                 label="Giá trị đơn TB"
                 value={formatVND(dashboard?.averageOrderValue ?? 0)}
-                accent="#059669"
+                accent="champagne"
                 icon={BarChart2}
               />
               <KPICard
                 label="Tăng trưởng"
                 value={`${dashboard?.revenueGrowth ?? 0}%`}
-                accent="#D97706"
+                accent="success"
                 icon={TrendingUp}
                 trend={dashboard?.revenueGrowth}
               />
             </div>
 
             {/* Middle row */}
-            <div className="grid grid-cols-3 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16 }}>
               {/* Top products */}
-              <div className="col-span-1 bg-white rounded-xl shadow-sm p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Star className="w-4 h-4 text-amber-500" />
-                  Sản phẩm bán chạy
-                </h3>
-                {dashboard?.topProducts.length ? (
-                  <ol className="space-y-3">
+              <div
+                style={{
+                  background: "var(--cela-paper)",
+                  border: "1px solid var(--cela-mist)",
+                  borderRadius: 16,
+                  padding: "20px 24px",
+                  boxShadow: "var(--cela-shadow-sm)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                  <Star style={{ width: 15, height: 15, color: "var(--cela-champagne)" }} />
+                  <h3
+                    style={{
+                      fontFamily: "var(--cela-display)",
+                      fontSize: 18,
+                      fontWeight: 500,
+                      color: "var(--cela-espresso)",
+                      margin: 0,
+                    }}
+                  >
+                    Sản phẩm bán chạy
+                  </h3>
+                </div>
+                {dashboard?.topProducts?.length ? (
+                  <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
                     {dashboard.topProducts.slice(0, 5).map((p, i) => (
-                      <li key={p.productId} className="flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center
-                          ${i === 0 ? "bg-amber-100 text-amber-700" : i === 1 ? "bg-gray-100 text-gray-600" : "bg-gray-50 text-gray-500"}`}>
+                      <li
+                        key={p.productId}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          paddingTop: i > 0 ? 10 : 0,
+                          borderTop: i > 0 ? "1px solid var(--cela-fog)" : "none",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            display: "grid",
+                            placeItems: "center",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            background: i === 0 ? "rgba(201,168,122,0.18)" : "var(--cela-fog)",
+                            color: i === 0 ? "var(--cela-gold)" : "var(--cela-stone)",
+                            flexShrink: 0,
+                          }}
+                        >
                           {i + 1}
                         </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{p.productName}</p>
-                          <p className="text-xs text-gray-500">{p.soldQty} đã bán</p>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: "var(--cela-espresso)",
+                              margin: 0,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {p.productName}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: 11,
+                              color: "var(--cela-stone)",
+                              margin: "2px 0 0",
+                              fontFamily: "var(--cela-mono)",
+                            }}
+                          >
+                            {p.soldQty} đã bán
+                          </p>
                         </div>
                       </li>
                     ))}
                   </ol>
                 ) : (
-                  <p className="text-sm text-gray-400">Chưa có dữ liệu</p>
+                  <p style={{ fontSize: 13, color: "var(--cela-stone)", margin: 0 }}>Chưa có dữ liệu</p>
                 )}
               </div>
 
-              {/* Quick stats placeholder */}
-              <div className="col-span-2 bg-white rounded-xl shadow-sm p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Doanh thu 7 ngày qua</h3>
-                <div className="flex items-center justify-center h-40 text-gray-400">
-                  <p className="text-sm">Biểu đồ doanh thu (cần Recharts)</p>
+              {/* Revenue chart placeholder */}
+              <div
+                style={{
+                  background: "var(--cela-paper)",
+                  border: "1px solid var(--cela-mist)",
+                  borderRadius: 16,
+                  padding: "20px 24px",
+                  boxShadow: "var(--cela-shadow-sm)",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: "var(--cela-display)",
+                    fontSize: 18,
+                    fontWeight: 500,
+                    color: "var(--cela-espresso)",
+                    margin: "0 0 16px",
+                  }}
+                >
+                  Doanh thu <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>7 ngày qua</span>
+                </h3>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: 160,
+                    background: "var(--cela-ivory)",
+                    borderRadius: 10,
+                    color: "var(--cela-stone)",
+                    fontSize: 13,
+                    fontFamily: "var(--cela-mono)",
+                  }}
+                >
+                  Biểu đồ doanh thu (cần Recharts)
                 </div>
               </div>
             </div>
 
             {/* Alerts panel */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Cảnh báo hệ thống</h3>
-              <p className="text-sm text-gray-400">Không có cảnh báo nào.</p>
+            <div
+              style={{
+                background: "var(--cela-paper)",
+                border: "1px solid var(--cela-mist)",
+                borderRadius: 16,
+                padding: "20px 24px",
+                boxShadow: "var(--cela-shadow-sm)",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "var(--cela-display)",
+                  fontSize: 18,
+                  fontWeight: 500,
+                  color: "var(--cela-espresso)",
+                  margin: "0 0 12px",
+                }}
+              >
+                Cảnh báo hệ thống
+              </h3>
+              <p style={{ fontSize: 13, color: "var(--cela-stone)", margin: 0 }}>
+                Không có cảnh báo nào.
+              </p>
             </div>
           </>
         )}

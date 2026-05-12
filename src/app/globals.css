@@ -46,75 +46,120 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* CÉLA custom colors for Tailwind utilities */
+  --color-cela-ivory: #faf7f2;
+  --color-cela-cream: #f3ece1;
+  --color-cela-paper: #ffffff;
+  --color-cela-blush: #f3e3e5;
+  --color-cela-blush-deep: #ead4d7;
+  --color-cela-espresso: #3c2e2a;
+  --color-cela-cocoa: #6b574f;
+  --color-cela-stone: #8a7a6f;
+  --color-cela-mist: #d8cec5;
+  --color-cela-fog: #ece4da;
+  --color-cela-rose: #b76e79;
+  --color-cela-rose-soft: #c98a92;
+  --color-cela-rose-deep: #8f4f59;
+  --color-cela-champagne: #c9a87a;
+  --color-cela-gold: #b8945c;
+  --color-cela-success: #6b8e6a;
+  --color-cela-warn: #c89556;
+  --color-cela-danger: #b04848;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Tailwind base tokens — updated to CÉLA palette */
+  --background: #faf7f2;
+  --foreground: #3c2e2a;
+  --card: #ffffff;
+  --card-foreground: #3c2e2a;
+  --popover: #ffffff;
+  --popover-foreground: #3c2e2a;
+  --primary: #3c2e2a;
+  --primary-foreground: #faf7f2;
+  --secondary: #f3ece1;
+  --secondary-foreground: #3c2e2a;
+  --muted: #f3ece1;
+  --muted-foreground: #6b574f;
+  --accent: #f3ece1;
+  --accent-foreground: #3c2e2a;
+  --destructive: #b04848;
+  --border: #d8cec5;
+  --input: #d8cec5;
+  --ring: #b76e79;
+  --chart-1: #b76e79;
+  --chart-2: #c9a87a;
+  --chart-3: #6b574f;
+  --chart-4: #6b8e6a;
+  --chart-5: #3c2e2a;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #3c2e2a;
+  --sidebar-foreground: #f3ece1;
+  --sidebar-primary: #b76e79;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(201, 168, 122, 0.16);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #b76e79;
+
+  /* CÉLA Design Tokens */
+  --cela-ivory: #faf7f2;
+  --cela-cream: #f3ece1;
+  --cela-paper: #ffffff;
+  --cela-blush: #f3e3e5;
+  --cela-blush-deep: #ead4d7;
+  --cela-espresso: #3c2e2a;
+  --cela-cocoa: #6b574f;
+  --cela-stone: #8a7a6f;
+  --cela-stone-soft: #a89a90;
+  --cela-mist: #d8cec5;
+  --cela-fog: #ece4da;
+  --cela-rose: #b76e79;
+  --cela-rose-soft: #c98a92;
+  --cela-rose-deep: #8f4f59;
+  --cela-champagne: #c9a87a;
+  --cela-champagne-soft: #e0c79c;
+  --cela-gold: #b8945c;
+  --cela-success: #6b8e6a;
+  --cela-warn: #c89556;
+  --cela-danger: #b04848;
+  --cela-shadow-sm: 0 1px 2px rgba(60, 46, 42, 0.04), 0 1px 1px rgba(60, 46, 42, 0.03);
+  --cela-shadow-md: 0 2px 8px rgba(60, 46, 42, 0.06), 0 1px 2px rgba(60, 46, 42, 0.04);
+  --cela-shadow-lg: 0 12px 32px -8px rgba(60, 46, 42, 0.12), 0 4px 12px -4px rgba(60, 46, 42, 0.06);
+  --cela-shadow-rose: 0 12px 32px -10px rgba(183, 110, 121, 0.35);
+  --cela-display: var(--font-cg, "Playfair Display", Georgia, serif);
+  --cela-sans: var(--font-manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  --cela-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #2a1f1c;
+  --foreground: #f3ece1;
+  --card: #3c2e2a;
+  --card-foreground: #f3ece1;
+  --popover: #3c2e2a;
+  --popover-foreground: #f3ece1;
+  --primary: #f3ece1;
+  --primary-foreground: #3c2e2a;
+  --secondary: #4a3830;
+  --secondary-foreground: #f3ece1;
+  --muted: #4a3830;
+  --muted-foreground: #a89a90;
+  --accent: #4a3830;
+  --accent-foreground: #f3ece1;
+  --destructive: #c05050;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #b76e79;
+  --sidebar: #2a1f1c;
+  --sidebar-foreground: #f3ece1;
+  --sidebar-primary: #b76e79;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(201, 168, 122, 0.16);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #b76e79;
 }
 
 @layer base {
@@ -123,8 +168,31 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--cela-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* CÉLA scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--cela-mist);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* CÉLA focus ring */
+*:focus-visible {
+  outline: 2px solid var(--cela-rose);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
