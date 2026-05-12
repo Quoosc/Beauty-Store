@@ -8,12 +8,10 @@ import { ERPLayout } from "@/components/layout/ERPLayout";
 import { productService } from "@/services/product.service";
 import { categoryService } from "@/services/category.service";
 import type { Category } from "@/types";
-
 export default function CreateProductPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
   const [barcode, setBarcode] = useState("");
@@ -23,17 +21,20 @@ export default function CreateProductPage() {
   const [expiryDate, setExpiryDate] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<File[]>([]);
-
   const today = new Date().toISOString().split("T")[0];
-  const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split("T")[0];
-
-  const costWarning = costPrice && sellingPrice && Number(costPrice) > Number(sellingPrice);
-  const expiryWarning = expiryDate && expiryDate > today && expiryDate < thirtyDaysLater;
-
+  const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 3600 * 1000)
+    .toISOString()
+    .split("T")[0];
+  const costWarning =
+    costPrice && sellingPrice && Number(costPrice) > Number(sellingPrice);
+  const expiryWarning =
+    expiryDate && expiryDate > today && expiryDate < thirtyDaysLater;
   useEffect(() => {
-    categoryService.getAll().then(setCategories).catch(() => {});
+    categoryService
+      .getAll()
+      .then(setCategories)
+      .catch(() => {});
   }, []);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !sku.trim() || !categoryId || !sellingPrice) {
@@ -56,187 +57,309 @@ export default function CreateProductPage() {
       if (expiryDate) formData.append("expiryDate", expiryDate);
       if (description) formData.append("description", description);
       images.forEach((img) => formData.append("images", img));
-
       await productService.create(formData);
       toast.success("Tạo sản phẩm thành công!");
       router.push("/products");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const msg = (
+        err as {
+          response?: {
+            data?: {
+              message?: string;
+            };
+          };
+        }
+      )?.response?.data?.message;
       toast.error(msg || "Tạo sản phẩm thất bại");
     } finally {
       setIsLoading(false);
     }
   }
-
   const allCategories = categories.flatMap((c) => [c, ...(c.children ?? [])]);
-
   return (
     <ERPLayout>
+      {" "}
       <div className="max-w-2xl">
+        {" "}
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-gray-100">
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">Thêm sản phẩm mới</h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-8 space-y-5">
-          {/* Tên */}
+          {" "}
+          <button
+            onClick={() => router.back()}
+            className="p-2 rounded-lg hover:bg-[var(--cela-fog)]"
+          >
+            {" "}
+            <ArrowLeft className="w-5 h-5 text-[var(--cela-stone)]" />{" "}
+          </button>{" "}
+          <div
+            style={{
+              marginBottom: 24,
+            }}
+          >
+            {/* Page header */}
+            <p
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "var(--cela-cocoa)",
+                fontWeight: 600,
+                marginBottom: 6,
+              }}
+            >
+              BEAUTY ERP
+            </p>
+            <h1
+              style={{
+                fontFamily: "var(--cela-display)",
+                fontSize: 28,
+                fontWeight: 700,
+                color: "var(--cela-espresso)",
+                fontStyle: "italic",
+                lineHeight: 1.2,
+              }}
+            >
+              Th�m s?n ph?m{" "}
+              <span
+                style={{
+                  color: "var(--cela-rose)",
+                }}
+              >
+                m?i
+              </span>
+            </h1>
+          </div>{" "}
+        </div>{" "}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-[var(--cela-paper)] rounded-xl p-8 space-y-5"
+        >
+          {" "}
+          {/* Tên */}{" "}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Tên sản phẩm <span className="text-red-500">*</span>
-            </label>
+            {" "}
+            <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+              {" "}
+              Tên sản phẩm{" "}
+              <span className="text-[var(--cela-danger)]">*</span>{" "}
+            </label>{" "}
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nhập tên sản phẩm"
-              className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-            />
-          </div>
-
-          {/* SKU & Barcode */}
+              className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)]"
+              style={{
+                border: "1px solid var(--cela-mist)",
+              }}
+            />{" "}
+          </div>{" "}
+          {/* SKU & Barcode */}{" "}
           <div className="grid grid-cols-2 gap-4">
+            {" "}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                SKU <span className="text-red-500">*</span>
-              </label>
+              {" "}
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+                {" "}
+                SKU <span className="text-[var(--cela-danger)]">*</span>{" "}
+              </label>{" "}
               <input
                 type="text"
                 value={sku}
                 onChange={(e) => setSku(e.target.value.toUpperCase())}
                 placeholder="SP-001"
-                className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-              />
-            </div>
+                className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)]"
+                style={{
+                  border: "1px solid var(--cela-mist)",
+                }}
+              />{" "}
+            </div>{" "}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Barcode</label>
+              {" "}
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+                Barcode
+              </label>{" "}
               <input
                 type="text"
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
                 placeholder="EAN-13 hoặc Code-128"
-                className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-              />
-            </div>
-          </div>
-
-          {/* Category */}
+                className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)]"
+                style={{
+                  border: "1px solid var(--cela-mist)",
+                }}
+              />{" "}
+            </div>{" "}
+          </div>{" "}
+          {/* Category */}{" "}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Danh mục <span className="text-red-500">*</span>
-            </label>
+            {" "}
+            <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+              {" "}
+              Danh mục <span className="text-[var(--cela-danger)]">*</span>{" "}
+            </label>{" "}
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+              className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)]"
+              style={{
+                border: "1px solid var(--cela-mist)",
+              }}
             >
-              <option value="">-- Chọn danh mục --</option>
+              {" "}
+              <option value="">-- Chọn danh mục --</option>{" "}
               {allCategories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.parentId ? `  └ ${c.name}` : c.name}
+                  {" "}
+                  {c.parentId ? ` └ ${c.name}` : c.name}{" "}
                 </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Prices */}
+              ))}{" "}
+            </select>{" "}
+          </div>{" "}
+          {/* Prices */}{" "}
           <div className="grid grid-cols-2 gap-4">
+            {" "}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Giá bán (VND) <span className="text-red-500">*</span>
-              </label>
+              {" "}
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+                {" "}
+                Giá bán (VND){" "}
+                <span className="text-[var(--cela-danger)]">*</span>{" "}
+              </label>{" "}
               <input
                 type="number"
                 value={sellingPrice}
                 onChange={(e) => setSellingPrice(e.target.value)}
                 placeholder="0"
                 min="0"
-                className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-              />
-            </div>
+                className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)]"
+                style={{
+                  border: "1px solid var(--cela-mist)",
+                }}
+              />{" "}
+            </div>{" "}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Giá vốn (VND)</label>
+              {" "}
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+                Giá vốn (VND)
+              </label>{" "}
               <input
                 type="number"
                 value={costPrice}
                 onChange={(e) => setCostPrice(e.target.value)}
                 placeholder="0"
                 min="0"
-                className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-              />
-            </div>
-          </div>
-
+                className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)]"
+                style={{
+                  border: "1px solid var(--cela-mist)",
+                }}
+              />{" "}
+            </div>{" "}
+          </div>{" "}
           {costWarning && (
-            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-              <p className="text-sm text-amber-700">Giá vốn lớn hơn giá bán</p>
+            <div className="flex items-center gap-2 p-3 bg-[rgba(201,168,122,0.14)] border border-amber-200 rounded-lg">
+              {" "}
+              <AlertTriangle className="w-4 h-4 text-[var(--cela-gold)] flex-shrink-0" />{" "}
+              <p className="text-sm text-[var(--cela-gold)]">
+                Giá vốn lớn hơn giá bán
+              </p>{" "}
             </div>
-          )}
-
-          {/* Expiry date */}
+          )}{" "}
+          {/* Expiry date */}{" "}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Ngày hết hạn</label>
+            {" "}
+            <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+              Ngày hết hạn
+            </label>{" "}
             <input
               type="date"
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
               min={today}
-              className="w-full h-11 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400"
-            />
+              className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)]"
+              style={{
+                border: "1px solid var(--cela-mist)",
+              }}
+            />{" "}
             {expiryWarning && (
-              <p className="text-amber-600 text-xs mt-1 flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> Sản phẩm sắp hết hạn (dưới 30 ngày)
+              <p className="text-[var(--cela-gold)] text-xs mt-1 flex items-center gap-1">
+                {" "}
+                <AlertTriangle className="w-3 h-3" /> Sản phẩm sắp hết hạn (dưới
+                30 ngày){" "}
               </p>
-            )}
-          </div>
-
-          {/* Description */}
+            )}{" "}
+          </div>{" "}
+          {/* Description */}{" "}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Mô tả</label>
+            {" "}
+            <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+              Mô tả
+            </label>{" "}
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Mô tả sản phẩm..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 resize-none"
-            />
-          </div>
-
-          {/* Images */}
+              className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)] resize-none"
+              style={{
+                border: "1px solid var(--cela-mist)",
+              }}
+            />{" "}
+          </div>{" "}
+          {/* Images */}{" "}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Ảnh sản phẩm</label>
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-colors">
-              <Upload className="w-6 h-6 text-gray-400 mb-2" />
-              <span className="text-sm text-gray-500">Chọn ảnh (nhiều file)</span>
+            {" "}
+            <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+              Ảnh sản phẩm
+            </label>{" "}
+            <label
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer hover:border-[rgba(183,110,121,0.35)] hover:bg-[rgba(183,110,121,0.08)] transition-colors"
+              style={{
+                borderColor: "var(--cela-mist)",
+              }}
+            >
+              {" "}
+              <Upload className="w-6 h-6 text-[var(--cela-stone)] mb-2" />{" "}
+              <span className="text-sm text-[var(--cela-stone)]">
+                Chọn ảnh (nhiều file)
+              </span>{" "}
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={(e) => setImages(Array.from(e.target.files ?? []))}
                 className="hidden"
-              />
-            </label>
+              />{" "}
+            </label>{" "}
             {images.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">Đã chọn {images.length} ảnh</p>
-            )}
-          </div>
-
+              <p className="text-xs text-[var(--cela-stone)] mt-1">
+                Đã chọn {images.length} ảnh
+              </p>
+            )}{" "}
+          </div>{" "}
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => router.back()} className="flex-1 h-11 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Hủy
-            </button>
+            {" "}
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex-1 h-11 rounded-xl text-sm font-medium text-[var(--cela-cocoa)] hover:bg-[var(--cela-fog)]"
+              style={{
+                border: "1px solid var(--cela-mist)",
+              }}
+            >
+              {" "}
+              Hủy{" "}
+            </button>{" "}
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 h-11 bg-gradient-to-r from-[#FF69B4] to-[#D946A6] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50"
+              className="flex-1 h-11 bg-[var(--cela-espresso)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50"
             >
-              {isLoading ? "Đang tạo..." : "Tạo sản phẩm"}
-            </button>
-          </div>
-        </form>
-      </div>
+              {" "}
+              {isLoading ? "Đang tạo..." : "Tạo sản phẩm"}{" "}
+            </button>{" "}
+          </div>{" "}
+        </form>{" "}
+      </div>{" "}
     </ERPLayout>
   );
 }
