@@ -38,7 +38,7 @@ export function Header() {
       style={{
         background: "var(--cela-paper)",
         borderBottom: "1px solid var(--cela-mist)",
-        boxShadow: "var(--cela-shadow-sm)",
+        boxShadow: "var(--cela-shadow-soft)",
         height: 56,
       }}
     >
@@ -185,7 +185,12 @@ export function Header() {
             onClick={handleLogout}
             className="ml-1 p-1.5 rounded-lg transition-colors hover:bg-cela-cream"
             title="Đăng xuất"
-            style={{ color: "var(--cela-stone)", background: "transparent", border: 0, cursor: "pointer" }}
+            style={{
+              color: "var(--cela-stone)",
+              background: "transparent",
+              border: 0,
+              cursor: "pointer",
+            }}
           >
             <LogOut style={{ width: 15, height: 15 }} />
           </button>
