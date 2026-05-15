@@ -6,9 +6,10 @@ import type {
 } from "@/types";
 
 export const loyaltyService = {
+  // Backend: GET /members?phone=  (NOT /members/search)
   searchByPhone: async (phone: string): Promise<LoyaltyMember> => {
     const res = await api.get<ApiResponse<LoyaltyMember>>(
-      "/loyalty-promotion/members/search",
+      "/loyalty-promotion/members",
       { params: { phone } }
     );
     return res.data.data;
@@ -60,7 +61,7 @@ export const loyaltyService = {
     size?: number;
     search?: string;
   }) => {
-    const res = await api.get("/loyalty-promotion/members", { params });
+    const res = await api.get("/loyalty-promotion/members/all", { params });
     return res.data.data;
   },
 

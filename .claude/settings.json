@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "PowerShell(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)"
+    ],
+    "defaultMode": "bypassPermissions"
+  }
+}

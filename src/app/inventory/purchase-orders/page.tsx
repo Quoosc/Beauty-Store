@@ -73,6 +73,16 @@ export default function PurchaseOrdersPage() {
   useEffect(() => {
     load();
   }, [statusFilter, page]);
+  async function handleSubmit(id: string) {
+    try {
+      await purchaseOrderService.submit(id);
+      toast.success("Đã gửi duyệt PO");
+      load();
+    } catch {
+      toast.error("Gửi duyệt thất bại");
+    }
+  }
+
   async function handleCancel(id: string) {
     if (!confirm("Hủy Purchase Order này?")) return;
     try {
@@ -277,13 +287,20 @@ export default function PurchaseOrdersPage() {
                             </button>
                           )}{" "}
                           {po.status === "PENDING" && (
-                            <button
-                              onClick={() => handleCancel(po.id)}
-                              className="px-3 py-1.5 text-xs font-medium text-[var(--cela-danger)] hover:bg-[rgba(183,110,121,0.08)] rounded-lg"
-                            >
-                              {" "}
-                              Hủy PO{" "}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleSubmit(po.id)}
+                                className="px-3 py-1.5 bg-[rgba(107,142,106,0.12)] border border-[rgba(107,142,106,0.3)] text-(--cela-success) rounded-lg text-xs font-medium hover:bg-[rgba(107,142,106,0.2)]"
+                              >
+                                Gửi duyệt
+                              </button>
+                              <button
+                                onClick={() => handleCancel(po.id)}
+                                className="px-3 py-1.5 text-xs font-medium text-(--cela-danger) hover:bg-[rgba(183,110,121,0.08)] rounded-lg"
+                              >
+                                Hủy PO
+                              </button>
+                            </>
                           )}{" "}
                         </div>{" "}
                       </td>{" "}

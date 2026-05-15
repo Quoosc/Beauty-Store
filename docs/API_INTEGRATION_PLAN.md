@@ -1,6 +1,6 @@
 # BeautyERP — Kế hoạch Tích hợp API cho Frontend
 
-> **Ngày lập:** 2026-05-15  
+> **Ngày lập:** 2026-05-15 · **Cập nhật lần cuối:** 2026-05-16  
 > **Stack FE:** Next.js 16 (App Router) · React 19 · TypeScript 5 · Zustand · Axios · Tailwind CSS 4 · shadcn/ui  
 > **Backend:** 7 microservices qua API Gateway `:8080/api/v1`  
 > **Tổng API backend:** 81 endpoints (60 public + 21 internal)  
@@ -37,7 +37,7 @@
 | Service files | 15 | 15 | Một số method sai endpoint |
 | Zustand stores | 3 | 3 ✅ | — |
 | Types | 1 file | ~90% | Một số type thiếu |
-| Middleware (route guard) | — | Auth only | Chưa có role guard |
+| Middleware (route guard) | — | ✅ Hoàn thiện | Role guard + force-change-password guard đã có trong `src/middleware.ts` |
 
 ### 1.2 Pages theo trạng thái
 
@@ -495,8 +495,9 @@
 | `POST /order/shifts` | `shiftService.open()` | ✅ |
 | `POST /order/shifts/:id/close` | `shiftService.close()` | ✅ |
 
-**Trạng thái:** ✅ COMPLETE  
+**Trạng thái:** ✅ COMPLETE — đã kiểm thử thực tế 2026-05-16 (tất cả pass)  
 **Lưu ý:**
+- [x] Backend đã fix: `POST /order/shifts` bị 500 do PostgreSQL enum mismatch → đã sửa `Shift.java` + `ShiftRepository.java`
 - [ ] Đóng ca: nếu `variance ≠ 0` → bắt buộc nhập ghi chú (validate client-side)
 - [ ] Sau đóng ca thành công → clear `pos.store` draft
 

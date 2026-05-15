@@ -34,28 +34,19 @@ export default function CouponsPage() {
   const [form, setForm] = useState<CouponForm>(emptyForm);
   const [promotionFilter, setPromotionFilter] = useState<string>("ALL");
 
-  async function loadCoupons(filterPromotionId?: string) {
-    const data = await couponService.getAll({
-      page: 0,
-      size: 100,
-      promotionId: filterPromotionId,
-    });
+  async function loadCoupons(promotionId: string) {
+    const data = await couponService.getAll(promotionId, { page: 0, size: 100 });
     return data?.content ?? (Array.isArray(data) ? data : []);
   }
 
   async function loadInitial() {
     setIsLoading(true);
     try {
-      const [couponRows, promoRows] = await Promise.all([
-        loadCoupons(),
-        promotionService.getAll({ isActive: true, page: 0, size: 100 }),
-      ]);
-
+      const promoRows = await promotionService.getAll({ isActive: true, page: 0, size: 100 });
       const promoList = promoRows?.content ?? (Array.isArray(promoRows) ? promoRows : []);
-      setCoupons(couponRows);
       setPromotions(promoList);
     } catch {
-      toast.error("Khong the tai du lieu coupon");
+      toast.error("Khong the tai danh sach khuyen mai");
     } finally {
       setIsLoading(false);
     }
@@ -67,8 +58,12 @@ export default function CouponsPage() {
 
   async function applyFilter(nextFilter: string) {
     setPromotionFilter(nextFilter);
+    if (nextFilter === "ALL") {
+      setCoupons([]);
+      return;
+    }
     try {
-      const data = await loadCoupons(nextFilter === "ALL" ? undefined : nextFilter);
+      const data = await loadCoupons(nextFilter);
       setCoupons(data);
     } catch {
       toast.error("Khong the tai danh sach coupon");
@@ -166,7 +161,11 @@ export default function CouponsPage() {
           ) : coupons.length === 0 ? (
             <div className="flex flex-col items-center py-16">
               <Ticket className="w-12 h-12 text-[var(--cela-mist)] mb-3" />
-              <p className="text-[var(--cela-stone)]">Chua co coupon nao</p>
+              <p className="text-[var(--cela-stone)]">
+                {promotionFilter === "ALL"
+                  ? "Chon khuyen mai de xem coupon"
+                  : "Chua co coupon nao cho khuyen mai nay"}
+              </p>
             </div>
           ) : (
             <table className="w-full">

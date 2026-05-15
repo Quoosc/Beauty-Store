@@ -6,18 +6,24 @@ import type {
   ReportJob,
 } from "@/types";
 
-export interface RevenueReportData {
+// Matches backend RevenueReportResponse.DailyEntry
+export interface DailyEntry {
   date: string;
+  revenue: number;
+  discount: number;
+  orderCount: number;
+}
+
+// Matches backend RevenueReportResponse
+export interface RevenueReportResponse {
+  from: string;
+  to: string;
   totalRevenue: number;
   orderCount: number;
   averageOrderValue: number;
-  topProducts: {
-    productId: string;
-    productName: string;
-    soldQty: number;
-    revenue: number;
-  }[];
-  totalDiscount?: number;
+  totalDiscount: number;
+  netRevenue: number;
+  dailyData: DailyEntry[];
 }
 
 export interface NearExpiryItem {
@@ -50,30 +56,28 @@ export type InventoryReportResult =
   | NearExpiryItem[]
   | SlowMovingItem[];
 
-export interface InventoryExportPayload {
-  tab: InventoryReportTab;
-}
-
 export const reportService = {
   getDashboard: async (): Promise<DashboardData> => {
     const res = await api.get<ApiResponse<DashboardData>>("/report/dashboard");
     return res.data.data;
   },
 
+  // Backend: GET /reports/revenue?from=&to=  (params: from, to — NOT startDate/endDate)
   getRevenue: async (params: {
-    startDate: string;
-    endDate: string;
-  }): Promise<RevenueReportData[]> => {
-    const res = await api.get<ApiResponse<RevenueReportData[]>>(
+    from: string;
+    to: string;
+  }): Promise<RevenueReportResponse> => {
+    const res = await api.get<ApiResponse<RevenueReportResponse>>(
       "/report/reports/revenue",
       { params }
     );
     return res.data.data;
   },
 
+  // Backend: POST /reports/revenue/async  body: { from, to }  (AsyncRevenueReportRequest)
   requestAsyncRevenue: async (params: {
-    startDate: string;
-    endDate: string;
+    from: string;
+    to: string;
   }): Promise<ReportJob> => {
     const res = await api.post<ApiResponse<ReportJob>>(
       "/report/reports/revenue/async",
@@ -99,10 +103,16 @@ export const reportService = {
     return res.data.data;
   },
 
+  // Backend: POST /reports/inventory/export?tab=  (@RequestParam, NOT request body)
   exportInventoryPdf: async (tab: InventoryReportTab): Promise<Blob> => {
-    const res = await api.post("/report/reports/inventory/export", { tab }, {
-      responseType: "blob",
-    });
+    const res = await api.post(
+      "/report/reports/inventory/export",
+      null,
+      {
+        params: { tab },
+        responseType: "blob",
+      }
+    );
     return res.data as Blob;
   },
 };

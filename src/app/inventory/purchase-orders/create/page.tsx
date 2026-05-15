@@ -114,7 +114,7 @@ export default function CreatePurchaseOrderPage() {
     }
     setIsSubmitting(true);
     try {
-      await purchaseOrderService.create({
+      const po = await purchaseOrderService.create({
         supplierId,
         items: items.map((i) => ({
           productId: i.productId,
@@ -122,7 +122,14 @@ export default function CreatePurchaseOrderPage() {
           unitPrice: i.unitPrice,
         })),
       });
-      toast.success("Tạo Purchase Order thành công!");
+
+      try {
+        await purchaseOrderService.submit(po.id);
+        toast.success("Tạo và gửi Purchase Order thành công!");
+      } catch {
+        toast.warning("Tạo PO thành công nhưng gửi duyệt thất bại. Vui lòng gửi duyệt thủ công từ danh sách.");
+      }
+
       router.push("/inventory/purchase-orders");
     } catch (err: unknown) {
       const msg = (

@@ -13,13 +13,8 @@ export const couponService = {
     return res.data.data;
   },
 
-  getAll: async (params?: {
-    page?: number;
-    size?: number;
-    isActive?: boolean;
-    promotionId?: string;
-  }) => {
-    const res = await api.get("/loyalty-promotion/coupons", { params });
+  getAll: async (promotionId: string, params?: { page?: number; size?: number; isActive?: boolean }) => {
+    const res = await api.get("/loyalty-promotion/coupons", { params: { promotionId, ...params } });
     return res.data.data;
   },
 

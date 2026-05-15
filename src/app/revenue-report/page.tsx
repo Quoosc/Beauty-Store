@@ -19,7 +19,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ERPLayout } from "@/components/layout/ERPLayout";
-import { reportService, type RevenueReportData } from "@/services/report.service";
+import {
+  reportService,
+  type RevenueReportResponse,
+} from "@/services/report.service";
 
 const formatVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", {
@@ -39,7 +42,8 @@ export default function RevenueReportPage() {
 
   const [startDate, setStartDate] = useState(sevenDaysAgo);
   const [endDate, setEndDate] = useState(today);
-  const [reportData, setReportData] = useState<RevenueReportData[] | null>(null);
+  // Single RevenueReportResponse object — matches backend structure
+  const [reportData, setReportData] = useState<RevenueReportResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [asyncMessage, setAsyncMessage] = useState<string>("");
 
@@ -57,15 +61,16 @@ export default function RevenueReportPage() {
       const status = job.status;
 
       if (status === "COMPLETED") {
-        const payload = job.data as { reportData?: RevenueReportData[] } | undefined;
-        if (payload?.reportData && Array.isArray(payload.reportData)) {
-          setReportData(payload.reportData);
+        // AsyncReportJobResponse.data is RevenueReportResponse
+        const data = job.data as RevenueReportResponse | undefined;
+        if (data?.dailyData) {
+          setReportData(data);
           setAsyncMessage("Bao cao da hoan tat");
           return;
         }
 
         setAsyncMessage(
-          "Bao cao da hoan tat. Neu chua co du lieu trong man hinh, vui long mo notification de lay ket qua."
+          "Bao cao da hoan tat. Vui long mo notification de lay ket qua."
         );
         return;
       }
@@ -97,17 +102,19 @@ export default function RevenueReportPage() {
 
     try {
       if (daysDiff > 31) {
+        // Backend: POST /reports/revenue/async — params must be "from" and "to"
         const job = await reportService.requestAsyncRevenue({
-          startDate,
-          endDate,
+          from: startDate,
+          to: endDate,
         });
 
         toast.success("Da tao job bao cao bat dong bo");
         await pollAsyncJob(job.jobId);
       } else {
+        // Backend: GET /reports/revenue?from=&to=
         const data = await reportService.getRevenue({
-          startDate,
-          endDate,
+          from: startDate,
+          to: endDate,
         });
         setReportData(data);
       }
@@ -157,9 +164,9 @@ export default function RevenueReportPage() {
     if (!reportData) return;
 
     const csv = [
-      ["Ngay", "Doanh thu", "So don", "Gia tri TB"].join(","),
-      ...reportData.map((d) =>
-        [d.date, d.totalRevenue, d.orderCount, d.averageOrderValue].join(",")
+      ["Ngay", "So don", "Doanh thu", "Giam gia"].join(","),
+      ...reportData.dailyData.map((d) =>
+        [d.date, d.orderCount, d.revenue, d.discount].join(",")
       ),
     ].join("\n");
 
@@ -174,19 +181,21 @@ export default function RevenueReportPage() {
     URL.revokeObjectURL(url);
   }
 
-  const totalRevenue = reportData?.reduce((sum, d) => sum + d.totalRevenue, 0) ?? 0;
-  const totalOrders = reportData?.reduce((sum, d) => sum + d.orderCount, 0) ?? 0;
-  const avgOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  // KPI values come directly from top-level RevenueReportResponse fields
+  const totalRevenue = reportData?.totalRevenue ?? 0;
+  const totalOrders = reportData?.orderCount ?? 0;
+  const avgOrder = reportData?.averageOrderValue ?? 0;
 
+  // Chart uses dailyData[] — each entry has date, revenue, orderCount, discount
   const chartRows = useMemo(
     () =>
-      (reportData ?? []).map((d) => ({
+      (reportData?.dailyData ?? []).map((d) => ({
         date: d.date,
         label: new Date(d.date).toLocaleDateString("vi-VN", {
           day: "2-digit",
           month: "2-digit",
         }),
-        revenue: d.totalRevenue,
+        revenue: d.revenue,
       })),
     [reportData]
   );
@@ -271,7 +280,7 @@ export default function RevenueReportPage() {
 
           {daysDiff > 31 && (
             <p className="text-xs text-[var(--cela-gold)] mt-3">
-              Khoang {">"}31 ngay se duoc xu ly bat dong bo va polling moi 5 giay.
+              Khoang &gt;31 ngay se duoc xu ly bat dong bo va polling moi 5 giay.
             </p>
           )}
         </div>
@@ -334,19 +343,19 @@ export default function RevenueReportPage() {
                   <tr>
                     <th className="text-left px-6 py-3">Ngay</th>
                     <th className="text-right px-4 py-3">So don</th>
-                    <th className="text-right px-4 py-3">Tong doanh thu</th>
-                    <th className="text-right px-4 py-3">Gia tri TB</th>
+                    <th className="text-right px-4 py-3">Doanh thu</th>
+                    <th className="text-right px-4 py-3">Giam gia</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.map((d) => (
+                  {reportData.dailyData.map((d) => (
                     <tr key={d.date} style={{ borderBottom: "1px solid var(--cela-fog)" }}>
                       <td className="px-6 py-3 text-sm text-[var(--cela-espresso)]">
                         {new Date(d.date).toLocaleDateString("vi-VN")}
                       </td>
                       <td className="px-4 py-3 text-right text-sm text-[var(--cela-cocoa)]">{d.orderCount}</td>
-                      <td className="px-4 py-3 text-right text-sm font-semibold text-[var(--cela-espresso)]">{formatVND(d.totalRevenue)}</td>
-                      <td className="px-4 py-3 text-right text-sm text-[var(--cela-success)]">{formatVND(d.averageOrderValue)}</td>
+                      <td className="px-4 py-3 text-right text-sm font-semibold text-[var(--cela-espresso)]">{formatVND(d.revenue)}</td>
+                      <td className="px-4 py-3 text-right text-sm text-[var(--cela-stone)]">{formatVND(d.discount)}</td>
                     </tr>
                   ))}
                 </tbody>

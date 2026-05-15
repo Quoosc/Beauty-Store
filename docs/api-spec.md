@@ -4,6 +4,7 @@
 > **Auth:** JWT trong httpOnly cookie `jwt` (set bởi backend, không đọc được từ JS)  
 > **Axios instance:** `@/lib/axios` — `withCredentials: true`, 401 → redirect `/login`  
 > **Response format:** `{ success: boolean, data: T, message?: string }`  
+> **Cập nhật:** 2026-05-16 — sửa gateway prefix loyalty-promotion và notification-audit  
 > **Context path từng service được gateway route:**
 
 | Service | Gateway prefix |
@@ -12,9 +13,9 @@
 | catalog-service | `/catalog` |
 | order-service | `/order` |
 | inventory-service | `/inventory` |
-| loyalty-promotion-service | `/loyalty` |
+| loyalty-promotion-service | `/loyalty-promotion` ⚠️ *(trước đây ghi sai là `/loyalty`)* |
 | report-service | `/report` |
-| notification-audit-service | `/notification` |
+| notification-audit-service | `/notification-audit` ⚠️ *(trước đây ghi sai là `/notification`)* |
 
 ---
 

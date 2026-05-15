@@ -20,6 +20,10 @@ export const purchaseOrderService = {
     return res.data.data;
   },
 
+  submit: async (id: string): Promise<void> => {
+    await api.post(`/inventory/purchase-orders/${id}/submit`);
+  },
+
   confirm: async (id: string): Promise<void> => {
     await api.post(`/inventory/purchase-orders/${id}/confirm`);
   },

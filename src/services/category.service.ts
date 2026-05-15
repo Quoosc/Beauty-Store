@@ -7,6 +7,11 @@ export const categoryService = {
     return res.data.data;
   },
 
+  getById: async (id: string): Promise<Category> => {
+    const res = await api.get<ApiResponse<Category>>(`/catalog/categories/${id}`);
+    return res.data.data;
+  },
+
   create: async (data: { name: string; parentId?: string | null }): Promise<Category> => {
     const res = await api.post<ApiResponse<Category>>(`/catalog/categories`, data);
     return res.data.data;
