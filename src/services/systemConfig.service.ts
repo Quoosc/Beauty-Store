@@ -14,4 +14,13 @@ export const systemConfigService = {
     );
     return res.data.data;
   },
+
+  getByKey: async (key: string): Promise<SystemConfig> => {
+    const configs = await systemConfigService.getAll();
+    const found = configs.find((config) => config.key === key);
+    if (!found) {
+      throw new Error("Khong tim thay system config");
+    }
+    return found;
+  },
 };

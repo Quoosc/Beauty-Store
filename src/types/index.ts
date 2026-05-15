@@ -127,6 +127,14 @@ export interface Order {
   status: OrderStatus;
   receiptUrl: string | null;
   createdAt: string;
+  cancelStatus?: CancelLogStatus;
+  cancelReason?: string | null;
+  cancelRequestedAt?: string | null;
+  cancelLog?: {
+    status?: CancelLogStatus;
+    reason?: string | null;
+    requestedAt?: string | null;
+  };
 }
 
 /** Request body tạo đơn hàng */
@@ -145,6 +153,13 @@ export interface ReturnTransaction {
   items: { productId: string; productName: string; quantity: number; unitPrice: number }[];
   totalRefund: number;
   createdAt: string;
+}
+
+export interface ReturnTransactionItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
 }
 
 // ------------------------------------------------------------
@@ -190,6 +205,25 @@ export interface InventoryStock {
   quantity: number;
   minThreshold: number;
   isLowStock: boolean;
+}
+
+export interface InventoryReportRow {
+  productId: string;
+  productName: string;
+  sku: string;
+  branchId: string;
+  quantity: number;
+  minThreshold: number;
+  isLowStock: boolean;
+}
+
+export type AdjustmentType = "DAMAGED" | "LOST" | "EXPIRED";
+
+export interface AdjustmentRequest {
+  productId: string;
+  quantity: number;
+  type: AdjustmentType;
+  description: string;
 }
 
 export interface PurchaseOrder {
@@ -259,7 +293,13 @@ export interface Coupon {
 export interface CouponValidationResponse {
   isValid: boolean;
   discountAmount: number;
-  reason?: string;   // nếu không hợp lệ
+  reason?: string;
+}
+
+export interface RedeemPreviewResponse {
+  pointsToRedeem: number;
+  discountAmount: number;
+  maxAllowed: number;
 }
 
 // ------------------------------------------------------------
@@ -289,12 +329,21 @@ export interface Notification {
 // REPORT — report-service :8086
 // ------------------------------------------------------------
 
+
 export interface DashboardData {
   totalRevenue: number;
   totalOrders: number;
   averageOrderValue: number;
-  revenueGrowth: number;    // % so với hôm qua
+  revenueGrowth: number;
   topProducts: { productId: string; productName: string; soldQty: number }[];
+  revenueByDay?: { date: string; revenue: number }[];
+}
+export interface ReportJob {
+  jobId: string;
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  resultUrl?: string;
+  createdAt?: string;
+  data?: unknown;
 }
 
 // ------------------------------------------------------------

@@ -21,4 +21,8 @@ export const supplierService = {
     const res = await api.put<ApiResponse<Supplier>>(`/inventory/suppliers/${id}`, data);
     return res.data.data;
   },
+
+  deactivate: async (id: string): Promise<void> => {
+    await api.post(`/inventory/suppliers/${id}/deactivate`);
+  },
 };
