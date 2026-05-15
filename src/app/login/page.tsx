@@ -47,6 +47,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const { login, isLoading } = useAuthStore();
   const router = useRouter();
 
@@ -55,10 +56,33 @@ export default function LoginPage() {
     setError("");
     try {
       const user = await login(username, password);
-      toast.success("Đăng nhập thành công!");
-      router.push(ROLE_REDIRECT[user.role]);
-    } catch {
-      setError("Sai tên đăng nhập hoặc mật khẩu");
+      setFailedAttempts(0);
+      toast.success("Dang nhap thanh cong!");
+      if (user.forceChangePassword) {
+        router.push("/force-change-password");
+      } else {
+        router.push(ROLE_REDIRECT[user.role]);
+      }
+    } catch (err: unknown) {
+      const status =
+        (err as { response?: { status?: number } })?.response?.status ?? 0;
+      const backendMessage =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "";
+
+      if (status === 423 || backendMessage.toLowerCase().includes("lock")) {
+        setError("Tai khoan bi khoa, lien he Admin");
+        return;
+      }
+
+      const nextAttempts = failedAttempts + 1;
+      setFailedAttempts(nextAttempts);
+      const remaining = Math.max(0, 5 - nextAttempts);
+      setError(
+        remaining > 0
+          ? `Sai ten dang nhap hoac mat khau. Con ${remaining} lan thu.`
+          : "Sai ten dang nhap hoac mat khau."
+      );
     }
   };
 

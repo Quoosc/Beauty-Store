@@ -5,49 +5,80 @@ import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authService } from "@/services/auth.service";
-import { useAuthStore, ROLE_REDIRECT } from "@/stores/auth.store";
+import {
+  useAuthStore,
+  ROLE_REDIRECT,
+} from "@/stores/auth.store";
 import { CelaLogo } from "@/components/ui/cela-logo";
 import { CelaButton, CelaInput } from "@/components/ui/cela-primitives";
 
+type FormErrors = {
+  currentPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
+};
+
 function validatePassword(pwd: string): string | null {
-  if (pwd.length < 8) return "M?t kh?u ph?i c� �t nh?t 8 k� t?";
-  if (!/[A-Z]/.test(pwd)) return "Ph?i c� �t nh?t 1 ch? hoa";
-  if (!/[a-z]/.test(pwd)) return "Ph?i c� �t nh?t 1 ch? thu?ng";
-  if (!/[0-9]/.test(pwd)) return "Ph?i c� �t nh?t 1 ch? s?";
+  if (pwd.length < 8) return "Mat khau phai co it nhat 8 ky tu";
+  if (!/[A-Z]/.test(pwd)) return "Mat khau phai co it nhat 1 chu hoa";
+  if (!/[a-z]/.test(pwd)) return "Mat khau phai co it nhat 1 chu thuong";
+  if (!/[0-9]/.test(pwd)) return "Mat khau phai co it nhat 1 chu so";
   return null;
 }
 
 export default function ForceChangePasswordPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const setForceChangePasswordResolved = useAuthStore(
+    (s) => s.setForceChangePasswordResolved
+  );
 
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [errors, setErrors] = useState<{
-    newPassword?: string;
-    confirmPassword?: string;
-  }>({});
+
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
   function validate(): boolean {
-    const errs: typeof errors = {};
+    const nextErrors: FormErrors = {};
+
+    if (!currentPassword.trim()) {
+      nextErrors.currentPassword = "Vui long nhap mat khau tam thoi";
+    }
+
     const pwdErr = validatePassword(newPassword);
-    if (pwdErr) errs.newPassword = pwdErr;
-    if (newPassword !== confirmPassword)
-      errs.confirmPassword = "M?t kh?u x�c nh?n kh�ng kh?p";
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
+    if (pwdErr) {
+      nextErrors.newPassword = pwdErr;
+    }
+
+    if (newPassword && currentPassword && newPassword === currentPassword) {
+      nextErrors.newPassword = "Mat khau moi khong duoc trung mat khau tam thoi";
+    }
+
+    if (newPassword !== confirmPassword) {
+      nextErrors.confirmPassword = "Mat khau xac nhan khong khop";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
+
     try {
       setIsLoading(true);
-      await authService.changePassword("", newPassword);
-      toast.success("�� d?t m?t kh?u th�nh c�ng!");
+      await authService.changePassword(currentPassword, newPassword);
+
+      setForceChangePasswordResolved();
+      toast.success("Doi mat khau thanh cong");
+
       const redirectPath = user ? ROLE_REDIRECT[user.role] : "/login";
       router.push(redirectPath);
     } catch (err: unknown) {
@@ -56,7 +87,8 @@ export default function ForceChangePasswordPage() {
           ? err.message
           : (err as { response?: { data?: { message?: string } } })?.response
               ?.data?.message;
-      toast.error(message || "�?t m?t kh?u th?t b?i");
+
+      toast.error(message || "Doi mat khau that bai");
     } finally {
       setIsLoading(false);
     }
@@ -103,8 +135,9 @@ export default function ForceChangePasswordPage() {
             margin: 0,
           }}
         >
-          �?t m?t kh?u m?i
+          Doi mat khau moi
         </h1>
+
         <p
           style={{
             fontSize: 13,
@@ -113,125 +146,42 @@ export default function ForceChangePasswordPage() {
             lineHeight: 1.5,
           }}
         >
-          ��y l� l?n dang nh?p d?u ti�n. Vui l�ng d?t m?t kh?u d? b?o m?t t�i
-          kho?n.
+          Dang nhap lan dau. Vui long nhap mat khau tam thoi va dat mat khau moi.
         </p>
 
         <form
           onSubmit={handleSubmit}
           style={{ marginTop: 22, display: "grid", gap: 16 }}
         >
-          <div>
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                color: "var(--cela-cocoa)",
-                margin: "0 0 8px",
-              }}
-            >
-              M?t kh?u m?i
-            </p>
-            <div style={{ position: "relative" }}>
-              <CelaInput
-                type={showNew ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                onBlur={validate}
-                placeholder="Nh?p m?t kh?u m?i"
-                style={{ paddingRight: 38 }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNew((v) => !v)}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  border: 0,
-                  background: "transparent",
-                  color: "var(--cela-stone)",
-                  cursor: "pointer",
-                }}
-              >
-                {showNew ? (
-                  <EyeOff style={{ width: 15, height: 15 }} />
-                ) : (
-                  <Eye style={{ width: 15, height: 15 }} />
-                )}
-              </button>
-            </div>
-            {errors.newPassword && (
-              <p
-                style={{
-                  fontSize: 11,
-                  color: "var(--cela-danger)",
-                  margin: "4px 0 0",
-                }}
-              >
-                {errors.newPassword}
-              </p>
-            )}
-          </div>
+          <PasswordField
+            label="Mat khau tam thoi"
+            value={currentPassword}
+            onChange={setCurrentPassword}
+            show={showCurrent}
+            onToggle={() => setShowCurrent((v) => !v)}
+            placeholder="Nhap mat khau tam thoi"
+            error={errors.currentPassword}
+          />
 
-          <div>
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                color: "var(--cela-cocoa)",
-                margin: "0 0 8px",
-              }}
-            >
-              X�c nh?n m?t kh?u m?i
-            </p>
-            <div style={{ position: "relative" }}>
-              <CelaInput
-                type={showConfirm ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onBlur={validate}
-                placeholder="Nh?p l?i m?t kh?u m?i"
-                style={{ paddingRight: 38 }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm((v) => !v)}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  border: 0,
-                  background: "transparent",
-                  color: "var(--cela-stone)",
-                  cursor: "pointer",
-                }}
-              >
-                {showConfirm ? (
-                  <EyeOff style={{ width: 15, height: 15 }} />
-                ) : (
-                  <Eye style={{ width: 15, height: 15 }} />
-                )}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p
-                style={{
-                  fontSize: 11,
-                  color: "var(--cela-danger)",
-                  margin: "4px 0 0",
-                }}
-              >
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
+          <PasswordField
+            label="Mat khau moi"
+            value={newPassword}
+            onChange={setNewPassword}
+            show={showNew}
+            onToggle={() => setShowNew((v) => !v)}
+            placeholder="Nhap mat khau moi"
+            error={errors.newPassword}
+          />
+
+          <PasswordField
+            label="Xac nhan mat khau moi"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            show={showConfirm}
+            onToggle={() => setShowConfirm((v) => !v)}
+            placeholder="Nhap lai mat khau moi"
+            error={errors.confirmPassword}
+          />
 
           <CelaButton
             type="submit"
@@ -251,14 +201,92 @@ export default function ForceChangePasswordPage() {
                     animation: "spin 0.7s linear infinite",
                   }}
                 />
-                �ang x? l�...
+                Dang xu ly...
               </>
             ) : (
-              "�?t m?t kh?u"
+              "Cap nhat mat khau"
             )}
           </CelaButton>
         </form>
       </div>
+    </div>
+  );
+}
+
+function PasswordField({
+  label,
+  value,
+  onChange,
+  show,
+  onToggle,
+  placeholder,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  show: boolean;
+  onToggle: () => void;
+  placeholder: string;
+  error?: string;
+}) {
+  return (
+    <div>
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "var(--cela-cocoa)",
+          margin: "0 0 8px",
+        }}
+      >
+        {label}
+      </p>
+
+      <div style={{ position: "relative" }}>
+        <CelaInput
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          style={{ paddingRight: 38 }}
+        />
+
+        <button
+          type="button"
+          onClick={onToggle}
+          style={{
+            position: "absolute",
+            right: 10,
+            top: "50%",
+            transform: "translateY(-50%)",
+            border: 0,
+            background: "transparent",
+            color: "var(--cela-stone)",
+            cursor: "pointer",
+          }}
+        >
+          {show ? (
+            <EyeOff style={{ width: 15, height: 15 }} />
+          ) : (
+            <Eye style={{ width: 15, height: 15 }} />
+          )}
+        </button>
+      </div>
+
+      {error && (
+        <p
+          style={{
+            fontSize: 11,
+            color: "var(--cela-danger)",
+            margin: "4px 0 0",
+          }}
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }

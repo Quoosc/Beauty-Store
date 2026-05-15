@@ -40,6 +40,7 @@ interface AuthStore {
   logout: () => Promise<void>;
   /** Xóa state (dùng khi axios interceptor bắt 401) */
   clearAuth: () => void;
+  setForceChangePasswordResolved: () => void;
 }
 
 /** Map role → route redirect sau login */
@@ -84,5 +85,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
   clearAuth: () => {
     saveUserToSession(null);
     set({ user: null, isAuthenticated: false });
+  },
+
+  setForceChangePasswordResolved: () => {
+    set((state) => {
+      if (!state.user) return state;
+      const nextUser = { ...state.user, forceChangePassword: false };
+      saveUserToSession(nextUser);
+      return { ...state, user: nextUser };
+    });
   },
 }));
