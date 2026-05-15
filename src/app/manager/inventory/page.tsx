@@ -27,7 +27,11 @@ export default function ManagerInventoryPage() {
     setIsLoading(true);
     try {
       const data = await inventoryService.getPendingAdjustments();
-      setPending(Array.isArray(data) ? data : (data?.content ?? []));
+      setPending(
+        Array.isArray(data)
+          ? (data as PendingAdjustment[])
+          : ((data?.content ?? []) as PendingAdjustment[])
+      );
     } catch {
       toast.error("Không thể tải danh sách yêu cầu điều chỉnh");
     } finally {
