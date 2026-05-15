@@ -1,474 +1,297 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  BarChart2,
-  RefreshCw,
   AlertTriangle,
+  BarChart2,
   Clock,
+  Download,
+  RefreshCw,
   TrendingDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ERPLayout } from "@/components/layout/ERPLayout";
 import {
   reportService,
-  type InventoryReportData,
+  type InventoryReportTab,
+  type NearExpiryItem,
+  type SlowMovingItem,
 } from "@/services/report.service";
+import type { InventoryReportRow } from "@/types";
+
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   });
-type TabKey = "low-stock" | "near-expiry" | "slow-moving";
+
 export default function InventoryReportPage() {
-  const [reportData, setReportData] = useState<InventoryReportData | null>(
-    null,
-  );
-  const [activeTab, setActiveTab] = useState<TabKey>("low-stock");
+  const [activeTab, setActiveTab] = useState<InventoryReportTab>("current_stock");
   const [isLoading, setIsLoading] = useState(true);
-  async function load() {
+  const [currentStockRows, setCurrentStockRows] = useState<InventoryReportRow[]>([]);
+  const [nearExpiryRows, setNearExpiryRows] = useState<NearExpiryItem[]>([]);
+  const [slowMovingRows, setSlowMovingRows] = useState<SlowMovingItem[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const tabMap: {
+    key: InventoryReportTab;
+    label: string;
+    color: string;
+  }[] = [
+    { key: "current_stock", label: "Ton kho hien tai", color: "text-[var(--cela-danger)]" },
+    { key: "near_expiry", label: "Sap het han", color: "text-[var(--cela-gold)]" },
+    { key: "slow_moving", label: "Cham luan chuyen", color: "text-[var(--cela-cocoa)]" },
+  ];
+
+  async function load(tab = activeTab) {
     setIsLoading(true);
     try {
-      const data = await reportService.getInventoryReport();
-      setReportData(data);
+      const result = await reportService.getInventoryReport({ tab, size: 200 });
+      if (tab === "current_stock") {
+        setCurrentStockRows(Array.isArray(result) ? (result as InventoryReportRow[]) : []);
+      }
+      if (tab === "near_expiry") {
+        setNearExpiryRows(Array.isArray(result) ? (result as NearExpiryItem[]) : []);
+      }
+      if (tab === "slow_moving") {
+        setSlowMovingRows(Array.isArray(result) ? (result as SlowMovingItem[]) : []);
+      }
     } catch {
-      toast.error("Không thể tải báo cáo tồn kho");
+      toast.error("Khong the tai bao cao ton kho");
     } finally {
       setIsLoading(false);
     }
   }
+
   useEffect(() => {
-    load();
-  }, []);
-  function daysUntil(dateStr: string) {
-    return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
+    load(activeTab);
+  }, [activeTab]);
+
+  const lowStockCount = useMemo(
+    () => currentStockRows.filter((row) => row.isLowStock).length,
+    [currentStockRows]
+  );
+
+  async function handleExportPdf() {
+    try {
+      setIsExporting(true);
+      const blob = await reportService.exportInventoryPdf(activeTab);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `inventory-report-${activeTab}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Da xuat PDF");
+    } catch {
+      toast.error("Xuat PDF that bai");
+    } finally {
+      setIsExporting(false);
+    }
   }
-  const tabs: {
-    key: TabKey;
-    label: string;
-    count: number;
-    color: string;
-  }[] = [
-    {
-      key: "low-stock",
-      label: "Tồn kho thấp",
-      count: reportData?.lowStockItems.length ?? 0,
-      color: "text-[var(--cela-danger)]",
-    },
-    {
-      key: "near-expiry",
-      label: "Sắp hết hạn",
-      count: reportData?.nearExpiryItems.length ?? 0,
-      color: "text-[var(--cela-gold)]",
-    },
-    {
-      key: "slow-moving",
-      label: "Chậm luân chuyển",
-      count: reportData?.slowMovingItems.length ?? 0,
-      color: "text-[var(--cela-cocoa)]",
-    },
-  ];
+
   return (
     <ERPLayout>
-      {" "}
       <div className="space-y-6">
-        {" "}
         <div className="flex items-center justify-between">
-          {" "}
           <div className="flex items-center gap-3">
-            {" "}
-            <BarChart2 className="w-6 h-6 text-[var(--cela-rose)]" />{" "}
-            <div
-              style={{
-                marginBottom: 24,
-              }}
-            >
-              {/* Page header */}
-              <p
-                style={{
-                  fontSize: 11,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  color: "var(--cela-cocoa)",
-                  fontWeight: 600,
-                  marginBottom: 6,
-                }}
-              >
+            <BarChart2 className="w-6 h-6 text-[var(--cela-rose)]" />
+            <div style={{ marginBottom: 24 }}>
+              <p style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--cela-cocoa)", fontWeight: 600, marginBottom: 6 }}>
                 BEAUTY ERP
               </p>
-              <h1
-                style={{
-                  fontFamily: "var(--cela-display)",
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: "var(--cela-espresso)",
-                  fontStyle: "italic",
-                  lineHeight: 1.2,
-                }}
-              >
-                B�o c�o{" "}
-                <span
-                  style={{
-                    color: "var(--cela-rose)",
-                  }}
-                >
-                  t?n kho
-                </span>
+              <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
+                Bao cao <span style={{ color: "var(--cela-rose)" }}>ton kho</span>
               </h1>
-            </div>{" "}
-          </div>{" "}
-          <button
-            onClick={load}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-[var(--cela-cocoa)] hover:bg-[var(--cela-fog)] disabled:opacity-50"
-            style={{
-              border: "1px solid var(--cela-mist)",
-            }}
-          >
-            {" "}
-            <RefreshCw
-              className={`w-4 h-4${isLoading ? "animate-spin" : ""}`}
-            />{" "}
-            Cập nhật{" "}
-          </button>{" "}
-        </div>{" "}
-        {/* Summary cards */}{" "}
-        <div className="grid grid-cols-3 gap-4">
-          {" "}
-          {[
-            {
-              icon: AlertTriangle,
-              label: "Tồn kho thấp",
-              value: reportData?.lowStockItems.length ?? 0,
-              color: "text-[var(--cela-danger)]",
-              bg: "bg-[rgba(183,110,121,0.08)]",
-            },
-            {
-              icon: Clock,
-              label: "Sắp hết hạn",
-              value: reportData?.nearExpiryItems.length ?? 0,
-              color: "text-[var(--cela-gold)]",
-              bg: "bg-[rgba(201,168,122,0.14)]",
-            },
-            {
-              icon: TrendingDown,
-              label: "Chậm luân chuyển",
-              value: reportData?.slowMovingItems.length ?? 0,
-              color: "text-[var(--cela-cocoa)]",
-              bg: "bg-[rgba(120,140,180,0.12)]",
-            },
-          ].map(({ icon: Icon, label, value, color, bg }) => (
-            <div
-              key={label}
-              className="bg-[var(--cela-paper)] rounded-xl p-5 flex items-center gap-4"
-            >
-              {" "}
-              <div
-                className={`w-11 h-11${bg}rounded-xl flex items-center justify-center`}
-              >
-                {" "}
-                <Icon className={`w-5 h-5${color}`} />{" "}
-              </div>{" "}
-              <div>
-                {" "}
-                <p className="text-xs text-[var(--cela-stone)]">{label}</p>{" "}
-                <p className={`text-[28px] font-bold${color}`}>
-                  {isLoading ? "—" : value}
-                </p>{" "}
-              </div>{" "}
             </div>
-          ))}{" "}
-        </div>{" "}
-        {/* Tabs */}{" "}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => load(activeTab)}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-[var(--cela-cocoa)] hover:bg-[var(--cela-fog)] disabled:opacity-50"
+              style={{ border: "1px solid var(--cela-mist)" }}
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+              Cap nhat
+            </button>
+            <button
+              onClick={handleExportPdf}
+              disabled={isExporting}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-[var(--cela-espresso)] hover:opacity-90 disabled:opacity-50"
+            >
+              <Download className="w-4 h-4" />
+              {isExporting ? "Dang xuat..." : "Xuat PDF"}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <SummaryCard icon={AlertTriangle} label="SKU low stock" value={lowStockCount} tone="danger" />
+          <SummaryCard icon={Clock} label="SKU sap het han" value={nearExpiryRows.length} tone="warning" />
+          <SummaryCard icon={TrendingDown} label="SKU cham luan chuyen" value={slowMovingRows.length} tone="info" />
+        </div>
+
         <div className="bg-[var(--cela-paper)] rounded-xl overflow-hidden">
-          {" "}
-          <div
-            className="flex"
-            style={{
-              borderBottom: "1px solid var(--cela-mist)",
-            }}
-          >
-            {" "}
-            {tabs.map((tab) => (
+          <div className="flex" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
+            {tabMap.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors${activeTab === tab.key ? "border-[var(--cela-rose)] text-[var(--cela-rose)]" : "border-transparent text-[var(--cela-stone)] hover:text-[var(--cela-cocoa)]"}`}
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.key ? "border-[var(--cela-rose)] text-[var(--cela-rose)]" : "border-transparent text-[var(--cela-stone)] hover:text-[var(--cela-cocoa)]"}`}
               >
-                {" "}
-                {tab.label}{" "}
-                <span
-                  className={`px-1.5 py-0.5 rounded-full text-xs font-bold${activeTab === tab.key ? "bg-[rgba(183,110,121,0.15)] text-[var(--cela-rose-deep)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}
-                >
-                  {" "}
-                  {tab.count}{" "}
-                </span>{" "}
+                {tab.label}
               </button>
-            ))}{" "}
-          </div>{" "}
+            ))}
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
-              {" "}
-              <svg
-                className="animate-spin w-6 h-6 text-[var(--cela-rose)]"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                {" "}
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />{" "}
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                />{" "}
-              </svg>{" "}
+              <svg className="animate-spin w-6 h-6 text-[var(--cela-rose)]" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
             </div>
           ) : (
             <>
-              {" "}
-              {/* Tab 1: Low stock */}{" "}
-              {activeTab === "low-stock" && (
-                <table className="w-full">
-                  {" "}
-                  <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
-                    {" "}
-                    <tr>
-                      {" "}
-                      <th className="text-left px-6 py-3">Sản phẩm</th>{" "}
-                      <th className="text-left px-4 py-3">SKU</th>{" "}
-                      <th className="text-center px-4 py-3">Tồn kho</th>{" "}
-                      <th className="text-center px-4 py-3">
-                        Ngưỡng tối thiểu
-                      </th>{" "}
-                      <th className="text-center px-4 py-3">% còn lại</th>{" "}
-                    </tr>{" "}
-                  </thead>{" "}
-                  <tbody>
-                    {" "}
-                    {(reportData?.lowStockItems ?? []).length === 0 ? (
-                      <tr
-                        style={{
-                          borderBottom: "1px solid var(--cela-fog)",
-                        }}
-                      >
-                        <td
-                          colSpan={5}
-                          className="px-6 py-10 text-center text-[var(--cela-stone)] text-sm"
-                        >
-                          Không có sản phẩm nào
-                        </td>
-                      </tr>
-                    ) : (
-                      reportData?.lowStockItems.map((item) => {
-                        const pct =
-                          item.minThreshold > 0
-                            ? Math.round(
-                                (item.quantity / item.minThreshold) * 100,
-                              )
-                            : 0;
-                        return (
-                          <tr
-                            key={item.productId}
-                            className="hover:bg-[var(--cela-fog)]"
-                            style={{
-                              borderBottom: "1px solid var(--cela-fog)",
-                            }}
-                          >
-                            {" "}
-                            <td className="px-6 py-4 text-sm font-medium text-[var(--cela-espresso)]">
-                              {item.productName}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">
-                              {item.sku}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-center">
-                              {" "}
-                              <span className="text-sm font-bold text-[var(--cela-danger)]">
-                                {item.quantity}
-                              </span>{" "}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-center text-sm text-[var(--cela-stone)]">
-                              {item.minThreshold}
-                            </td>{" "}
-                            <td className="px-4 py-4">
-                              {" "}
-                              <div className="flex items-center gap-2 justify-center">
-                                {" "}
-                                <div className="w-24 bg-[var(--cela-mist)] rounded-full h-2">
-                                  {" "}
-                                  <div
-                                    className="bg-[var(--cela-rose)] h-2 rounded-full"
-                                    style={{
-                                      width: `${Math.min(pct, 100)}%`,
-                                    }}
-                                  />{" "}
-                                </div>{" "}
-                                <span className="text-xs text-[var(--cela-danger)] font-medium">
-                                  {pct}%
-                                </span>{" "}
-                              </div>{" "}
-                            </td>{" "}
-                          </tr>
-                        );
-                      })
-                    )}{" "}
-                  </tbody>{" "}
-                </table>
-              )}{" "}
-              {/* Tab 2: Near expiry */}{" "}
-              {activeTab === "near-expiry" && (
-                <table className="w-full">
-                  {" "}
-                  <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
-                    {" "}
-                    <tr>
-                      {" "}
-                      <th className="text-left px-6 py-3">Sản phẩm</th>{" "}
-                      <th className="text-left px-4 py-3">SKU</th>{" "}
-                      <th className="text-left px-4 py-3">Hạn sử dụng</th>{" "}
-                      <th className="text-center px-4 py-3">Tồn kho</th>{" "}
-                      <th className="text-center px-4 py-3">Còn lại</th>{" "}
-                    </tr>{" "}
-                  </thead>{" "}
-                  <tbody>
-                    {" "}
-                    {(reportData?.nearExpiryItems ?? []).length === 0 ? (
-                      <tr
-                        style={{
-                          borderBottom: "1px solid var(--cela-fog)",
-                        }}
-                      >
-                        <td
-                          colSpan={5}
-                          className="px-6 py-10 text-center text-[var(--cela-stone)] text-sm"
-                        >
-                          Không có sản phẩm nào
-                        </td>
-                      </tr>
-                    ) : (
-                      reportData?.nearExpiryItems.map((item) => {
-                        const days = daysUntil(item.expiryDate);
-                        return (
-                          <tr
-                            key={item.productId}
-                            className="hover:bg-[var(--cela-fog)]"
-                            style={{
-                              borderBottom: "1px solid var(--cela-fog)",
-                            }}
-                          >
-                            {" "}
-                            <td className="px-6 py-4 text-sm font-medium text-[var(--cela-espresso)]">
-                              {item.productName}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">
-                              {item.sku}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">
-                              {formatDate(item.expiryDate)}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-center text-sm text-[var(--cela-cocoa)]">
-                              {item.quantity}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-center">
-                              {" "}
-                              <span
-                                className={`text-sm font-bold${days <= 7 ? "text-[var(--cela-danger)]" : "text-[var(--cela-gold)]"}`}
-                              >
-                                {" "}
-                                {days} ngày{" "}
-                              </span>{" "}
-                            </td>{" "}
-                          </tr>
-                        );
-                      })
-                    )}{" "}
-                  </tbody>{" "}
-                </table>
-              )}{" "}
-              {/* Tab 3: Slow moving */}{" "}
-              {activeTab === "slow-moving" && (
-                <table className="w-full">
-                  {" "}
-                  <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
-                    {" "}
-                    <tr>
-                      {" "}
-                      <th className="text-left px-6 py-3">Sản phẩm</th>{" "}
-                      <th className="text-left px-4 py-3">SKU</th>{" "}
-                      <th className="text-center px-4 py-3">Tồn kho</th>{" "}
-                      <th className="text-left px-4 py-3">Lần bán cuối</th>{" "}
-                    </tr>{" "}
-                  </thead>{" "}
-                  <tbody>
-                    {" "}
-                    {(reportData?.slowMovingItems ?? []).length === 0 ? (
-                      <tr
-                        style={{
-                          borderBottom: "1px solid var(--cela-fog)",
-                        }}
-                      >
-                        <td
-                          colSpan={4}
-                          className="px-6 py-10 text-center text-[var(--cela-stone)] text-sm"
-                        >
-                          Không có sản phẩm nào
-                        </td>
-                      </tr>
-                    ) : (
-                      reportData?.slowMovingItems.map((item) => {
-                        const isOld = item.lastSoldAt
-                          ? (Date.now() - new Date(item.lastSoldAt).getTime()) /
-                              86400000 >
-                            30
-                          : true;
-                        return (
-                          <tr
-                            key={item.productId}
-                            className="hover:bg-[var(--cela-fog)]"
-                            style={{
-                              borderBottom: "1px solid var(--cela-fog)",
-                            }}
-                          >
-                            {" "}
-                            <td className="px-6 py-4 text-sm font-medium text-[var(--cela-espresso)]">
-                              {item.productName}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">
-                              {item.sku}
-                            </td>{" "}
-                            <td className="px-4 py-4 text-center text-sm text-[var(--cela-cocoa)]">
-                              {item.quantity}
-                            </td>{" "}
-                            <td className="px-4 py-4">
-                              {" "}
-                              <span
-                                className={`text-sm${isOld ? "text-[var(--cela-cocoa)] font-medium" : "text-[var(--cela-stone)]"}`}
-                              >
-                                {" "}
-                                {item.lastSoldAt
-                                  ? formatDate(item.lastSoldAt)
-                                  : "Chưa bán"}{" "}
-                              </span>{" "}
-                            </td>{" "}
-                          </tr>
-                        );
-                      })
-                    )}{" "}
-                  </tbody>{" "}
-                </table>
-              )}{" "}
+              {activeTab === "current_stock" && (
+                <StockTable rows={currentStockRows} />
+              )}
+              {activeTab === "near_expiry" && (
+                <NearExpiryTable rows={nearExpiryRows} />
+              )}
+              {activeTab === "slow_moving" && (
+                <SlowMovingTable rows={slowMovingRows} />
+              )}
             </>
-          )}{" "}
-        </div>{" "}
-      </div>{" "}
+          )}
+        </div>
+      </div>
     </ERPLayout>
+  );
+}
+
+function SummaryCard({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  tone: "danger" | "warning" | "info";
+}) {
+  const map = {
+    danger: "text-[var(--cela-danger)] bg-[rgba(183,110,121,0.08)]",
+    warning: "text-[var(--cela-gold)] bg-[rgba(201,168,122,0.14)]",
+    info: "text-[var(--cela-cocoa)] bg-[rgba(120,140,180,0.12)]",
+  };
+
+  return (
+    <div className="bg-[var(--cela-paper)] rounded-xl p-5 flex items-center gap-4">
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${map[tone]}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div>
+        <p className="text-xs text-[var(--cela-stone)]">{label}</p>
+        <p className="text-[28px] font-bold text-[var(--cela-espresso)]">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function StockTable({ rows }: { rows: InventoryReportRow[] }) {
+  if (rows.length === 0) {
+    return <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co du lieu ton kho.</p>;
+  }
+
+  return (
+    <table className="w-full">
+      <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
+        <tr>
+          <th className="text-left px-6 py-3">San pham</th>
+          <th className="text-left px-4 py-3">SKU</th>
+          <th className="text-center px-4 py-3">Ton kho</th>
+          <th className="text-center px-4 py-3">Threshold</th>
+          <th className="text-center px-4 py-3">Trang thai</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.productId} style={{ borderBottom: "1px solid var(--cela-fog)" }}>
+            <td className="px-6 py-4 text-sm text-[var(--cela-espresso)]">{row.productName}</td>
+            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{row.sku}</td>
+            <td className="px-4 py-4 text-center text-sm font-semibold text-[var(--cela-cocoa)]">{row.quantity}</td>
+            <td className="px-4 py-4 text-center text-sm text-[var(--cela-stone)]">{row.minThreshold}</td>
+            <td className="px-4 py-4 text-center">
+              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${row.isLowStock ? "bg-[rgba(183,110,121,0.12)] text-[var(--cela-danger)]" : "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]"}`}>
+                {row.isLowStock ? "LOW_STOCK" : "OK"}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function NearExpiryTable({ rows }: { rows: NearExpiryItem[] }) {
+  if (rows.length === 0) {
+    return <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co du lieu sap het han.</p>;
+  }
+
+  return (
+    <table className="w-full">
+      <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
+        <tr>
+          <th className="text-left px-6 py-3">San pham</th>
+          <th className="text-left px-4 py-3">SKU</th>
+          <th className="text-left px-4 py-3">Han su dung</th>
+          <th className="text-center px-4 py-3">So luong</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.productId} style={{ borderBottom: "1px solid var(--cela-fog)" }}>
+            <td className="px-6 py-4 text-sm text-[var(--cela-espresso)]">{row.productName}</td>
+            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{row.sku}</td>
+            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{formatDate(row.expiryDate)}</td>
+            <td className="px-4 py-4 text-center text-sm font-semibold text-[var(--cela-gold)]">{row.quantity}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function SlowMovingTable({ rows }: { rows: SlowMovingItem[] }) {
+  if (rows.length === 0) {
+    return <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co du lieu cham luan chuyen.</p>;
+  }
+
+  return (
+    <table className="w-full">
+      <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
+        <tr>
+          <th className="text-left px-6 py-3">San pham</th>
+          <th className="text-left px-4 py-3">SKU</th>
+          <th className="text-center px-4 py-3">So luong</th>
+          <th className="text-left px-4 py-3">Lan ban cuoi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.productId} style={{ borderBottom: "1px solid var(--cela-fog)" }}>
+            <td className="px-6 py-4 text-sm text-[var(--cela-espresso)]">{row.productName}</td>
+            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{row.sku}</td>
+            <td className="px-4 py-4 text-center text-sm font-semibold text-[var(--cela-cocoa)]">{row.quantity}</td>
+            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{row.lastSoldAt ? formatDate(row.lastSoldAt) : "Chua ban"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
