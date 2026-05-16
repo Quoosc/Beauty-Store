@@ -2,7 +2,7 @@ import api from "@/lib/axios";
 import type { ApiResponse, Promotion, PaginatedResponse } from "@/types";
 
 export const promotionService = {
-  getAll: async (params?: { page?: number; size?: number; isActive?: boolean }) => {
+  getAll: async (params?: { page?: number; size?: number; active?: boolean }) => {
     const res = await api.get<PaginatedResponse<Promotion>>(
       "/loyalty-promotion/promotions",
       { params }

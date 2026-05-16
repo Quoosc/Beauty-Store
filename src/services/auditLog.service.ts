@@ -7,8 +7,8 @@ export const auditLogService = {
     size?: number;
     entityType?: string;
     userId?: string;
-    startDate?: string;
-    endDate?: string;
+    from?: string;    // đúng tên BE nhận (không phải startDate)
+    to?: string;      // đúng tên BE nhận (không phải endDate)
   }) => {
     const res = await api.get<PaginatedResponse<AuditLog>>(
       `/notification-audit/audit-logs`,

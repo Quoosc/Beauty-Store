@@ -86,8 +86,8 @@ export default function SystemConfigurationPage() {
       .finally(() => setIsLoading(false));
   }, []);
   function startEdit(config: SystemConfig) {
-    setEditingKey(config.key);
-    setEditValue(config.value);
+    setEditingKey(config.configKey);
+    setEditValue(config.configValue);
   }
   function cancelEdit() {
     setEditingKey(null);
@@ -107,10 +107,10 @@ export default function SystemConfigurationPage() {
       await systemConfigService.update(key, editValue);
       setConfigs((prev) =>
         prev.map((c) =>
-          c.key === key
+          c.configKey === key
             ? {
                 ...c,
-                value: editValue,
+                configValue: editValue,
               }
             : c,
         ),
@@ -209,7 +209,7 @@ export default function SystemConfigurationPage() {
             {" "}
             {CONFIG_GROUPS.map((group) => {
               const groupConfigs = configs.filter((c) =>
-                c.key.startsWith(group.prefix),
+                c.configKey.startsWith(group.prefix),
               );
               if (groupConfigs.length === 0) return null;
               return (
@@ -232,11 +232,11 @@ export default function SystemConfigurationPage() {
                   <div>
                     {" "}
                     {groupConfigs.map((config) => {
-                      const isEditing = editingKey === config.key;
-                      const label = CONFIG_LABELS[config.key] ?? config.key;
+                      const isEditing = editingKey === config.configKey;
+                      const label = CONFIG_LABELS[config.configKey] ?? config.configKey;
                       return (
                         <div
-                          key={config.key}
+                          key={config.configKey}
                           className="px-6 py-4 flex items-center justify-between gap-4"
                         >
                           {" "}
@@ -246,7 +246,7 @@ export default function SystemConfigurationPage() {
                               {label}
                             </p>{" "}
                             <p className="text-xs text-[var(--cela-stone)] font-mono mt-0.5">
-                              {config.key}
+                              {config.configKey}
                             </p>{" "}
                           </div>{" "}
                           {isEditing ? (
@@ -261,7 +261,7 @@ export default function SystemConfigurationPage() {
                                 className="w-32 h-9 border border-[rgba(183,110,121,0.35)] rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)]"
                               />{" "}
                               <button
-                                onClick={() => handleSave(config.key)}
+                                onClick={() => handleSave(config.configKey)}
                                 disabled={isSaving}
                                 className="flex items-center gap-1 px-3 py-1.5 bg-[rgba(107,142,106,0.10)] border border-green-200 text-[var(--cela-success)] rounded-lg text-xs font-medium hover:bg-[rgba(107,142,106,0.15)] disabled:opacity-50"
                               >
@@ -286,8 +286,8 @@ export default function SystemConfigurationPage() {
                               <span className="text-lg font-bold text-[var(--cela-rose)]">
                                 {" "}
                                 {formatConfigValue(
-                                  config.key,
-                                  config.value,
+                                  config.configKey,
+                                  config.configValue,
                                 )}{" "}
                               </span>{" "}
                               <button
@@ -313,10 +313,10 @@ export default function SystemConfigurationPage() {
             {(() => {
               const grouped = CONFIG_GROUPS.flatMap((g) =>
                 configs
-                  .filter((c) => c.key.startsWith(g.prefix))
-                  .map((c) => c.key),
+                  .filter((c) => c.configKey.startsWith(g.prefix))
+                  .map((c) => c.configKey),
               );
-              const remaining = configs.filter((c) => !grouped.includes(c.key));
+              const remaining = configs.filter((c) => !grouped.includes(c.configKey));
               if (remaining.length === 0) return null;
               return (
                 <div className="bg-[var(--cela-paper)] rounded-xl overflow-hidden">
@@ -335,17 +335,17 @@ export default function SystemConfigurationPage() {
                   <div>
                     {" "}
                     {remaining.map((config) => {
-                      const isEditing = editingKey === config.key;
+                      const isEditing = editingKey === config.configKey;
                       return (
                         <div
-                          key={config.key}
+                          key={config.configKey}
                           className="px-6 py-4 flex items-center justify-between gap-4"
                         >
                           {" "}
                           <div className="flex-1">
                             {" "}
                             <p className="text-sm font-medium text-[var(--cela-espresso)]">
-                              {config.key}
+                              {config.configKey}
                             </p>{" "}
                             <p className="text-xs text-[var(--cela-stone)]">
                               {config.description}
@@ -362,7 +362,7 @@ export default function SystemConfigurationPage() {
                                 className="w-32 h-9 border border-[rgba(183,110,121,0.35)] rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)]"
                               />{" "}
                               <button
-                                onClick={() => handleSave(config.key)}
+                                onClick={() => handleSave(config.configKey)}
                                 disabled={isSaving}
                                 className="flex items-center gap-1 px-3 py-1.5 bg-[rgba(107,142,106,0.10)] border border-green-200 text-[var(--cela-success)] rounded-lg text-xs font-medium"
                               >
@@ -384,7 +384,7 @@ export default function SystemConfigurationPage() {
                             <div className="flex items-center gap-4">
                               {" "}
                               <span className="text-lg font-bold text-[var(--cela-rose)]">
-                                {config.value}
+                                {config.configValue}
                               </span>{" "}
                               <button
                                 onClick={() => startEdit(config)}

@@ -245,13 +245,13 @@ export default function PurchaseOrdersPage() {
                         {po.id.slice(-8).toUpperCase()}
                       </td>{" "}
                       <td className="px-4 py-4 text-sm text-[var(--cela-cocoa)]">
-                        {po.supplierName}
+                        {po.supplier.name}
                       </td>{" "}
                       <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">
                         {formatDate(po.createdAt)}
                       </td>{" "}
                       <td className="px-4 py-4 text-right text-sm font-semibold text-[var(--cela-espresso)]">
-                        {formatVND(po.totalAmount)}
+                        {"—"}
                       </td>{" "}
                       <td className="px-4 py-4 text-center">
                         {" "}

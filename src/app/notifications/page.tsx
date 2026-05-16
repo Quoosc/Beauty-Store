@@ -65,11 +65,17 @@ const NOTIFICATION_CONFIG: Record<
     iconColor: "var(--cela-cocoa)",
     iconBg: "rgba(140,100,80,0.15)",
   },
-  REPORT_READY: {
+  REPORT_COMPLETED: {
     label: "Báo cáo sẵn sàng",
     icon: FileText,
     iconColor: "var(--cela-success)",
     iconBg: "rgba(107,142,106,0.15)",
+  },
+  ADJUSTMENT_APPROVAL: {
+    label: "Chờ duyệt điều chỉnh kho",
+    icon: CheckSquare,
+    iconColor: "#6080b0",
+    iconBg: "rgba(120,140,180,0.18)",
   },
   ACCOUNT_LOCKED: {
     label: "Tài khoản bị khóa",
@@ -86,7 +92,8 @@ const ALL_TYPES: { key: string; label: string }[] = [
   { key: "SHIFT_VARIANCE", label: "Chênh lệch ca" },
   { key: "CANCEL_APPROVAL", label: "Chờ duyệt hủy" },
   { key: "PO_PARTIAL", label: "Nhận hàng thiếu" },
-  { key: "REPORT_READY", label: "Báo cáo sẵn sàng" },
+  { key: "REPORT_COMPLETED", label: "Báo cáo sẵn sàng" },
+  { key: "ADJUSTMENT_APPROVAL", label: "Chờ duyệt điều chỉnh" },
   { key: "ACCOUNT_LOCKED", label: "Khóa tài khoản" },
 ];
 
@@ -275,13 +282,13 @@ function NotificationDetailPanel({
         )}
 
         {(notification.type === "PO_PARTIAL" ||
-          notification.type === "REPORT_READY") && (
+          notification.type === "REPORT_COMPLETED") && (
           <CelaButton
             variant="primary"
             onClick={() => router.push(notification.deepLinkPath)}
             style={{ width: "100%", justifyContent: "center" }}
           >
-            {notification.type === "REPORT_READY" && (
+            {notification.type === "REPORT_COMPLETED" && (
               <FileText style={{ width: 18, height: 18 }} />
             )}
             {notification.type === "PO_PARTIAL"
@@ -296,8 +303,9 @@ function NotificationDetailPanel({
           "NEAR_EXPIRY",
           "SHIFT_VARIANCE",
           "CANCEL_APPROVAL",
+          "ADJUSTMENT_APPROVAL",
           "PO_PARTIAL",
-          "REPORT_READY",
+          "REPORT_COMPLETED",
         ].includes(notification.type) && (
           <CelaButton
             variant="secondary"

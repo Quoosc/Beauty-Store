@@ -458,19 +458,6 @@ export default function OrderDetailPage() {
                   <th
                     style={{
                       padding: "10px 16px",
-                      textAlign: "left",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: "0.12em",
-                      textTransform: "uppercase",
-                      color: "var(--cela-cocoa)",
-                    }}
-                  >
-                    SKU
-                  </th>{" "}
-                  <th
-                    style={{
-                      padding: "10px 16px",
                       textAlign: "center",
                       fontSize: 11,
                       fontWeight: 600,
@@ -528,16 +515,6 @@ export default function OrderDetailPage() {
                       }}
                     >
                       {item.productName}
-                    </td>{" "}
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        fontSize: 13,
-                        color: "var(--cela-stone)",
-                        fontFamily: "var(--cela-mono)",
-                      }}
-                    >
-                      {item.sku}
                     </td>{" "}
                     <td
                       style={{
@@ -630,7 +607,7 @@ export default function OrderDetailPage() {
                     {formatVND(order.subtotal)}
                   </span>{" "}
                 </div>{" "}
-                {order.couponDiscount > 0 && (
+                {(order.discountAmount - order.pointsDiscount) > 0 && (
                   <div
                     style={{
                       display: "flex",
@@ -651,7 +628,7 @@ export default function OrderDetailPage() {
                         fontFamily: "var(--cela-mono)",
                       }}
                     >
-                      - {formatVND(order.couponDiscount)}
+                      - {formatVND(order.discountAmount - order.pointsDiscount)}
                     </span>{" "}
                   </div>
                 )}{" "}
@@ -788,14 +765,16 @@ export default function OrderDetailPage() {
                       color: "var(--cela-stone)",
                     }}
                   >
-                    Thu ngân
+                    Mã thu ngân
                   </span>{" "}
                   <span
                     style={{
                       color: "var(--cela-espresso)",
+                      fontFamily: "var(--cela-mono)",
+                      fontSize: 11,
                     }}
                   >
-                    {order.cashierName}
+                    {order.cashierId}
                   </span>{" "}
                 </div>{" "}
               </div>{" "}

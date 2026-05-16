@@ -13,7 +13,7 @@ interface CouponForm {
   promotionId: string;
   maxUsageTotal: number;
   maxUsagePerCustomer: number;
-  isActive: boolean;
+  active: boolean;
 }
 
 const emptyForm: CouponForm = {
@@ -21,7 +21,7 @@ const emptyForm: CouponForm = {
   promotionId: "",
   maxUsageTotal: 100,
   maxUsagePerCustomer: 1,
-  isActive: true,
+  active: true,
 };
 
 export default function CouponsPage() {
@@ -42,7 +42,7 @@ export default function CouponsPage() {
   async function loadInitial() {
     setIsLoading(true);
     try {
-      const promoRows = await promotionService.getAll({ isActive: true, page: 0, size: 100 });
+      const promoRows = await promotionService.getAll({ active: true, page: 0, size: 100 });
       const promoList = promoRows?.content ?? (Array.isArray(promoRows) ? promoRows : []);
       setPromotions(promoList);
     } catch {
@@ -200,8 +200,8 @@ export default function CouponsPage() {
                       </td>
                       <td className="px-4 py-4 text-center text-sm text-[var(--cela-stone)]">{c.maxUsagePerCustomer}</td>
                       <td className="px-4 py-4 text-center">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${c.isActive ? "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}>
-                          {c.isActive ? "Dang hoat dong" : "Da tat"}
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${c.active ? "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}>
+                          {c.active ? "Dang hoat dong" : "Da tat"}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">

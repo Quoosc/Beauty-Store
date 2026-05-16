@@ -14,9 +14,9 @@ import { inventoryService } from "@/services/inventory.service";
 import { productService } from "@/services/product.service";
 import { systemConfigService } from "@/services/systemConfig.service";
 import { useAuthStore } from "@/stores/auth.store";
-import type { AdjustmentType, InventoryStock, Product } from "@/types";
+import type { AdjustmentLossType, InventoryStock, Product } from "@/types";
 
-const ADJUSTMENT_TYPES: { value: AdjustmentType; label: string }[] = [
+const ADJUSTMENT_TYPES: { value: AdjustmentLossType; label: string }[] = [
   { value: "DAMAGED", label: "Hang hong" },
   { value: "LOST", label: "Hang that thoat" },
   { value: "EXPIRED", label: "Hang het han" },
@@ -47,7 +47,7 @@ export default function InventoryAdjustmentsPage() {
   const [isSearching, setIsSearching] = useState(false);
 
   const [quantity, setQuantity] = useState("");
-  const [adjType, setAdjType] = useState<AdjustmentType>("DAMAGED");
+  const [adjType, setAdjType] = useState<AdjustmentLossType>("DAMAGED");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,7 +63,7 @@ export default function InventoryAdjustmentsPage() {
     systemConfigService
       .getByKey("inventory.large_adjustment_percent")
       .then((config) => {
-        const parsed = Number(config.value);
+        const parsed = Number(config.configValue);
         if (!Number.isNaN(parsed) && parsed > 0) {
           setApprovalThreshold(parsed);
         }
@@ -88,7 +88,7 @@ export default function InventoryAdjustmentsPage() {
           status: "ACTIVE",
           size: 10,
         });
-        setSearchResults(res.data.data.content);
+        setSearchResults(res.data.data.products ?? []);
         setShowResults(true);
       } finally {
         setIsSearching(false);
@@ -151,7 +151,7 @@ export default function InventoryAdjustmentsPage() {
       await inventoryService.createAdjustment({
         productId: selectedProduct.id,
         quantity: qtyNum,
-        type: adjType,
+        lossType: adjType,
         description: description.trim(),
       });
 
@@ -312,7 +312,7 @@ export default function InventoryAdjustmentsPage() {
               <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Loai dieu chinh</label>
               <select
                 value={adjType}
-                onChange={(e) => setAdjType(e.target.value as AdjustmentType)}
+                onChange={(e) => setAdjType(e.target.value as AdjustmentLossType)}
                 className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)]"
                 style={{ border: "1px solid var(--cela-mist)" }}
               >

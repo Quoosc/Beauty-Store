@@ -45,7 +45,7 @@ export default function POSShiftPage() {
   const getVariance = () => {
     if (!shift) return 0;
     const closing = parseFloat(closingCash) || 0;
-    const expected = (shift.openingCash ?? 0) + (shift.totalRevenue ?? 0);
+    const expected = (shift.openingCash ?? 0) + (shift.summary?.totalRevenue ?? 0);
     return closing - expected;
   };
 
@@ -106,7 +106,7 @@ export default function POSShiftPage() {
   }
 
   const variance = getVariance();
-  const expected = (shift?.openingCash ?? 0) + (shift?.totalRevenue ?? 0);
+  const expected = (shift?.openingCash ?? 0) + (shift?.summary?.totalRevenue ?? 0);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--cela-ivory)" }}>
@@ -188,13 +188,13 @@ export default function POSShiftPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <span style={{ fontSize: 13, color: "var(--cela-stone)" }}>Số đơn hàng</span>
                   <span style={{ fontSize: 13, color: "var(--cela-espresso)", fontFamily: "var(--cela-mono)" }}>
-                    {shift?.completedOrders ?? 0}
+                    {shift?.summary?.orderCount ?? 0}
                   </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <span style={{ fontSize: 13, color: "var(--cela-stone)" }}>Doanh thu</span>
                   <span style={{ fontSize: 13, color: "var(--cela-rose)", fontFamily: "var(--cela-mono)", fontWeight: 600 }}>
-                    {formatCurrency(shift?.totalRevenue ?? 0)}
+                    {formatCurrency(shift?.summary?.totalRevenue ?? 0)}
                   </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>

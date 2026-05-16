@@ -2,6 +2,10 @@ import api from "@/lib/axios";
 import type { ApiResponse, Coupon, CouponValidationResponse } from "@/types";
 
 export const couponService = {
+  /**
+   * BE trả { discountAmount, promotionId, promotionName } — không có isValid.
+   * Nếu coupon không hợp lệ BE trả 4xx, không trả response body với isValid=false.
+   */
   validate: async (data: {
     code: string;
     orderTotal: number;
@@ -13,7 +17,7 @@ export const couponService = {
     return res.data.data;
   },
 
-  getAll: async (promotionId: string, params?: { page?: number; size?: number; isActive?: boolean }) => {
+  getAll: async (promotionId: string, params?: { page?: number; size?: number; active?: boolean }) => {
     const res = await api.get("/loyalty-promotion/coupons", { params: { promotionId, ...params } });
     return res.data.data;
   },

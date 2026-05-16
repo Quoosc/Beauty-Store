@@ -11,15 +11,17 @@ export interface CreateOrderPayload {
   shiftId: string;
   items: { productId: string; quantity: number; unitPrice: number }[];
   couponCode?: string;
-  memberId?: string;
-  pointsToRedeem?: number;
+  loyaltyMemberId?: string;   // đúng tên BE nhận (không phải memberId)
+  couponDiscount?: number;
+  pointsRedeemed?: number;    // đúng tên BE nhận (không phải pointsToRedeem)
+  pointsDiscount?: number;
   tenderedAmount: number;
 }
 
 export interface CancelRequest {
   id: string;
   orderId: string;
-  cashierName: string;
+  cashierId: string;
   orderTotal: number;
   reason: string;
   requestedAt: string;
@@ -61,6 +63,11 @@ export const orderService = {
   rejectCancel: (id: string) =>
     api.post<ApiResponse<Order>>(`/order/orders/${id}/cancel/reject`),
 
+  /**
+   * BE không trả cancel log info trong OrderResponse.
+   * Cần endpoint riêng /orders/cancel-requests khi BE bổ sung.
+   * Hiện tại: lấy danh sách orders của branch, lọc status CANCELLED.
+   */
   getCancelRequests: async (
     branchId: string,
     params?: { page?: number; size?: number; status?: CancelLogStatus }
@@ -75,34 +82,18 @@ export const orderService = {
       }
     );
 
-    const statusFilter = params?.status ?? "PENDING";
     const orders = normalizeOrderList(res.data.data);
 
     return orders
-      .filter((order) => {
-        const cancelStatus =
-          order.cancelStatus ??
-          order.cancelLog?.status ??
-          ((order as unknown as { cancel_request_status?: CancelLogStatus }).cancel_request_status ?? null);
-
-        return cancelStatus === statusFilter;
-      })
+      .filter((order) => order.status === "CANCELLED")
       .map((order) => ({
-        id:
-          (order as unknown as { cancelLogId?: string }).cancelLogId ??
-          order.id,
+        id: order.id,
         orderId: order.id,
-        cashierName: order.cashierName,
+        cashierId: order.cashierId,
         orderTotal: order.total,
-        reason:
-          order.cancelReason ??
-          order.cancelLog?.reason ??
-          ((order as unknown as { cancel_reason?: string }).cancel_reason ?? "Khong co ly do"),
-        requestedAt:
-          order.cancelRequestedAt ??
-          order.cancelLog?.requestedAt ??
-          ((order as unknown as { cancel_requested_at?: string }).cancel_requested_at ?? order.createdAt),
-        status: statusFilter,
+        reason: "",
+        requestedAt: order.createdAt,
+        status: "PENDING" as CancelLogStatus,
       }));
   },
 

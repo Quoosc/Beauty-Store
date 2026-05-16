@@ -37,8 +37,9 @@ export default function AdminDashboardPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
+  // BE trả chart7Days (không phải revenueByDay)
   const chartData = useMemo(() => {
-    return (dashboard?.revenueByDay ?? []).map((item) => ({
+    return (dashboard?.chart7Days ?? []).map((item) => ({
       date: item.date,
       label: new Date(item.date).toLocaleDateString("vi-VN", {
         day: "2-digit",
@@ -46,9 +47,13 @@ export default function AdminDashboardPage() {
       }),
       revenue: item.revenue,
     }));
-  }, [dashboard?.revenueByDay]);
+  }, [dashboard?.chart7Days]);
 
   const today = new Date().toLocaleDateString("vi-VN", { dateStyle: "full" });
+
+  // Lấy từ nested revenue object — BE: DashboardResponse.RevenueSummary
+  const revenue = dashboard?.revenue;
+  const vsPrev = revenue?.vsPreviousDayPercent ?? 0;
 
   return (
     <ERPLayout>
@@ -78,10 +83,14 @@ export default function AdminDashboardPage() {
         ) : (
           <>
             <div className="grid grid-cols-4 gap-4">
-              <KpiCard icon={DollarSign} label="Tong doanh thu" value={formatVND(dashboard.totalRevenue)} accent="rose" trend={dashboard.revenueGrowth} />
-              <KpiCard icon={ShoppingBag} label="So don hang" value={dashboard.totalOrders.toLocaleString("vi-VN")} accent="espresso" />
-              <KpiCard icon={BarChart2} label="AOV" value={formatVND(dashboard.averageOrderValue)} accent="champagne" />
-              <KpiCard icon={dashboard.revenueGrowth >= 0 ? TrendingUp : TrendingDown} label="Tang truong" value={`${dashboard.revenueGrowth}%`} accent={dashboard.revenueGrowth >= 0 ? "success" : "rose"} trend={dashboard.revenueGrowth} />
+              {/* revenue.today — không phải totalRevenue */}
+              <KpiCard icon={DollarSign} label="Tong doanh thu" value={formatVND(revenue?.today ?? 0)} accent="rose" trend={vsPrev} />
+              {/* revenue.orderCount — không phải totalOrders */}
+              <KpiCard icon={ShoppingBag} label="So don hang" value={(revenue?.orderCount ?? 0).toLocaleString("vi-VN")} accent="espresso" />
+              {/* revenue.averageOrderValue */}
+              <KpiCard icon={BarChart2} label="AOV" value={formatVND(revenue?.averageOrderValue ?? 0)} accent="champagne" />
+              {/* revenue.vsPreviousDayPercent — không phải revenueGrowth */}
+              <KpiCard icon={vsPrev >= 0 ? TrendingUp : TrendingDown} label="Tang truong" value={`${vsPrev}%`} accent={vsPrev >= 0 ? "success" : "rose"} trend={vsPrev} />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -123,7 +132,7 @@ export default function AdminDashboardPage() {
                   <h3 className="font-semibold text-[var(--cela-espresso)]">Top 5 san pham</h3>
                 </div>
 
-                {dashboard.topProducts.length === 0 ? (
+                {(dashboard.topProducts ?? []).length === 0 ? (
                   <p className="text-sm text-[var(--cela-stone)]">Chua co du lieu.</p>
                 ) : (
                   <table className="w-full text-sm">
@@ -135,7 +144,7 @@ export default function AdminDashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {dashboard.topProducts.slice(0, 5).map((p, index) => (
+                      {(dashboard.topProducts ?? []).slice(0, 5).map((p, index) => (
                         <tr key={p.productId} className="border-t" style={{ borderColor: "var(--cela-fog)" }}>
                           <td className="py-2 text-[var(--cela-cocoa)] font-medium">{index + 1}</td>
                           <td className="py-2 text-[var(--cela-espresso)]">{p.productName}</td>
@@ -185,7 +194,7 @@ function KpiCard({
       <p className="text-2xl font-bold text-[var(--cela-espresso)]">{value}</p>
       {trend !== undefined && (
         <p className={`text-xs mt-2 ${trend >= 0 ? "text-[var(--cela-success)]" : "text-[var(--cela-danger)]"}`}>
-          {trend >= 0 ? "?" : "?"} {Math.abs(trend)}% so voi hom qua
+          {trend >= 0 ? "↑" : "↓"} {Math.abs(trend)}% so voi hom qua
         </p>
       )}
     </div>

@@ -23,23 +23,23 @@ const formatDate = (iso: string) =>
 interface PromotionForm {
   name: string;
   type: "PERCENTAGE" | "FIXED_AMOUNT";
-  value: number;
+  discountValue: number;
   minOrderValue: number;
   maxDiscountCap: number | null;
   startDate: string;
   endDate: string;
-  isActive: boolean;
+  active: boolean;
 }
 
 const emptyForm: PromotionForm = {
   name: "",
   type: "PERCENTAGE",
-  value: 0,
+  discountValue: 0,
   minOrderValue: 0,
   maxDiscountCap: null,
   startDate: "",
   endDate: "",
-  isActive: true,
+  active: true,
 };
 
 export default function PromotionsPage() {
@@ -52,7 +52,7 @@ export default function PromotionsPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const data = await promotionService.getAll({ page: 0, size: 100 });
+      const data = await promotionService.getAll({ active: true, page: 0, size: 100 });
       const rows = data?.content ?? (Array.isArray(data) ? data : []);
       setPromotions(rows);
     } catch {
@@ -86,12 +86,12 @@ export default function PromotionsPage() {
       return;
     }
 
-    if (form.value <= 0) {
+    if (form.discountValue <= 0) {
       toast.error("Gia tri giam phai lon hon 0");
       return;
     }
 
-    if (form.type === "PERCENTAGE" && form.value > 100) {
+    if (form.type === "PERCENTAGE" && form.discountValue > 100) {
       toast.error("Phan tram giam toi da 100%");
       return;
     }
@@ -180,18 +180,18 @@ export default function PromotionsPage() {
                     <td className="px-6 py-4 text-sm font-medium text-[var(--cela-espresso)]">{p.name}</td>
                     <td className="px-4 py-4">
                       <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-[rgba(120,140,180,0.18)] text-[var(--cela-cocoa)]">
-                        {p.type === "PERCENTAGE" ? `Giam ${p.value}%` : `Giam ${formatVND(p.value)}`}
+                        {p.type === "PERCENTAGE" ? `Giam ${p.discountValue}%` : `Giam ${formatVND(p.discountValue)}`}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-right text-sm text-[var(--cela-stone)]">{formatVND(p.minOrderValue)}</td>
                     <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{formatDate(p.startDate)} {"->"} {formatDate(p.endDate)}</td>
                     <td className="px-4 py-4 text-center">
-                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${p.isActive ? "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}>
-                        {p.isActive ? "Dang hoat dong" : "Da tat"}
+                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${p.active ? "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}>
+                        {p.active ? "Dang hoat dong" : "Da tat"}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-center">
-                      {p.isActive ? (
+                      {p.active ? (
                         <button
                           onClick={() => handleDeactivate(p)}
                           className="px-3 py-1.5 text-xs font-medium text-[var(--cela-danger)] hover:bg-[rgba(183,110,121,0.08)] rounded-lg"
@@ -249,8 +249,8 @@ export default function PromotionsPage() {
                   type="number"
                   min={0}
                   max={form.type === "PERCENTAGE" ? 100 : undefined}
-                  value={form.value}
-                  onChange={(e) => setForm((f) => ({ ...f, value: Number(e.target.value) }))}
+                  value={form.discountValue}
+                  onChange={(e) => setForm((f) => ({ ...f, discountValue: Number(e.target.value) }))}
                   className="w-full h-10 rounded-lg px-3 text-sm focus:outline-none"
                   style={{ border: "1px solid var(--cela-mist)" }}
                 />

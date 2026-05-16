@@ -7,17 +7,19 @@ export const systemConfigService = {
     return res.data.data;
   },
 
-  update: async (key: string, value: string): Promise<SystemConfig> => {
+  /** BE nhận { configValue: string } — không phải { value: string } */
+  update: async (key: string, configValue: string): Promise<SystemConfig> => {
     const res = await api.put<ApiResponse<SystemConfig>>(
       `/auth/system-configs/${key}`,
-      { value }
+      { configValue }
     );
     return res.data.data;
   },
 
+  /** Tìm theo configKey — không phải key */
   getByKey: async (key: string): Promise<SystemConfig> => {
     const configs = await systemConfigService.getAll();
-    const found = configs.find((config) => config.key === key);
+    const found = configs.find((config) => config.configKey === key);
     if (!found) {
       throw new Error("Khong tim thay system config");
     }

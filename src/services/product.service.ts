@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { ApiResponse, Product } from "@/types";
+import { ApiResponse, CatalogPagedData, Product } from "@/types";
 
 /**
  * Product Service — catalog-service :8082 (qua api-gateway :8080)
@@ -18,6 +18,8 @@ import { ApiResponse, Product } from "@/types";
  *   PUT    /api/v1/catalog/products/:id      — cập nhật (multipart/form-data)
  *   DELETE /api/v1/catalog/products/:id      — discontinue (ADMIN, BRANCH_MANAGER)
  *   GET    /api/v1/catalog/products/images/:filename — serve ảnh
+ *
+ * Lưu ý pagination: BE trả CatalogPagedData { products, total } — không phải Spring Data { content, totalElements }
  */
 
 export interface ProductSearchParams {
@@ -29,8 +31,9 @@ export interface ProductSearchParams {
 }
 
 export const productService = {
+  /** BE trả PagedProductResponse: { products: Product[], total, page, size } */
   search: (params?: ProductSearchParams) =>
-    api.get<ApiResponse<{ content: Product[]; page: number; size: number; totalElements: number; totalPages: number }>>(
+    api.get<ApiResponse<CatalogPagedData<Product>>>(
       "/catalog/products/search",
       { params }
     ),

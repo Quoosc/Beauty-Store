@@ -144,7 +144,7 @@ export default function ManagerPurchaseOrdersPage() {
   const displayedOrders = orders.filter(
     (po) =>
       supplierSearch === "" ||
-      po.supplierName.toLowerCase().includes(supplierSearch.toLowerCase()),
+      po.supplier.name.toLowerCase().includes(supplierSearch.toLowerCase()),
   );
   const pendingCount = displayedOrders.filter(
     (o) => o.status === "PENDING",
@@ -320,7 +320,7 @@ export default function ManagerPurchaseOrdersPage() {
                         </td>{" "}
                         <td className="px-4 py-4 text-sm text-[var(--cela-cocoa)]">
                           {" "}
-                          {po.supplierName}{" "}
+                          {po.supplier.name}{" "}
                         </td>{" "}
                         <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">
                           {" "}
@@ -332,7 +332,7 @@ export default function ManagerPurchaseOrdersPage() {
                         </td>{" "}
                         <td className="px-4 py-4 text-right text-sm font-semibold text-[var(--cela-espresso)]">
                           {" "}
-                          {formatVND(po.totalAmount)}{" "}
+                          {"—"}{" "}
                         </td>{" "}
                         <td className="px-4 py-4 text-center">
                           {" "}
@@ -430,16 +430,11 @@ export default function ManagerPurchaseOrdersPage() {
                                       {" "}
                                       <span>
                                         {" "}
-                                        {item.productName ??
-                                          item.productId}{" "}
+                                        {item.productId}{" "}
                                       </span>{" "}
                                       <span className="text-[var(--cela-stone)]">
                                         {" "}
-                                        SL: {item.orderedQty} ×{""}{" "}
-                                        {item.unitPrice?.toLocaleString(
-                                          "vi-VN",
-                                        )}{" "}
-                                        đ{" "}
+                                        SL: {item.orderedQty}{" "}
                                       </span>{" "}
                                     </div>
                                   ))}{" "}

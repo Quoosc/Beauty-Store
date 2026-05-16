@@ -4,11 +4,14 @@ import { Shift, Order } from "@/types";
 /**
  * POS Store — state cho màn hình bán hàng
  *
- * Draft autosave: cartItems được lưu vào localStorage('pos_draft') mỗi 10s
+ * Draft autosave: cartItems được lưu vào localStorage("draft_order_{cashierId}") mỗi 10s
+ * Key bao gồm cashierId để tránh cashier khác load nhầm draft.
  * Clear draft: sau khi payment thành công hoặc tạo đơn mới
  */
 
-const DRAFT_KEY = "pos_draft";
+function getDraftKey(cashierId: string | undefined): string {
+  return cashierId ? `draft_order_${cashierId}` : "draft_order_unknown";
+}
 
 export interface CartItem {
   productId: string;
@@ -64,7 +67,7 @@ export const usePOSStore = create<POSStore>((set, get) => ({
     const { cartItems } = get();
     const existing = cartItems.find((i) => i.productId === product.productId);
     if (existing) {
-      if (existing.quantity >= product.stock) return; // đã đạt max stock
+      if (existing.quantity >= product.stock) return;
       set({
         cartItems: cartItems.map((i) =>
           i.productId === product.productId
@@ -106,17 +109,20 @@ export const usePOSStore = create<POSStore>((set, get) => ({
   setTenderedAmount: (amount) => set({ tenderedAmount: amount }),
 
   saveDraft: () => {
-    const { cartItems } = get();
+    const { cartItems, currentShift } = get();
     if (cartItems.length === 0) return;
+    const key = getDraftKey(currentShift?.cashierId);
     localStorage.setItem(
-      DRAFT_KEY,
+      key,
       JSON.stringify({ items: cartItems, savedAt: new Date().toISOString() })
     );
   },
 
   loadDraft: () => {
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
+      const { currentShift } = get();
+      const key = getDraftKey(currentShift?.cashierId);
+      const raw = localStorage.getItem(key);
       if (!raw) return false;
       const draft = JSON.parse(raw);
       if (draft.items && draft.items.length > 0) {
@@ -124,15 +130,19 @@ export const usePOSStore = create<POSStore>((set, get) => ({
         return true;
       }
     } catch {
-      // ignore
+      // ignore parse error
     }
     return false;
   },
 
-  clearDraft: () => localStorage.removeItem(DRAFT_KEY),
+  clearDraft: () => {
+    const key = getDraftKey(get().currentShift?.cashierId);
+    localStorage.removeItem(key);
+  },
 
   resetForNewOrder: () => {
-    localStorage.removeItem(DRAFT_KEY);
+    const key = getDraftKey(get().currentShift?.cashierId);
+    localStorage.removeItem(key);
     set({
       cartItems: [],
       appliedCoupon: null,

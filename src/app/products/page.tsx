@@ -45,8 +45,9 @@ export default function ProductsPage() {
           page,
           size: 20,
         });
-        setProducts(res.data.data.content);
-        setTotalPages(res.data.data.totalPages);
+        // BE trả CatalogPagedData: { products, total } — không phải { content, totalElements }
+        setProducts(res.data.data.products ?? []);
+        setTotalPages(Math.ceil((res.data.data.total ?? 0) / 20) || 1);
       } catch {
         toast.error("Không thể tải danh sách sản phẩm");
       } finally {
@@ -165,13 +166,13 @@ export default function ProductsPage() {
               </thead>
               <tbody>
                 {products.map((product) => {
-                  const costWarning = product.costPrice > product.sellingPrice;
+                  const costWarning = (product.costPrice ?? 0) > product.sellingPrice;
                   return (
                     <tr key={product.id} style={{ borderBottom: "1px solid var(--cela-fog)" }}>
                       <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                        {product.imageUrls.length > 0 ? (
+                        {product.imageUrl !== null ? (
                           <img
-                            src={productService.getImageUrl(product.imageUrls[0])}
+                            src={productService.getImageUrl(product.imageUrl!)}
                             alt={product.name}
                             style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover" }}
                           />
@@ -186,7 +187,7 @@ export default function ProductsPage() {
                         <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--cela-stone)", fontFamily: "var(--cela-mono)" }}>{product.sku}</p>
                       </td>
                       <td style={{ padding: "12px 16px", fontSize: 13, color: "var(--cela-stone)" }}>
-                        {product.category?.name ?? "—"}
+                        {"—"}
                       </td>
                       <td style={{ padding: "12px 16px", textAlign: "right", fontSize: 13, fontWeight: 600, color: "var(--cela-espresso)", fontFamily: "var(--cela-mono)" }}>
                         {formatVND(product.sellingPrice)}

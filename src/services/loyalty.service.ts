@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   LoyaltyMember,
   RedeemPreviewResponse,
+  RedeemResponse,
 } from "@/types";
 
 export const loyaltyService = {
@@ -45,11 +46,12 @@ export const loyaltyService = {
     return res.data.data;
   },
 
+  /** BE trả { discountAmount, actualPointsRedeemed, remainingBalance } */
   redeem: async (
     memberId: string,
     data: { pointsToRedeem: number; orderTotal: number }
-  ): Promise<{ discountAmount: number }> => {
-    const res = await api.post<ApiResponse<{ discountAmount: number }>>(
+  ): Promise<RedeemResponse> => {
+    const res = await api.post<ApiResponse<RedeemResponse>>(
       `/loyalty-promotion/members/${memberId}/redeem`,
       data
     );

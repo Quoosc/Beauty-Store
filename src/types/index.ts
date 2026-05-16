@@ -43,6 +43,7 @@ export interface ApiResponse<T> {
   timestamp?: string;
 }
 
+/** Spring Data Page — dùng cho các service trả Page<T> chuẩn */
 export interface PaginatedData<T> {
   content: T[];
   page: number;
@@ -57,6 +58,14 @@ export interface PaginatedResponse<T> {
   data: PaginatedData<T>;
 }
 
+/** Catalog-service dùng custom PagedProductResponse: 'products' + 'total' (không phải Spring Data) */
+export interface CatalogPagedData<T> {
+  products: T[];
+  total: number;
+  page: number;
+  size: number;
+}
+
 // ------------------------------------------------------------
 // CATALOG — catalog-service :8082
 // ------------------------------------------------------------
@@ -65,9 +74,10 @@ export interface PaginatedResponse<T> {
 export interface Category {
   id: string;            // UUID
   name: string;
-  slug: string;
   parentId: string | null;
   level: number;         // 1 = parent, 2 = child
+  createdAt?: string;
+  updatedAt?: string;
   children?: Category[];
 }
 
@@ -78,17 +88,18 @@ export type ProductStatus = "ACTIVE" | "DISCONTINUED";
 export interface Product {
   id: string;            // UUID
   sku: string;
-  barcode: string;
+  barcode: string | null;
   name: string;
-  slug: string;
-  description: string;
+  unit: string;
   sellingPrice: number;
-  costPrice: number;
-  imageUrls: string[];
+  costPrice: number | null;
+  imageUrl: string | null;   // BE trả string đơn, không phải mảng
   status: ProductStatus;
   expiryDate: string | null;
   branchId: string;
-  category: Category;
+  categoryId: string;        // BE trả UUID, không embed Category object
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ------------------------------------------------------------
@@ -98,51 +109,49 @@ export interface Product {
 /** Khớp với OrderStatus enum */
 export type OrderStatus = "PENDING" | "COMPLETED" | "CANCELLED" | "RETURNED";
 
-/** Khớp với CancelLogStatus enum */
+/** Dùng nội bộ cho cancel log */
 export type CancelLogStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 /** Khớp với OrderItemResponse.java */
 export interface OrderItem {
+  id: string;
   productId: string;
   productName: string;
-  sku: string;
-  quantity: number;
   unitPrice: number;
+  quantity: number;
   subtotal: number;
 }
 
 /** Khớp với OrderResponse.java */
 export interface Order {
   id: string;            // UUID
-  idempotencyKey: string;
   shiftId: string;
   cashierId: string;
-  cashierName: string;
   branchId: string;
-  items: OrderItem[];
+  loyaltyMemberId: string | null;
+  couponCode: string | null;
   subtotal: number;
-  couponDiscount: number;
+  discountAmount: number;       // tổng giảm giá (coupon + points)
+  pointsRedeemed: number | null;
   pointsDiscount: number;
   total: number;
+  tenderedAmount: number;
+  changeAmount: number;
   status: OrderStatus;
   receiptUrl: string | null;
+  items: OrderItem[];
   createdAt: string;
-  cancelStatus?: CancelLogStatus;
-  cancelReason?: string | null;
-  cancelRequestedAt?: string | null;
-  cancelLog?: {
-    status?: CancelLogStatus;
-    reason?: string | null;
-    requestedAt?: string | null;
-  };
+  updatedAt: string;
 }
 
 /** Request body tạo đơn hàng */
 export interface CreateOrderRequest {
   items: { productId: string; quantity: number }[];
   couponCode?: string;
-  memberId?: string;
-  pointsToRedeem?: number;
+  loyaltyMemberId?: string;    // đúng tên BE nhận
+  couponDiscount?: number;
+  pointsRedeemed?: number;     // đúng tên BE nhận
+  pointsDiscount?: number;
   tenderedAmount: number;
 }
 
@@ -168,22 +177,29 @@ export interface ReturnTransactionItem {
 
 export type ShiftStatus = "OPEN" | "CLOSED";
 
+/** Khớp với ShiftResponse.summary nested object */
+export interface ShiftSummary {
+  orderCount: number;
+  totalRevenue: number;
+  cancelCount: number;
+  returnCount: number;
+}
+
 /** Khớp với ShiftResponse.java */
 export interface Shift {
   id: string;
   cashierId: string;
-  cashierName: string;
   branchId: string;
   status: ShiftStatus;
   openingCash: number;
   closingCash: number | null;
   variance: number | null;
-  completedOrders: number;
-  totalRevenue: number;
-  cancelledOrders: number;
-  returnedOrders: number;
+  note: string | null;
+  summary: ShiftSummary | null;
   openedAt: string;
   closedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ------------------------------------------------------------
@@ -217,69 +233,86 @@ export interface InventoryReportRow {
   isLowStock: boolean;
 }
 
-export type AdjustmentType = "DAMAGED" | "LOST" | "EXPIRED";
+export type AdjustmentLossType = "DAMAGED" | "LOST" | "EXPIRED";
 
+/** Khớp với AdjustmentRequest BE — field là lossType, không phải type */
 export interface AdjustmentRequest {
   productId: string;
   quantity: number;
-  type: AdjustmentType;
+  lossType: AdjustmentLossType;
   description: string;
 }
 
-export interface PurchaseOrder {
-  id: string;
-  supplierId: string;
-  supplierName: string;
-  branchId: string;
-  status: POStatus;
-  items: POItem[];
-  totalAmount: number;
-  createdAt: string;
-}
-
-export interface POItem {
-  productId: string;
-  productName: string;
-  orderedQty: number;
-  receivedQty: number;
-  unitPrice: number;
-  lotNumber: string | null;
-  expiryDate: string | null;
-}
-
+/** Khớp với SupplierResponse.java */
 export interface Supplier {
   id: string;
   name: string;
   taxCode: string;
-  phone: string;
   address: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Khớp với PurchaseOrderResponse.java */
+export interface PurchaseOrder {
+  id: string;
+  poCode: string;
+  supplier: Supplier;            // nested object, không phải flat supplierId/supplierName
+  branchId: string;
+  status: POStatus;
+  createdBy: string;
+  confirmedBy: string | null;
+  confirmedAt: string | null;
+  items: POItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Khớp với PoItemResponse.java */
+export interface POItem {
+  id: string;
+  productId: string;
+  orderedQty: number;
+  receivedQty: number;
+  lotNumber: string | null;
+  expiryDate: string | null;
+  createdAt: string;
 }
 
 // ------------------------------------------------------------
 // LOYALTY & PROMOTION — loyalty-promotion-service :8085
 // ------------------------------------------------------------
 
+/** Khớp với LoyaltyMemberResponse.java */
 export interface LoyaltyMember {
   id: string;
   memberCode: string;
   fullName: string;
   phone: string;
   pointBalance: number;
+  branchId: string | null;
   createdAt: string;
 }
 
+/** Khớp với PromotionResponse.java — active (không phải isActive) */
 export interface Promotion {
   id: string;
   name: string;
   type: "PERCENTAGE" | "FIXED_AMOUNT";
-  value: number;
+  discountValue: number;         // đúng tên BE (không phải value)
   minOrderValue: number;
   maxDiscountCap: number | null;
   startDate: string;
   endDate: string;
-  isActive: boolean;
+  active: boolean;               // Lombok @Data tạo isActive() getter nhưng JSON serialize là 'active'
+  branchId: string | null;
 }
 
+/** Khớp với CouponResponse.java — active (không phải isActive) */
 export interface Coupon {
   id: string;
   code: string;
@@ -287,19 +320,28 @@ export interface Coupon {
   maxUsageTotal: number;
   maxUsagePerCustomer: number;
   usedCount: number;
-  isActive: boolean;
+  active: boolean;
 }
 
+/** Khớp với CouponValidationResponse.java — BE không có field isValid */
 export interface CouponValidationResponse {
-  isValid: boolean;
   discountAmount: number;
-  reason?: string;
+  promotionId: string;
+  promotionName: string;
 }
 
+/** Khớp với RedeemPreviewResponse.java */
 export interface RedeemPreviewResponse {
   pointsToRedeem: number;
   discountAmount: number;
   maxAllowed: number;
+}
+
+/** Response sau khi đổi điểm thành công */
+export interface RedeemResponse {
+  discountAmount: number;
+  actualPointsRedeemed: number;
+  remainingBalance: number;
 }
 
 // ------------------------------------------------------------
@@ -311,9 +353,10 @@ export type NotificationType =
   | "NEAR_EXPIRY"
   | "SHIFT_VARIANCE"
   | "CANCEL_APPROVAL"
+  | "ADJUSTMENT_APPROVAL"     // BE có, FE trước đó thiếu
   | "PO_PARTIAL"
-  | "REPORT_READY"
-  | "ACCOUNT_LOCKED";  // Admin nhận khi tài khoản bị khóa sau 5 lần sai
+  | "REPORT_COMPLETED"        // đúng tên — không phải REPORT_READY
+  | "ACCOUNT_LOCKED";         // Admin nhận khi tài khoản bị khóa sau 5 lần sai
 
 export interface Notification {
   id: string;
@@ -329,19 +372,52 @@ export interface Notification {
 // REPORT — report-service :8086
 // ------------------------------------------------------------
 
-
-export interface DashboardData {
-  totalRevenue: number;
-  totalOrders: number;
+/** Khớp với DashboardResponse.RevenueSummary */
+export interface DashboardRevenueSummary {
+  today: number;
+  orderCount: number;
   averageOrderValue: number;
-  revenueGrowth: number;
-  topProducts: { productId: string; productName: string; soldQty: number }[];
-  revenueByDay?: { date: string; revenue: number }[];
+  totalDiscount: number;
+  vsPreviousDayPercent: number | null;
 }
+
+/** Khớp với DashboardResponse.DailyChartPoint */
+export interface DashboardChartPoint {
+  date: string;
+  revenue: number;
+  orderCount: number;
+}
+
+/** Khớp với DashboardResponse.TopProductEntry */
+export interface DashboardTopProduct {
+  productId: string;
+  productName: string;
+  soldQty: number;
+  revenue: number;
+}
+
+/** Khớp với DashboardResponse.AlertEntry */
+export interface DashboardAlert {
+  type: string;
+  productId: string;
+  message: string;
+}
+
+/**
+ * Khớp với DashboardResponse.java — cấu trúc nested, KHÔNG phải flat.
+ * BE dùng @JsonInclude(NON_NULL) nên field có thể vắng mặt khi null.
+ */
+export interface DashboardData {
+  revenue?: DashboardRevenueSummary;
+  chart7Days?: DashboardChartPoint[];
+  topProducts?: DashboardTopProduct[];
+  alerts?: DashboardAlert[];
+}
+
+/** Khớp với AsyncReportJobResponse.java — status chỉ có PROCESSING/COMPLETED/FAILED */
 export interface ReportJob {
   jobId: string;
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
-  resultUrl?: string;
+  status: "PROCESSING" | "COMPLETED" | "FAILED";
   createdAt?: string;
   data?: unknown;
 }
@@ -350,11 +426,15 @@ export interface ReportJob {
 // SYSTEM CONFIG — auth-service :8081
 // ------------------------------------------------------------
 
+/** Khớp với SystemConfigResponse.java — field là configKey/configValue */
 export interface SystemConfig {
-  key: string;
-  value: string;
+  id: string;
+  configKey: string;
+  configValue: string;
   description: string;
-  updatedBy: string;
+  minValue: string | null;
+  maxValue: string | null;
+  updatedBy: string | null;
   updatedAt: string;
 }
 
