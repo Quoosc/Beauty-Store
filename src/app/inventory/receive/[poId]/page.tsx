@@ -195,7 +195,7 @@ export default function ReceiveGoodsPage() {
                   fontWeight: 600,
                 }}
               >
-                {po.supplierName}
+                {po.supplier?.name}
               </p>{" "}
             </div>{" "}
             <div>

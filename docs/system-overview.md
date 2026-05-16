@@ -231,14 +231,14 @@ interface POSStore {
   removeFromCart(productId): void;
   updateQuantity(productId, qty): void;
   clearCart(): void;
-  saveDraft(): void;       // → localStorage('pos_draft')
+  saveDraft(): void;       // → localStorage('draft_order_{cashierId}')
   loadDraft(): boolean;
   clearDraft(): void;
   resetForNewOrder(): void; // gọi sau khi thanh toán thành công
 }
 ```
 
-- Draft autosave mỗi 10s → `localStorage('pos_draft')`
+- Draft autosave mỗi 10s → `localStorage('draft_order_{cashierId}')`
 - Xóa draft sau `resetForNewOrder()`
 - Validate stock tại client (không vượt quá available qty hiển thị)
 
@@ -441,7 +441,7 @@ LƯU Ý: Backend KHÔNG có GET /auth/me endpoint.
 3. **Không lưu JWT vào localStorage/sessionStorage** — backend set httpOnly cookie.
 4. **Không có refresh token flow** — hết phiên (8h) → redirect `/login`.
 5. **Idempotency-Key bắt buộc** khi `POST /order/orders` — generate UUID v4 phía client (đã tích hợp trong order.service.ts).
-6. **POS draft autosave:** `localStorage('pos_draft')` mỗi 10s, xóa sau `resetForNewOrder()`.
+6. **POS draft autosave:** `localStorage('draft_order_{cashierId}')` mỗi 10s, xóa sau `resetForNewOrder()`.
 7. **Notification polling:** `GET /notification-audit/notifications/unread-count` mỗi 30s — **KHÔNG dùng WebSocket.**
 8. **Branch isolation:** KHÔNG truyền branchId từ client body/param — backend tự lấy từ JWT header.
 9. **Responsive:** Mọi trang responsive từ mobile (375px) đến desktop (1440px). Desktop-first vì đây là ERP.

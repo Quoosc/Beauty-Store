@@ -7,15 +7,16 @@ import {
   ReturnTransaction,
 } from "@/types";
 
+/** Khớp với CreateOrderRequest.java — backend KHÔNG nhận shiftId và item.unitPrice */
 export interface CreateOrderPayload {
-  shiftId: string;
-  items: { productId: string; quantity: number; unitPrice: number }[];
+  items: { productId: string; quantity: number }[];
   couponCode?: string;
   loyaltyMemberId?: string;   // đúng tên BE nhận (không phải memberId)
   couponDiscount?: number;
   pointsRedeemed?: number;    // đúng tên BE nhận (không phải pointsToRedeem)
   pointsDiscount?: number;
   tenderedAmount: number;
+  branchId?: string;          // ADMIN only
 }
 
 export interface CancelRequest {

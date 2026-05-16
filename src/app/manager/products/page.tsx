@@ -42,7 +42,7 @@ export default function ManagerProductsPage() {
           page,
           size: 20,
         });
-        setProducts(res.data.data.content);
+        setProducts(res.data.data.products ?? []);
         setTotalPages(res.data.data.totalPages);
       } catch {
         toast.error("Không thể tải danh sách sản phẩm");

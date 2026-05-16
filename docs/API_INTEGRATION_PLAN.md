@@ -831,20 +831,36 @@ export interface InventoryReportRow {
 }
 
 // Async report job
-export interface ReportJob {
+export interface AsyncReportJobResponse {
   jobId: string;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-  resultUrl?: string;
+  status: 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  message?: string;
   createdAt: string;
+  data?: RevenueReportResponse;  // populated khi COMPLETED
 }
 
-// Adjustment request type
-export type AdjustmentType = 'DAMAGED' | 'LOST' | 'EXPIRED';
-export interface AdjustmentRequest {
+// Adjustment request — CREATE body
+export type AdjustmentLossType = 'DAMAGED' | 'LOST' | 'EXPIRED';
+export interface CreateAdjustmentRequest {
   productId: string;
-  quantity: number;
-  type: AdjustmentType;
+  quantity: number;        // ← tên field đúng là `quantity` (không phải quantityDelta)
+  lossType: AdjustmentLossType;
   description: string;
+}
+// Adjustment request — RESPONSE
+export interface AdjustmentRequestResponse {
+  id: string;
+  productId: string;
+  branchId: string;
+  currentQuantity: number;   // ← tên field đúng (không phải currentQty)
+  adjustmentQty: number;     // ← tên field đúng (không phải quantityDelta)
+  lossType: AdjustmentLossType;
+  note: string;              // ← tên field đúng (không phải description trong response)
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  requestedBy: string;       // ← tên field đúng (không phải createdBy)
+  approvedBy?: string;
+  approvedAt?: string;
+  createdAt: string;
 }
 ```
 
@@ -854,11 +870,11 @@ export interface AdjustmentRequest {
 // Xoá: loyaltyService.getPointHistory() return type
 // (endpoint không tồn tại trên backend)
 
-// Thêm: redeem preview response
-export interface RedeemPreviewResponse {
-  pointsToRedeem: number;
+// Thêm: redeem response (cả preview và redeem thực sự dùng cùng type)
+export interface RedeemResponse {
   discountAmount: number;
-  maxAllowed: number;
+  actualPointsRedeemed: number;  // ← tên field đúng từ backend
+  remainingBalance: number;      // ← tên field đúng từ backend (không phải remainingPoints)
 }
 ```
 

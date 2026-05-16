@@ -7,11 +7,11 @@ export const systemConfigService = {
     return res.data.data;
   },
 
-  /** BE nhận { configValue: string } — không phải { value: string } */
+  /** BE nhận { value: string } — khớp với UpdateConfigRequest.java */
   update: async (key: string, configValue: string): Promise<SystemConfig> => {
     const res = await api.put<ApiResponse<SystemConfig>>(
       `/auth/system-configs/${key}`,
-      { configValue }
+      { value: configValue }
     );
     return res.data.data;
   },

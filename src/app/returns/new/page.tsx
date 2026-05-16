@@ -252,7 +252,7 @@ export default function ReturnsNewPage() {
                 <div>
                   {" "}
                   <p className="text-[var(--cela-stone)]">Thu ngân</p>{" "}
-                  <p className="font-medium">{foundOrder.cashierName}</p>{" "}
+                  <p className="font-medium">{foundOrder.cashierId}</p>{" "}
                 </div>{" "}
                 <div>
                   {" "}
@@ -326,7 +326,7 @@ export default function ReturnsNewPage() {
                             {item.productName}
                           </p>{" "}
                           <p className="text-xs text-[var(--cela-stone)]">
-                            {item.sku}
+                            ID: {item.productId.slice(-8).toUpperCase()}
                           </p>{" "}
                         </td>{" "}
                         <td className="px-4 py-3 text-center text-sm text-[var(--cela-stone)]">

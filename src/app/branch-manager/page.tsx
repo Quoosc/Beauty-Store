@@ -88,7 +88,7 @@ export default function BranchManagerDashboardPage() {
 
   const chartData = useMemo(
     () =>
-      (dashboard?.revenueByDay ?? []).map((item) => ({
+      (dashboard?.chart7Days ?? []).map((item) => ({
         date: item.date,
         label: new Date(item.date).toLocaleDateString("vi-VN", {
           day: "2-digit",
@@ -96,7 +96,7 @@ export default function BranchManagerDashboardPage() {
         }),
         revenue: item.revenue,
       })),
-    [dashboard?.revenueByDay]
+    [dashboard?.chart7Days]
   );
 
   const today = new Date().toLocaleDateString("vi-VN", { dateStyle: "full" });
@@ -130,9 +130,9 @@ export default function BranchManagerDashboardPage() {
         ) : (
           <>
             <div className="grid grid-cols-3 gap-4">
-              <KpiCard icon={DollarSign} label="Doanh thu" value={formatVND(dashboard.totalRevenue)} trend={dashboard.revenueGrowth} />
-              <KpiCard icon={ShoppingBag} label="So don" value={dashboard.totalOrders.toLocaleString("vi-VN")} />
-              <KpiCard icon={dashboard.revenueGrowth >= 0 ? TrendingUp : TrendingDown} label="Tang truong" value={`${dashboard.revenueGrowth}%`} trend={dashboard.revenueGrowth} />
+              <KpiCard icon={DollarSign} label="Doanh thu" value={formatVND(dashboard.revenue?.today ?? 0)} trend={dashboard.revenue?.vsPreviousDayPercent ?? 0} />
+              <KpiCard icon={ShoppingBag} label="So don" value={(dashboard.revenue?.orderCount ?? 0).toLocaleString("vi-VN")} />
+              <KpiCard icon={(dashboard.revenue?.vsPreviousDayPercent ?? 0) >= 0 ? TrendingUp : TrendingDown} label="Tang truong" value={`${dashboard.revenue?.vsPreviousDayPercent ?? 0}%`} trend={dashboard.revenue?.vsPreviousDayPercent ?? 0} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -4,7 +4,7 @@
 > **Auth:** JWT trong httpOnly cookie `jwt` (set bởi backend, không đọc được từ JS)  
 > **Axios instance:** `@/lib/axios` — `withCredentials: true`, 401 → redirect `/login`  
 > **Response format:** `{ success: boolean, data: T, message?: string }`  
-> **Cập nhật:** 2026-05-16 — sửa gateway prefix loyalty-promotion và notification-audit  
+> **Cập nhật:** 2026-05-16 — đồng bộ toàn bộ type/field với BE: SystemConfig, Order, Shift, PurchaseOrder, Dashboard, Notification, Adjustment, Member, Coupon, Promotion, ReturnResponse, AuditLog, RevenueReport params  
 > **Context path từng service được gateway route:**
 
 | Service | Gateway prefix |
@@ -26,7 +26,7 @@
 ```
 POST /auth/login
   Body: { username: string, password: string }
-  Returns: { userId, fullName, role, branchId, forceChangePassword }
+  Returns: { userId, username, fullName, role, branchId, forceChangePassword }
   Cookie: jwt được set bởi backend
   Dùng: auth.store.ts → login()
 
@@ -47,8 +47,8 @@ POST /auth/change-password
 ```
 POST /auth/accounts
   Auth: ADMIN
-  Body: { username, password, fullName, role, branchId? }
-  Returns: AccountResponse
+  Body: { username, fullName, role, branchId? }
+  Returns: AccountResponse  (includes temporaryPassword in response for first-time login)
   Page: /user-management (modal tạo)
 
 GET /auth/accounts
@@ -83,7 +83,7 @@ PATCH /auth/accounts/{id}/unlock
 ```
 GET /auth/system-configs
   Auth: ADMIN
-  Returns: SystemConfigResponse[]  [{ key, value, description }]
+  Returns: SystemConfigResponse[]  [{ configKey, configValue, description }]
   Page: /system-configuration
 
 GET /auth/system-configs/{key}
@@ -118,7 +118,7 @@ Config keys:
 GET /catalog/products/search
   Auth: ALL (public cho FE)
   Params: q?, categoryId?, status?, page=0, size=20
-  Returns: PagedProductResponse { content: Product[], totalPages, totalElements }
+  Returns: PagedProductResponse { products: Product[], total, page, size, totalPages }
   Page: /products, /pos/order (search realtime)
   Note: debounce 300ms ở FE; cache Redis 5 phút phía backend
 
@@ -161,16 +161,15 @@ interface Product {
   sku: string;
   barcode?: string;
   categoryId: string;
-  categoryName: string;
+  unit: string;
   costPrice: number;
   sellingPrice: number;
-  description?: string;
   imageUrl?: string;
-  minThreshold: number;
   expiryDate?: string;  // ISO date
   status: "ACTIVE" | "DISCONTINUED";
-  quantity?: number;    // từ inventory (nếu joined)
+  branchId?: string;
   createdAt: string;
+  updatedAt: string;
 }
 ```
 
@@ -194,7 +193,7 @@ POST /catalog/categories
 
 PUT /catalog/categories/{id}
   Auth: ADMIN
-  Body: { name?, parentId? }
+  Body: { name: string }
   Returns: CategoryResponse
 
 DELETE /catalog/categories/{id}
@@ -214,14 +213,16 @@ POST /order/orders
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
   Header: Idempotency-Key: {UUID v4}   ← BẮT BUỘC
   Body: {
-    shiftId: string,
-    items: [{ productId, quantity, unitPrice }],
-    paymentMethod: "CASH" | "CARD" | "TRANSFER",
-    memberId?: string,       // loyalty member
-    pointsToRedeem?: number, // đổi điểm
+    items: [{ productId, quantity }],
+    loyaltyMemberId?: string,
     couponCode?: string,
+    couponDiscount?: number,
+    pointsRedeemed?: number,
+    pointsDiscount?: number,
+    tenderedAmount: number,   ← BẮT BUỘC
+    branchId?: string,        // chỉ ADMIN
   }
-  Returns: OrderResponse { orderId, status, totalAmount, receiptUrl }
+  Returns: OrderResponse { id, status, total, receiptUrl, ... }
   Note: nếu tồn kho không đủ → 422 INSUFFICIENT_STOCK
 
 GET /order/orders/{id}
@@ -269,20 +270,23 @@ GET /order/orders/receipts/{id}
 ```typescript
 interface Order {
   id: string;
+  cashierId: string;
   shiftId: string;
-  cashierName: string;
   branchId: string;
+  loyaltyMemberId?: string;
+  couponCode?: string;
   items: OrderItem[];
   subtotal: number;
   discountAmount: number;
-  pointsUsed: number;
-  totalAmount: number;
-  paymentMethod: string;
-  status: "COMPLETED" | "CANCELLED" | "PENDING_CANCEL";
+  pointsRedeemed?: number;
+  pointsDiscount?: number;
+  total: number;               // ← tên field là `total` (không phải totalAmount)
+  tenderedAmount?: number;
+  changeAmount?: number;
+  status: "PENDING" | "COMPLETED" | "CANCELLED" | "RETURNED";
   receiptUrl: string;
   createdAt: string;
-  member?: { id: string; name: string; phone: string; pointsEarned: number };
-  cancelLog?: { reason: string; status: string; requestedAt: string };
+  updatedAt: string;
 }
 ```
 
@@ -318,7 +322,6 @@ GET /order/shifts/{id}
 interface Shift {
   id: string;
   cashierId: string;
-  cashierName: string;
   branchId: string;
   status: "OPEN" | "CLOSED";
   openingCash: number;
@@ -327,6 +330,11 @@ interface Shift {
   note?: string;
   openedAt: string;
   closedAt?: string;
+  summary?: ShiftSummary;
+  createdAt: string;
+  updatedAt: string;
+}
+interface ShiftSummary {
   totalOrders: number;
   totalRevenue: number;
 }
@@ -338,8 +346,9 @@ interface Shift {
 POST /order/returns
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
   Body: {
-    originalOrderId?: string,  // optional nếu tìm theo SKU
-    items: [{ productId, quantity, sku? }]
+    originalOrderId?: string,
+    items: [{ productId, quantity }],
+    reason?: string
   }
   Note: quantity ≤ qty mua trong đơn gốc; hoàn kho RETURN transaction
   Returns: ReturnResponse
@@ -360,15 +369,14 @@ POST /inventory/purchase-orders
   Auth: ADMIN, WAREHOUSE_STAFF
   Body: {
     supplierId: string,
-    note?: string,
-    items: [{ productId, orderedQty, unitCost }]
+    items: [{ productId, orderedQty }]
   }
   Returns: PurchaseOrderResponse (status=PENDING)
   Page: /inventory/purchase-orders/create
 
 POST /inventory/purchase-orders/{id}/submit
   Auth: ADMIN, WAREHOUSE_STAFF
-  Action: PENDING → SUBMITTED (gửi lên để BM confirm)
+  Action: PENDING → CONFIRMED (gửi để chờ BM confirm)
   Returns: PurchaseOrderResponse
 
 POST /inventory/purchase-orders/{id}/confirm
@@ -378,7 +386,7 @@ POST /inventory/purchase-orders/{id}/confirm
 
 POST /inventory/purchase-orders/{id}/cancel
   Auth: ADMIN, BRANCH_MANAGER
-  Action: PENDING|SUBMITTED → CANCELLED
+  Action: PENDING|CONFIRMED → CANCELLED
   Returns: PurchaseOrderResponse
 
 POST /inventory/purchase-orders/{id}/receive
@@ -406,24 +414,37 @@ GET /inventory/purchase-orders/{id}
 ```typescript
 interface PurchaseOrder {
   id: string;
-  poNumber: string;         // "PO-20260512-0001"
-  supplierId: string;
-  supplierName: string;
-  status: "PENDING" | "SUBMITTED" | "CONFIRMED" | "PARTIALLY_RECEIVED" | "FULLY_RECEIVED" | "CANCELLED";
-  note?: string;
-  totalAmount: number;
+  poCode: string;           // "PO-20260512-0001"  ← field name là `poCode` (không phải poNumber)
+  supplier: Supplier;
+  branchId: string;
+  status: "PENDING" | "CONFIRMED" | "PARTIALLY_RECEIVED" | "FULLY_RECEIVED" | "CANCELLED";
+  createdBy: string;
+  confirmedBy?: string;
+  confirmedAt?: string;
   items: PoItem[];
   createdAt: string;
-  confirmedAt?: string;
+  updatedAt: string;
+}
+interface Supplier {
+  id: string;
+  name: string;
+  taxCode?: string;
+  contactPerson?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 interface PoItem {
+  id: string;
   productId: string;
-  productName: string;
   orderedQty: number;
   receivedQty: number;
-  unitCost: number;
   lotNumber?: string;
   expiryDate?: string;
+  createdAt: string;
 }
 ```
 
@@ -432,10 +453,10 @@ interface PoItem {
 ```
 POST /inventory/adjustments
   Auth: ADMIN, WAREHOUSE_STAFF
-  Body: { productId, quantityDelta, lossType, description }
+  Body: { productId, quantity, lossType, description }
   Note:
-    |quantityDelta| > 10% tồn kho → INSERT AdjustmentRequest PENDING (cần BM duyệt)
-    |quantityDelta| ≤ 10% → thực hiện ngay
+    quantity > 10% tồn kho hiện tại → INSERT AdjustmentRequest PENDING (cần BM duyệt)
+    quantity ≤ 10% → thực hiện ngay
   Returns: AdjustmentRequestResponse
 
 GET /inventory/adjustments/pending
@@ -460,15 +481,15 @@ POST /inventory/adjustments/{id}/reject
 interface AdjustmentRequest {
   id: string;
   productId: string;
-  productName: string;
-  currentQty: number;
-  quantityDelta: number;     // âm = giảm
+  branchId: string;
+  currentQuantity: number;   // ← tên field là `currentQuantity` (không phải currentQty)
+  adjustmentQty: number;     // ← tên field là `adjustmentQty` (không phải quantityDelta)
   lossType: "DAMAGED" | "LOST" | "EXPIRED";
-  description: string;
+  note: string;              // ← tên field là `note` (không phải description)
   status: "PENDING" | "APPROVED" | "REJECTED";
-  createdBy: string;
+  requestedBy: string;       // ← tên field là `requestedBy` (không phải createdBy)
   approvedBy?: string;
-  rejectionReason?: string;
+  approvedAt?: string;
   createdAt: string;
 }
 ```
@@ -487,13 +508,13 @@ GET /inventory/suppliers/{id}
 
 POST /inventory/suppliers
   Auth: ADMIN, BRANCH_MANAGER
-  Body: { name, contactPerson?, phone?, email?, address? }
-  Note: name unique
+  Body: { name, taxCode, contactPerson?, phone, email?, address? }
+  Note: name unique; taxCode format 10 hoặc 13 chữ số
   Returns: SupplierResponse
 
 PUT /inventory/suppliers/{id}
   Auth: ADMIN, BRANCH_MANAGER
-  Body: { name?, contactPerson?, phone?, email?, address? }
+  Body: { name, taxCode, contactPerson?, phone, email?, address? }
   Returns: SupplierResponse
 
 POST /inventory/suppliers/{id}/deactivate
@@ -504,40 +525,40 @@ POST /inventory/suppliers/{id}/deactivate
 
 ---
 
-## 5. Loyalty & Promotion Service — `/loyalty`
+## 5. Loyalty & Promotion Service — `/loyalty-promotion`
 
 ### 5.1 Loyalty Members
 
 ```
-POST /loyalty/members
+POST /loyalty-promotion/members
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
-  Body: { fullName, phone, email? }
-  Note: phone unique
+  Body: { fullName, phone }
+  Note: phone unique; phone phải đúng 10 chữ số
   Returns: MemberResponse
   Page: /loyalty/members (modal đăng ký)
 
-GET /loyalty/members?phone={phone}
+GET /loyalty-promotion/members?phone={phone}
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
   Returns: MemberResponse
   Page: /loyalty/members (search), /pos/order (nhập SĐT loyalty)
 
-GET /loyalty/members/check?phone={phone}
+GET /loyalty-promotion/members/check?phone={phone}
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
   Returns: MemberResponse (404 nếu chưa đăng ký)
   Dùng: debounce check trước khi đổi điểm
 
-GET /loyalty/members/{id}
+GET /loyalty-promotion/members/{id}
   Returns: MemberResponse
 
-POST /loyalty/members/{id}/redeem-preview
+POST /loyalty-promotion/members/{id}/redeem-preview
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
   Body: { pointsToRedeem: number, orderTotal: number }
-  Returns: RedeemResponse { discountAmount, remainingPoints }
+  Returns: RedeemResponse { discountAmount, actualPointsRedeemed, remainingBalance }
   Dùng: preview discount trước khi thanh toán
 
-POST /loyalty/members/{id}/redeem
+POST /loyalty-promotion/members/{id}/redeem
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
-  Body: { pointsToRedeem: number, orderId: string, orderTotal: number }
+  Body: { pointsToRedeem: number, orderTotal: number }
   Note: SELECT FOR UPDATE chống race condition
   Returns: RedeemResponse
 ```
@@ -546,42 +567,34 @@ POST /loyalty/members/{id}/redeem
 ```typescript
 interface LoyaltyMember {
   id: string;
-  memberNumber: string;
+  memberCode: string;    // ← tên field là `memberCode` (không phải memberNumber)
   fullName: string;
   phone: string;
-  email?: string;
   pointBalance: number;
-  joinedAt: string;
-  transactions?: PointTransaction[];
-}
-interface PointTransaction {
-  id: string;
-  type: "EARN" | "REDEEM" | "REFUND";
-  points: number;        // âm nếu REDEEM
-  description: string;
-  createdAt: string;
+  branchId: string;
+  createdAt: string;     // ← tên field là `createdAt` (không phải joinedAt)
 }
 ```
 
 ### 5.2 Promotions
 
 ```
-GET /loyalty/promotions
+GET /loyalty-promotion/promotions
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
   Returns: PromotionResponse[]  (chỉ active)
   Page: /promotions
 
-GET /loyalty/promotions/{id}
+GET /loyalty-promotion/promotions/{id}
   Returns: PromotionResponse
 
-POST /loyalty/promotions
+POST /loyalty-promotion/promotions
   Auth: BRANCH_MANAGER, ADMIN
-  Body: { name, type, value, minOrderValue?, startDate, endDate, description? }
+  Body: { name, type, discountValue, maxDiscountCap?, minOrderValue?, startDate, endDate, branchId?, forceCreate? }
   Note: type = "PERCENTAGE" | "FIXED_AMOUNT"
         Không thể có 2 KM cùng loại + cùng phạm vi đang active đồng thời
   Returns: PromotionResponse
 
-DELETE /loyalty/promotions/{id}
+DELETE /loyalty-promotion/promotions/{id}
   Auth: BRANCH_MANAGER, ADMIN
   Action: deactivate (is_active = false)
   Returns: void
@@ -590,22 +603,22 @@ DELETE /loyalty/promotions/{id}
 ### 5.3 Coupons
 
 ```
-GET /loyalty/coupons?promotionId={id}
+GET /loyalty-promotion/coupons?promotionId={id}
   Auth: BRANCH_MANAGER, ADMIN
   Returns: CouponResponse[]
   Page: /coupons
 
-POST /loyalty/coupons
+POST /loyalty-promotion/coupons
   Auth: BRANCH_MANAGER, ADMIN
-  Body: { promotionId, code, maxUsageTotal, maxUsagePerCustomer, expiresAt }
+  Body: { promotionId, code?, maxUsageTotal, maxUsagePerCustomer? }
   Returns: CouponResponse
 
-POST /loyalty/coupons/validate
+POST /loyalty-promotion/coupons/validate
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
-  Body: { code: string, orderTotal: number }
-  Returns: CouponValidationResponse { valid, discountAmount, message? }
+  Body: { code: string, orderTotal: number, branchId?: string, memberId?: string }
+  Returns: CouponValidationResponse { discountAmount, promotionId, promotionName }
   Page: /pos/order (nhập mã coupon), /coupons (nút Validate test)
-  Note: ≤ 300ms
+  Note: ≤ 300ms; lỗi 4xx nếu coupon không hợp lệ
 ```
 
 ---
@@ -623,18 +636,33 @@ GET /report/dashboard
   Note: DB fail → trả {} (không lỗi)
 
 interface DashboardData {
-  totalRevenue: number;
-  totalOrders: number;
-  averageOrderValue: number;
-  revenueGrowth: number;        // % so với hôm qua
-  topProducts: TopProduct[];
-  dailyRevenue?: DailyRevenue[]; // 7 ngày qua
+  revenue: RevenueSummary;
+  chart7Days: DailyChartPoint[];
+  topProducts: TopProductEntry[];
+  alerts: AlertEntry[];
 }
-interface TopProduct {
+interface RevenueSummary {
+  today: number;                  // ← tên field là `today` (không phải totalRevenue)
+  orderCount: number;             // ← tên field là `orderCount` (không phải totalOrders)
+  averageOrderValue: number;
+  totalDiscount: number;
+  vsPreviousDayPercent: number;   // ← tên field là `vsPreviousDayPercent` (không phải revenueGrowth)
+}
+interface DailyChartPoint {
+  date: string;                   // "YYYY-MM-DD"
+  revenue: number;                // ← tên field là `revenue` (không phải totalRevenue)
+  orderCount: number;
+}
+interface TopProductEntry {
   productId: string;
   productName: string;
   soldQty: number;
   revenue: number;
+}
+interface AlertEntry {
+  type: string;
+  productId: string;
+  message: string;
 }
 ```
 
@@ -643,20 +671,20 @@ interface TopProduct {
 ```
 GET /report/reports/revenue
   Auth: ADMIN, BRANCH_MANAGER
-  Params: startDate (YYYY-MM-DD), endDate (YYYY-MM-DD)
+  Params: from (YYYY-MM-DD), to (YYYY-MM-DD)   ← params là `from` và `to` (không phải startDate/endDate)
   Note: nếu khoảng ≤ 31 ngày → trả ngay (≤ 2 giây)
         nếu > 31 ngày → 400 Bad Request, dùng async endpoint
-  Returns: RevenueReportData[]
+  Returns: RevenueReportResponse { from, to, totalRevenue, orderCount, averageOrderValue, totalDiscount, netRevenue, dailyData[] }
 
 POST /report/reports/revenue/async
   Auth: ADMIN, BRANCH_MANAGER
-  Body: { startDate, endDate }
-  Returns: { jobId: string }
+  Body: { from, to, branchId? }   ← body fields là `from` và `to` (không phải startDate/endDate)
+  Returns: AsyncReportJobResponse { jobId, status, message, createdAt }
   Dùng: polling GET /reports/jobs/{jobId}/result
 
 GET /report/reports/jobs/{jobId}/result
   Auth: ADMIN, BRANCH_MANAGER
-  Returns: AsyncReportJobResponse { status: "PENDING"|"COMPLETED"|"FAILED", resultUrl?, data? }
+  Returns: AsyncReportJobResponse { jobId, status: "PROCESSING"|"COMPLETED"|"FAILED", message, createdAt, data? }
   Note: poll mỗi 3-5 giây; dừng khi COMPLETED hoặc FAILED
         notification async: report.completed event → user nhận thông báo
 ```
@@ -666,12 +694,13 @@ GET /report/reports/jobs/{jobId}/result
 ```
 GET /report/reports/inventory
   Auth: ADMIN, BRANCH_MANAGER
-  Params: tab = "low_stock" | "expiry" | "slow_moving"
+  Params: tab = "current_stock" | "near_expiry" | "slow_moving"
+          ← tab values: `current_stock` (không phải low_stock), `near_expiry` (không phải expiry)
   Returns: InventoryReportData (tùy tab)
   
-  low_stock: [{ productId, productName, sku, quantity, minThreshold }]
-  expiry:    [{ productId, productName, sku, expiryDate, quantity, lotNumber }]
-  slow_moving: [{ productId, productName, sku, quantity, lastSoldAt, daysSinceLastSale }]
+  current_stock: [{ productId, productName, sku, quantity, minThreshold }]
+  near_expiry:   [{ productId, productName, sku, expiryDate, quantity, lotNumber }]
+  slow_moving:   [{ productId, productName, sku, quantity, lastSoldAt, daysSinceLastSale }]
 
 POST /report/reports/inventory/export
   Auth: ADMIN, BRANCH_MANAGER
@@ -682,29 +711,29 @@ POST /report/reports/inventory/export
 
 ---
 
-## 7. Notification & Audit Service — `/notification`
+## 7. Notification & Audit Service — `/notification-audit`
 
 ### 7.1 Notifications
 
 ```
-GET /notification/notifications/unread-count
+GET /notification-audit/notifications/unread-count
   Auth: AUTHENTICATED
   Returns: { data: number }
   Polling: mỗi 30 giây (dừng khi visibilitychange = hidden)
   Implemented: useNotificationPolling hook → notification.store
 
-GET /notification/notifications
+GET /notification-audit/notifications
   Auth: AUTHENTICATED
   Params: page=0, size=20, type? (filter theo loại)
   Returns: Page<NotificationResponse>
   Note: chỉ trả thông báo trong 30 ngày gần nhất, trong phạm vi role của user
 
-PATCH /notification/notifications/{id}/read
+PATCH /notification-audit/notifications/{id}/read
   Auth: AUTHENTICATED
   Action: is_read = true
   Returns: void
 
-PATCH /notification/notifications/read-all
+PATCH /notification-audit/notifications/read-all
   Auth: AUTHENTICATED
   Returns: void
 ```
@@ -713,11 +742,15 @@ PATCH /notification/notifications/read-all
 ```typescript
 interface Notification {
   id: string;
-  type: "LOW_STOCK" | "EXPIRY_ALERT" | "CANCEL_REQUESTED" | "PO_RECEIVED" |
-        "SHIFT_CLOSED" | "ACCOUNT_LOCKED" | "REPORT_COMPLETED";
+  userId: string;
+  branchId?: string;
+  type: "LOW_STOCK" | "NEAR_EXPIRY" | "CANCEL_APPROVAL" | "PO_PARTIAL" |
+        "SHIFT_VARIANCE" | "ACCOUNT_LOCKED" | "REPORT_COMPLETED" | "ADJUSTMENT_APPROVAL";
+  // ← enum values đúng: NEAR_EXPIRY (không phải EXPIRY_ALERT), CANCEL_APPROVAL (không phải CANCEL_REQUESTED),
+  //   PO_PARTIAL (không phải PO_RECEIVED), SHIFT_VARIANCE (không phải SHIFT_CLOSED)
   title: string;
   message: string;
-  deepLink?: string;        // URL navigate khi click
+  deepLinkPath?: string;    // ← tên field là `deepLinkPath` (không phải deepLink)
   isRead: boolean;
   createdAt: string;
 }
@@ -726,15 +759,14 @@ interface Notification {
 ### 7.2 Audit Logs (ADMIN only)
 
 ```
-GET /notification/audit-logs
+GET /notification-audit/audit-logs
   Auth: ADMIN
-  Params: startDate?, endDate?, entityType?, userId?, action?, page=0, size=20
+  Params: from?, to?, entityType?, entityId?, userId?, action?, page=0, size=20
   Returns: Page<AuditLogResponse>
 
 interface AuditLog {
   id: string;
   userId: string;
-  userName: string;
   ipAddress: string;
   entityType: string;    // "Product", "Account", "SystemConfig"...
   entityId: string;
@@ -784,9 +816,21 @@ export interface CreateReturnRequest {
 export interface ReturnResponse {
   id: string;
   originalOrderId?: string;
-  items: { productId: string; productName: string; quantity: number; unitPrice: number }[];
+  shiftId: string;
+  cashierId: string;
+  branchId: string;
+  reason?: string;
   totalRefund: number;
+  items: ReturnItemResponse[];
   createdAt: string;
+}
+export interface ReturnItemResponse {
+  id: string;
+  productId: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  refundAmount: number;
 }
 
 export const returnService = {

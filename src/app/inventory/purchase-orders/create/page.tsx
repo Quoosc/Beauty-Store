@@ -53,7 +53,7 @@ export default function CreatePurchaseOrderPage() {
           status: "ACTIVE",
           size: 10,
         });
-        setSearchResults(res.data.data.content);
+        setSearchResults(res.data.data.products ?? []);
         setShowResults(true);
       } finally {
         setIsSearching(false);
@@ -119,7 +119,6 @@ export default function CreatePurchaseOrderPage() {
         items: items.map((i) => ({
           productId: i.productId,
           orderedQty: i.orderedQty,
-          unitPrice: i.unitPrice,
         })),
       });
 

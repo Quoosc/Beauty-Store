@@ -433,7 +433,7 @@ export default function POSOrderPage() {
           status: "ACTIVE",
           size: 20,
         });
-        setSearchResults(res.data.data.content);
+        setSearchResults(res.data.data.products ?? []);
         setShowResults(true);
       } catch {
         setSearchResults([]);
@@ -475,16 +475,13 @@ export default function POSOrderPage() {
         code: couponInput,
         orderTotal: subtotal,
       });
-      if (result.isValid) {
-        setAppliedCoupon({
-          code: couponInput,
-          discountAmount: result.discountAmount,
-        });
-        toast.success("Áp dụng coupon thành công!");
-        setCouponInput("");
-      } else {
-        toast.error(result.reason ?? "Mã coupon không hợp lệ");
-      }
+      // Backend trả 4xx nếu không hợp lệ (catch bên dưới). Nếu đến đây → hợp lệ.
+      setAppliedCoupon({
+        code: couponInput,
+        discountAmount: result.discountAmount,
+      });
+      toast.success("Áp dụng coupon thành công!");
+      setCouponInput("");
     } catch {
       toast.error("Không thể kiểm tra coupon, thử lại sau");
     } finally {
@@ -557,15 +554,13 @@ export default function POSOrderPage() {
     setIsProcessing(true);
     try {
       const orderData: CreateOrderPayload = {
-        shiftId: currentShift!.id,
         items: cartItems.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
-          unitPrice: item.price,
         })),
         couponCode: appliedCoupon?.code,
-        memberId: member?.id,
-        pointsToRedeem: appliedPoints > 0 ? appliedPoints : undefined,
+        loyaltyMemberId: member?.id,
+        pointsRedeemed: appliedPoints > 0 ? appliedPoints : undefined,
         tenderedAmount: tendered,
       };
       const res = await orderService.create(orderData);
@@ -785,7 +780,7 @@ export default function POSOrderPage() {
                 fontWeight: 500,
               }}
             >
-              {currentShift.cashierName}
+              {currentShift.cashierId}
             </span>
           </div>
           <button

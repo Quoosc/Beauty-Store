@@ -83,8 +83,8 @@ export default function AuditLogsPage() {
         size: 20,
         entityType: filters.entityType || undefined,
         userId: filters.userId || undefined,
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
+        from: filters.startDate || undefined,
+        to: filters.endDate || undefined,
       });
       setLogs(result?.content ?? []);
       setTotalPages(result?.totalPages ?? 0);

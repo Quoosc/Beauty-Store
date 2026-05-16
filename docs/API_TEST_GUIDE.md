@@ -132,7 +132,7 @@ Mỗi test case ghi rõ:
 | Test | Hành động UI | API call | Expected |
 |------|--------------|----------|---------|
 | Xem cấu hình | Load `/system-configuration` | `GET /api/v1/auth/system-configs` | `200` · Array key-value |
-| Xem theo key | Click vào 1 config | `GET /api/v1/auth/system-configs/{key}` | `200` · `{ key, value }` |
+| Xem theo key | Click vào 1 config | `GET /api/v1/auth/system-configs/{key}` | `200` · `{ configKey, configValue }` |
 | Cập nhật | Edit value → Save | `PUT /api/v1/auth/system-configs/{key}` | `200` · Giá trị mới |
 
 **Keys quan trọng cần test:**
@@ -284,7 +284,7 @@ Mỗi test case ghi rõ:
   "discountAmount": 0,
   "pointsRedeemed": 0,
   "couponCode": null,
-  "memberId": null,
+  "loyaltyMemberId": null,
   "paymentMethod": "CASH",
   "cashReceived": 300000
 }
@@ -315,7 +315,7 @@ Mỗi test case ghi rõ:
 
 | Bước | Hành động UI | API call | Expected |
 |------|--------------|----------|---------|
-| 1 | Nhập mã coupon | Click "Áp dụng" | `POST /api/v1/loyalty-promotion/coupons/validate` | `200` · `{ discount, isValid: true }` |
+| 1 | Nhập mã coupon | Click "Áp dụng" | `POST /api/v1/loyalty-promotion/coupons/validate` | `200` · `{ discountAmount, promotionId, promotionName }` |
 | 2 | Coupon hết hạn | — | `400` · "Coupon đã hết hạn" |
 | 3 | Coupon hết lượt | — | `409` · Hết lượt sử dụng |
 | 4 | Order total < min_order_value | — | `400` · "Đơn hàng chưa đủ giá trị tối thiểu" |
@@ -457,8 +457,8 @@ Mỗi test case ghi rõ:
 ```json
 {
   "productId": "uuid",
-  "quantity": 5,
-  "type": "DAMAGED",
+  "quantityDelta": -5,
+  "lossType": "DAMAGED",
   "description": "Hàng vỡ trong quá trình vận chuyển"
 }
 ```

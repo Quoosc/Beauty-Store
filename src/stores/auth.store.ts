@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { User, UserRole } from "@/types";
+import { User, UserRole, LoginResponse } from "@/types";
 import { authService } from "@/services/auth.service";
 
 /**
@@ -63,8 +63,18 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await authService.login(username, password);
-      const user = data.data.user;
-      saveUserToSession(user); // persist để page refresh không mất
+      // Backend trả flat fields (userId, username, ...) — không phải nested { user: ... }
+      const loginData = data.data as LoginResponse;
+      const user: User = {
+        id: loginData.userId,
+        username: loginData.username,
+        fullName: loginData.fullName,
+        role: loginData.role as UserRole,
+        branchId: loginData.branchId,
+        forceChangePassword: loginData.forceChangePassword,
+        isLocked: false,
+      };
+      saveUserToSession(user);
       set({ user, isAuthenticated: true });
       return user;
     } finally {

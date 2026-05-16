@@ -25,10 +25,17 @@ export interface User {
   isLocked: boolean;
 }
 
-/** Khớp với LoginResponse.java — backend trả user info sau khi set cookie */
+/**
+ * Khớp với LoginResponse.java — backend trả flat fields (không phải nested user object).
+ * auth.store.ts map thành User object sau khi nhận.
+ */
 export interface LoginResponse {
-  user: User;
-  // JWT được set qua httpOnly cookie, KHÔNG có trong response body
+  userId: string;
+  username: string;
+  fullName: string;
+  role: string;
+  branchId: string | null;
+  forceChangePassword: boolean;
 }
 
 // ------------------------------------------------------------
@@ -64,6 +71,7 @@ export interface CatalogPagedData<T> {
   total: number;
   page: number;
   size: number;
+  totalPages: number;
 }
 
 // ------------------------------------------------------------
@@ -158,17 +166,24 @@ export interface CreateOrderRequest {
 /** Khớp với ReturnResponse.java */
 export interface ReturnTransaction {
   id: string;
-  originalOrderId: string;
-  items: { productId: string; productName: string; quantity: number; unitPrice: number }[];
+  originalOrderId: string | null;
+  shiftId: string;
+  cashierId: string;
+  branchId: string;
+  reason: string | null;
   totalRefund: number;
+  items: ReturnTransactionItem[];
   createdAt: string;
 }
 
+/** Khớp với ReturnItemResponse.java */
 export interface ReturnTransactionItem {
+  id: string;
   productId: string;
   productName: string;
-  quantity: number;
   unitPrice: number;
+  quantity: number;
+  refundAmount: number;
 }
 
 // ------------------------------------------------------------
@@ -235,10 +250,10 @@ export interface InventoryReportRow {
 
 export type AdjustmentLossType = "DAMAGED" | "LOST" | "EXPIRED";
 
-/** Khớp với AdjustmentRequest BE — field là lossType, không phải type */
+/** Khớp với CreateAdjustmentRequest.java — field là quantity (dương, min 1) */
 export interface AdjustmentRequest {
   productId: string;
-  quantity: number;
+  quantity: number;           // dương, min 1; backend luôn ghi nhận là giảm kho cho DAMAGED/LOST/EXPIRED
   lossType: AdjustmentLossType;
   description: string;
 }
@@ -330,14 +345,10 @@ export interface CouponValidationResponse {
   promotionName: string;
 }
 
-/** Khớp với RedeemPreviewResponse.java */
-export interface RedeemPreviewResponse {
-  pointsToRedeem: number;
-  discountAmount: number;
-  maxAllowed: number;
-}
-
-/** Response sau khi đổi điểm thành công */
+/**
+ * Khớp với RedeemResponse.java — dùng cho cả preview và redeem thực sự.
+ * Backend trả cùng cấu trúc cho cả POST /redeem-preview và POST /redeem.
+ */
 export interface RedeemResponse {
   discountAmount: number;
   actualPointsRedeemed: number;
@@ -348,15 +359,16 @@ export interface RedeemResponse {
 // NOTIFICATION — notification-audit-service :8087
 // ------------------------------------------------------------
 
+/** Khớp với NotificationType.java enum */
 export type NotificationType =
   | "LOW_STOCK"
-  | "NEAR_EXPIRY"
-  | "SHIFT_VARIANCE"
-  | "CANCEL_APPROVAL"
-  | "ADJUSTMENT_APPROVAL"     // BE có, FE trước đó thiếu
-  | "PO_PARTIAL"
-  | "REPORT_COMPLETED"        // đúng tên — không phải REPORT_READY
-  | "ACCOUNT_LOCKED";         // Admin nhận khi tài khoản bị khóa sau 5 lần sai
+  | "NEAR_EXPIRY"             // ⚠️ đã sửa: backend dùng NEAR_EXPIRY (không phải EXPIRY_ALERT)
+  | "SHIFT_VARIANCE"          // ⚠️ đã sửa: backend dùng SHIFT_VARIANCE (không phải SHIFT_CLOSED)
+  | "CANCEL_APPROVAL"         // ⚠️ đã sửa: backend dùng CANCEL_APPROVAL (không phải CANCEL_REQUESTED)
+  | "ADJUSTMENT_APPROVAL"
+  | "PO_PARTIAL"              // ⚠️ đã sửa: backend dùng PO_PARTIAL (không phải PO_RECEIVED)
+  | "REPORT_COMPLETED"
+  | "ACCOUNT_LOCKED";
 
 export interface Notification {
   id: string;

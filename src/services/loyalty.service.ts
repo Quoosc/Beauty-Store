@@ -2,7 +2,6 @@ import api from "@/lib/axios";
 import type {
   ApiResponse,
   LoyaltyMember,
-  RedeemPreviewResponse,
   RedeemResponse,
 } from "@/types";
 
@@ -38,8 +37,8 @@ export const loyaltyService = {
   redeemPreview: async (
     memberId: string,
     data: { orderTotal: number; pointsToRedeem?: number }
-  ): Promise<RedeemPreviewResponse> => {
-    const res = await api.post<ApiResponse<RedeemPreviewResponse>>(
+  ): Promise<RedeemResponse> => {
+    const res = await api.post<ApiResponse<RedeemResponse>>(
       `/loyalty-promotion/members/${memberId}/redeem-preview`,
       data
     );

@@ -167,7 +167,7 @@ export default function ManagerOrdersPage() {
                           <ExternalLink className="w-3.5 h-3.5" />
                         </button>
                       </td>
-                      <td className="px-4 py-4 text-sm text-[var(--cela-cocoa)]">{req.cashierName}</td>
+                      <td className="px-4 py-4 text-sm text-[var(--cela-cocoa)]">{req.cashierId}</td>
                       <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{formatDate(req.requestedAt)}</td>
                       <td className="px-4 py-4 text-right text-sm font-semibold text-[var(--cela-gold)]">
                         {formatVND(req.orderTotal)}

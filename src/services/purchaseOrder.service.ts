@@ -14,7 +14,7 @@ export const purchaseOrderService = {
 
   create: async (data: {
     supplierId: string;
-    items: { productId: string; orderedQty: number; unitPrice: number }[];
+    items: { productId: string; orderedQty: number }[];
   }): Promise<PurchaseOrder> => {
     const res = await api.post<ApiResponse<PurchaseOrder>>(`/inventory/purchase-orders`, data);
     return res.data.data;
