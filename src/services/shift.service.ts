@@ -36,4 +36,14 @@ export const shiftService = {
 
   getById: (shiftId: string) =>
     api.get<ApiResponse<Shift>>(`/order/shifts/${shiftId}`),
+
+  /**
+   * Đóng ca hiện tại mà không cần truyền shiftId từ store.
+   * Tự gọi getCurrent() để lấy ID — dùng khi store bị mất sau reload trang.
+   */
+  closeCurrent: async (data: { closingCash: number; note?: string }) => {
+    const currentRes = await api.get<ApiResponse<Shift>>("/order/shifts/current");
+    const shiftId = currentRes.data.data.id;
+    return api.post<ApiResponse<Shift>>(`/order/shifts/${shiftId}/close`, data);
+  },
 };

@@ -11,12 +11,23 @@ import {
 export interface CreateOrderPayload {
   items: { productId: string; quantity: number }[];
   couponCode?: string;
-  loyaltyMemberId?: string;   // đúng tên BE nhận (không phải memberId)
+  loyaltyMemberId?: string;
   couponDiscount?: number;
-  pointsRedeemed?: number;    // đúng tên BE nhận (không phải pointsToRedeem)
+  pointsRedeemed?: number;
   pointsDiscount?: number;
   tenderedAmount: number;
-  branchId?: string;          // ADMIN only
+  branchId?: string; // ADMIN only
+}
+
+/** Spring Data Page response — BE trả về khi dùng Page<T> */
+export interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number; // 0-based page index
+  first: boolean;
+  last: boolean;
 }
 
 export interface CancelRequest {
@@ -27,18 +38,31 @@ export interface CancelRequest {
   reason: string;
   requestedAt: string;
   status: CancelLogStatus;
+  hasPendingCancel?: boolean;
 }
 
 function normalizeOrderList(data: unknown): Order[] {
-  if (Array.isArray(data)) {
-    return data as Order[];
-  }
-
+  if (Array.isArray(data)) return data as Order[];
   if (data && typeof data === "object" && "content" in data) {
-    return ((data as { content?: Order[] }).content ?? []) as Order[];
+    return ((data as SpringPage<Order>).content ?? []);
   }
-
   return [];
+}
+
+function normalizeOrderPage(data: unknown): SpringPage<Order> {
+  if (data && typeof data === "object" && "content" in data) {
+    return data as SpringPage<Order>;
+  }
+  const content = Array.isArray(data) ? (data as Order[]) : [];
+  return {
+    content,
+    totalElements: content.length,
+    totalPages: 1,
+    size: content.length,
+    number: 0,
+    first: true,
+    last: true,
+  };
 }
 
 export const orderService = {
@@ -49,11 +73,49 @@ export const orderService = {
 
   getById: (id: string) => api.get<ApiResponse<Order>>(`/order/orders/${id}`),
 
-  getMy: (params?: { page?: number; size?: number }) =>
-    api.get<ApiResponse<Order[]>>("/order/orders/my", { params }),
+  /** Trả về Page với totalPages/totalElements cho pagination UI */
+  getMy: async (params?: { page?: number; size?: number }): Promise<SpringPage<Order>> => {
+    const res = await api.get<ApiResponse<unknown>>("/order/orders/my", { params });
+    return normalizeOrderPage(res.data.data);
+  },
 
-  getByBranch: (branchId: string, params?: { page?: number; size?: number }) =>
-    api.get<ApiResponse<Order[]>>(`/order/orders/branch/${branchId}`, { params }),
+  /** Trả về Page với totalPages/totalElements + hỗ trợ ?status= filter server-side */
+  getByBranch: async (
+    branchId: string,
+    params?: { page?: number; size?: number; status?: string }
+  ): Promise<SpringPage<Order>> => {
+    const res = await api.get<ApiResponse<unknown>>(
+      `/order/orders/branch/${branchId}`,
+      { params }
+    );
+    return normalizeOrderPage(res.data.data);
+  },
+
+  /**
+   * Đơn đang chờ phê duyệt hủy — COMPLETED + CancelLog PENDING.
+   * Gọi endpoint BE mới: GET /orders/branch/{branchId}/pending-cancels
+   * Đúng về semantic: không lẫn với đơn đã CANCELLED hoàn toàn.
+   */
+  getPendingCancels: async (
+    branchId: string,
+    params?: { page?: number; size?: number }
+  ): Promise<CancelRequest[]> => {
+    const res = await api.get<ApiResponse<unknown>>(
+      `/order/orders/branch/${branchId}/pending-cancels`,
+      { params }
+    );
+    const orders = normalizeOrderList(res.data.data);
+    return orders.map((order) => ({
+      id: order.id,
+      orderId: order.id,
+      cashierId: order.cashierId,
+      orderTotal: order.total,
+      reason: "",
+      requestedAt: order.createdAt,
+      status: "PENDING" as CancelLogStatus,
+      hasPendingCancel: true,
+    }));
+  },
 
   cancel: (id: string, data: { reason: string }) =>
     api.post<ApiResponse<Order>>(`/order/orders/${id}/cancel`, data),
@@ -63,40 +125,6 @@ export const orderService = {
 
   rejectCancel: (id: string) =>
     api.post<ApiResponse<Order>>(`/order/orders/${id}/cancel/reject`),
-
-  /**
-   * BE không trả cancel log info trong OrderResponse.
-   * Cần endpoint riêng /orders/cancel-requests khi BE bổ sung.
-   * Hiện tại: lấy danh sách orders của branch, lọc status CANCELLED.
-   */
-  getCancelRequests: async (
-    branchId: string,
-    params?: { page?: number; size?: number; status?: CancelLogStatus }
-  ): Promise<CancelRequest[]> => {
-    const res = await api.get<ApiResponse<Order[] | { content: Order[] }>>(
-      `/order/orders/branch/${branchId}`,
-      {
-        params: {
-          page: params?.page,
-          size: params?.size,
-        },
-      }
-    );
-
-    const orders = normalizeOrderList(res.data.data);
-
-    return orders
-      .filter((order) => order.status === "CANCELLED")
-      .map((order) => ({
-        id: order.id,
-        orderId: order.id,
-        cashierId: order.cashierId,
-        orderTotal: order.total,
-        reason: "",
-        requestedAt: order.createdAt,
-        status: "PENDING" as CancelLogStatus,
-      }));
-  },
 
   getReceipt: (id: string) =>
     api.get<ApiResponse<string>>(`/order/orders/receipts/${id}`),

@@ -57,9 +57,30 @@ interface POSStore {
   resetForNewOrder: () => void;
 }
 
+const POS_SHIFT_KEY = "pos_current_shift";
+
+function loadShiftFromSession(): Shift | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = sessionStorage.getItem(POS_SHIFT_KEY);
+    return raw ? (JSON.parse(raw) as Shift) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const usePOSStore = create<POSStore>((set, get) => ({
-  currentShift: null,
-  setCurrentShift: (shift) => set({ currentShift: shift }),
+  currentShift: loadShiftFromSession(),
+  setCurrentShift: (shift) => {
+    if (typeof window !== "undefined") {
+      if (shift) {
+        sessionStorage.setItem(POS_SHIFT_KEY, JSON.stringify(shift));
+      } else {
+        sessionStorage.removeItem(POS_SHIFT_KEY);
+      }
+    }
+    set({ currentShift: shift });
+  },
 
   cartItems: [],
 
