@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { Shift, Order } from "@/types";
+import { Shift } from "@/types";
+import { shiftService } from "@/services/shift.service";
 
 /**
  * POS Store — state cho màn hình bán hàng
@@ -55,6 +56,9 @@ interface POSStore {
 
   // Reset toàn bộ sau payment
   resetForNewOrder: () => void;
+
+  // Đồng bộ ca từ server (khi sessionStorage bị mất sau đóng trình duyệt)
+  syncShift: () => Promise<void>;
 }
 
 const POS_SHIFT_KEY = "pos_current_shift";
@@ -171,5 +175,15 @@ export const usePOSStore = create<POSStore>((set, get) => ({
       appliedPoints: 0,
       tenderedAmount: "",
     });
+  },
+
+  syncShift: async () => {
+    if (get().currentShift !== null) return;
+    try {
+      const res = await shiftService.getCurrent();
+      get().setCurrentShift(res.data.data);
+    } catch {
+      // Không có ca mở — giữ null
+    }
   },
 }));

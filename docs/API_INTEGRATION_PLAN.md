@@ -1,5 +1,10 @@
 # BeautyERP — Kế hoạch Tích hợp API cho Frontend
 
+> ⚠️ **TÀI LIỆU LỊCH SỬ — 2026-05-18**  
+> Tất cả 8 vấn đề API mismatch trong Section 2 **đã được xử lý hoàn toàn** tính đến 2026-05-18.  
+> Toàn bộ Phase 1 (blocker fixes), Phase 2 (feature gaps), Phase 3 (polish) đã hoàn thành — 96/96 API test PASS.  
+> Tài liệu này giữ lại để tham khảo lịch sử. Xem `FUTURE_IMPROVEMENTS.md` cho các tính năng còn lại cần backend bổ sung (M2, M3, M4, M6).
+
 > **Ngày lập:** 2026-05-15 · **Cập nhật lần cuối:** 2026-05-16  
 > **Stack FE:** Next.js 16 (App Router) · React 19 · TypeScript 5 · Zustand · Axios · Tailwind CSS 4 · shadcn/ui  
 > **Backend:** 7 microservices qua API Gateway `:8080/api/v1`  

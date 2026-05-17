@@ -235,6 +235,7 @@ interface POSStore {
   loadDraft(): boolean;
   clearDraft(): void;
   resetForNewOrder(): void; // gọi sau khi thanh toán thành công
+  syncShift(): Promise<void>; // gọi GET /order/shifts/current khi sessionStorage trống
 }
 ```
 
@@ -339,6 +340,7 @@ Gateway: strip "/api/v1" → forward /{service}/{path} → microservice (context
 | `/order/orders/{id}/cancel` | POST | Yêu cầu hủy đơn | CASHIER/BM |
 | `/order/orders/{id}/cancel/approve` | POST | Duyệt hủy đơn | BM |
 | `/order/orders/{id}/cancel/reject` | POST | Từ chối hủy đơn | BM |
+| `/order/orders/branch/{branchId}/pending-cancels` | GET | Đơn COMPLETED đang chờ Manager duyệt hủy | BM/ADMIN |
 | `/order/orders/receipts/{id}` | GET | Lấy receipt PDF (snapshot immutable) | CASHIER/BM/ADMIN |
 | `/order/returns` | POST | Tạo trả hàng | CASHIER |
 
@@ -372,10 +374,9 @@ Gateway: strip "/api/v1" → forward /{service}/{path} → microservice (context
 | `/loyalty-promotion/coupons/validate` | POST | Validate coupon ≤ 300ms | CASHIER |
 | `/loyalty-promotion/coupons` | GET | Danh sách coupon | BM/ADMIN |
 | `/loyalty-promotion/coupons` | POST | Tạo coupon | BM/ADMIN |
-| `/loyalty-promotion/coupons/{id}` | PUT | Cập nhật coupon | BM/ADMIN |
 | `/loyalty-promotion/promotions` | GET | Danh sách promotion | BM/ADMIN |
 | `/loyalty-promotion/promotions` | POST | Tạo promotion | BM/ADMIN |
-| `/loyalty-promotion/promotions/{id}` | PUT | Cập nhật promotion | BM/ADMIN |
+| `/loyalty-promotion/promotions/{id}` | DELETE | Vô hiệu hóa promotion | BM/ADMIN |
 
 #### report-service :8086 (`/api/v1/report/**`)
 | Endpoint (relative) | Method | Mô tả | Role |

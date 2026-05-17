@@ -102,18 +102,19 @@ GET /api/v1/order/returns/order/{orderId}
 
 ---
 
-## 5. Cảnh báo ngưỡng điều chỉnh kho (M7) 🟠 Thấp
+## 5. ~~Cảnh báo ngưỡng điều chỉnh kho (M7)~~ ✅ ĐÃ HOÀN THÀNH
+
+> **Ngày hoàn thành:** 2026-05-18
 
 **Tính năng:** FE hiển thị cảnh báo cho user trước khi submit adjustment lớn: *"Điều chỉnh này vượt ngưỡng X% tồn kho và cần Branch Manager duyệt"*.
 
-**Hiện tại:** Backend đã đọc ngưỡng từ `system_configs.large_adjustment_percent` và quyết định PENDING/APPROVED. FE không hiển thị warning trước.
+**Trạng thái:** ✅ **Đã implement đầy đủ tại `src/app/inventory/adjustments/page.tsx`.**
 
-**Giải pháp:**
-1. FE gọi `GET /api/v1/auth/system-configs/large_adjustment_percent` khi mở form adjustment.
-2. Tính `adjustmentPercent = quantity / currentStock * 100`.
-3. Nếu `adjustmentPercent > threshold`: hiển thị banner cảnh báo "Cần Manager duyệt" trước khi submit.
-
-**Không cần BE thay đổi** — endpoint đã có, chỉ cần FE đọc và hiển thị.
+- Khi load trang: gọi `systemConfigService.getByKey("inventory.large_adjustment_percent")` để lấy ngưỡng thực tế từ backend.
+- Khi user nhập số lượng: tính `adjustmentPercent = quantity / currentStock * 100`, so sánh với ngưỡng.
+- Nếu vượt ngưỡng: hiển thị banner cảnh báo "Cần Manager duyệt" màu vàng; nhãn nút đổi thành "Gửi yêu cầu duyệt".
+- Nếu không vượt ngưỡng: submit và thực thi ngay.
+- Fallback: nếu API system-config lỗi, dùng ngưỡng mặc định 10%.
 
 ---
 
@@ -125,6 +126,8 @@ GET /api/v1/order/returns/order/{orderId}
 | M6 | Returns theo order | Thấp | Thấp | 🟡 Trung bình |
 | M3 | Sửa/xóa coupon | Trung bình | Thấp | 🟡 Trung bình |
 | M4 | Sửa promotion | Trung bình | Thấp | 🟡 Trung bình |
-| M7 | Warning ngưỡng adjustment | Không cần | Thấp | 🟠 Thấp |
+| ~~M7~~ | ~~Warning ngưỡng adjustment~~ | ~~Không cần~~ | ~~Thấp~~ | ~~🟠 Thấp~~ ✅ |
 
 > **Khuyến nghị bắt đầu với M2** — DB đã có đầy đủ data, BE chỉ cần expose endpoint, FE UI đã thiết kế sẵn, giá trị UX cao nhất (khách hàng xem được lịch sử điểm).
+>
+> **Lưu ý 2026-05-18:** M7 đã hoàn thành. Còn lại 4 mục cần backend (M2, M3, M4, M6).

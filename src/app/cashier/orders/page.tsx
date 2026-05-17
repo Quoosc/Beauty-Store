@@ -63,23 +63,9 @@ export default function CashierOrdersPage() {
   async function loadOrders() {
     setIsLoading(true);
     try {
-      const res = await orderService.getMy({
-        page,
-        size: 10,
-      });
-      const data = res.data.data as unknown as
-        | {
-            content?: Order[];
-            totalPages?: number;
-          }
-        | Order[];
-      if (Array.isArray(data)) {
-        setOrders(data);
-        setTotalPages(1);
-      } else {
-        setOrders(data.content ?? []);
-        setTotalPages(data.totalPages ?? 1);
-      }
+      const page$ = await orderService.getMy({ page, size: 10 });
+      setOrders(page$.content ?? []);
+      setTotalPages(page$.totalPages ?? 1);
     } catch {
       toast.error("Không thể tải danh sách đơn hàng");
     } finally {

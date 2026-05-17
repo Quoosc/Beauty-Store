@@ -110,7 +110,7 @@ export const orderService = {
       orderId: order.id,
       cashierId: order.cashierId,
       orderTotal: order.total,
-      reason: "",
+      reason: order.pendingCancelReason ?? "",
       requestedAt: order.createdAt,
       status: "PENDING" as CancelLogStatus,
       hasPendingCancel: true,

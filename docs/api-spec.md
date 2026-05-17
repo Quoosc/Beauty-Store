@@ -238,9 +238,16 @@ GET /order/orders/my
 
 GET /order/orders/branch/{branchId}
   Auth: BRANCH_MANAGER, ADMIN
-  Params: startDate, endDate, status?
-  Returns: OrderResponse[]
+  Params: page, size, status?
+  Returns: Page<OrderResponse>
   Page: /manager/orders (list đơn toàn chi nhánh)
+
+GET /order/orders/branch/{branchId}/pending-cancels
+  Auth: BRANCH_MANAGER, ADMIN
+  Params: page, size
+  Returns: OrderResponse[]  ← chỉ đơn COMPLETED có CancelLog PENDING
+  Page: /manager/orders (duyệt hủy đơn)
+  Note: trả về Order với hasPendingCancel=true, pendingCancelReason, pendingCancelNote
 
 POST /order/orders/{id}/cancel
   Auth: CASHIER, BRANCH_MANAGER, ADMIN
@@ -284,6 +291,9 @@ interface Order {
   tenderedAmount?: number;
   changeAmount?: number;
   status: "PENDING" | "COMPLETED" | "CANCELLED" | "RETURNED";
+  hasPendingCancel?: boolean;      // true nếu đơn đang chờ Manager duyệt hủy
+  pendingCancelReason?: string;    // lý do cashier nhập khi yêu cầu hủy
+  pendingCancelNote?: string;      // ghi chú bổ sung
   receiptUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -335,8 +345,10 @@ interface Shift {
   updatedAt: string;
 }
 interface ShiftSummary {
-  totalOrders: number;
+  orderCount: number;    // ← tên field là `orderCount` (không phải totalOrders)
   totalRevenue: number;
+  cancelCount: number;
+  returnCount: number;
 }
 ```
 
@@ -598,6 +610,8 @@ DELETE /loyalty-promotion/promotions/{id}
   Auth: BRANCH_MANAGER, ADMIN
   Action: deactivate (is_active = false)
   Returns: void
+
+⚠️ PUT /loyalty-promotion/promotions/{id} — CHƯA IMPLEMENT (xem FUTURE_IMPROVEMENTS.md M4)
 ```
 
 ### 5.3 Coupons
@@ -619,6 +633,9 @@ POST /loyalty-promotion/coupons/validate
   Returns: CouponValidationResponse { discountAmount, promotionId, promotionName }
   Page: /pos/order (nhập mã coupon), /coupons (nút Validate test)
   Note: ≤ 300ms; lỗi 4xx nếu coupon không hợp lệ
+
+⚠️ PUT /loyalty-promotion/coupons/{id} — CHƯA IMPLEMENT (xem FUTURE_IMPROVEMENTS.md M3)
+⚠️ DELETE /loyalty-promotion/coupons/{id} — CHƯA IMPLEMENT (xem FUTURE_IMPROVEMENTS.md M3)
 ```
 
 ---

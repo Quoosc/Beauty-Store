@@ -113,9 +113,9 @@ beautystore-fe/
 │   │   ├── inventory.service.ts        ✅ DONE — stock, adjustments, approve/reject
 │   │   ├── purchaseOrder.service.ts    ✅ DONE — PO CRUD, receiveGoods
 │   │   ├── supplier.service.ts         ✅ DONE — CRUD suppliers
-│   │   ├── loyalty.service.ts          ✅ DONE — members, points, redeem, history
-│   │   ├── coupon.service.ts           ✅ DONE — validate, CRUD
-│   │   ├── promotion.service.ts        ✅ DONE — CRUD, deactivate
+│   │   ├── loyalty.service.ts          ✅ DONE — members, points, redeem (history M2: xem FUTURE_IMPROVEMENTS)
+│   │   ├── coupon.service.ts           ✅ DONE — validate, create, getAll (PUT/DELETE M3: xem FUTURE_IMPROVEMENTS)
+│   │   ├── promotion.service.ts        ✅ DONE — getAll, create, deactivate (PUT M4: xem FUTURE_IMPROVEMENTS)
 │   │   ├── notification.service.ts     ✅ DONE — unread-count, getAll, markAsRead
 │   │   ├── report.service.ts           ✅ DONE — dashboard, revenue (sync+async), inventory
 │   │   ├── auditLog.service.ts         ✅ DONE — getAll with filters
@@ -123,7 +123,7 @@ beautystore-fe/
 │   │
 │   ├── stores/
 │   │   ├── auth.store.ts               ✅ DONE — sessionStorage persist, ROLE_REDIRECT, clearAuth
-│   │   ├── pos.store.ts                ✅ DONE — cart, draft autosave 10s, shift state
+│   │   ├── pos.store.ts                ✅ DONE — cart, draft autosave 10s, shift state, syncShift()
 │   │   └── notification.store.ts       ✅ DONE — unread count, polling, markAsRead/All
 │   │
 │   ├── hooks/
@@ -144,11 +144,14 @@ beautystore-fe/
 │
 ├── docs/
 │   ├── project-structure.md            ✅ File này
-│   ├── cela-ui-refactor.md             ✅ CÉLA design spec + task tracker (32/32 pages ✅)
-│   ├── coding-convention.md            ✅ Coding standards (CÉLA styling rules)
 │   ├── system-overview.md              ✅ Architecture, tech stack, API routing
 │   ├── api-spec.md                     ✅ Tất cả endpoints theo từng service
-│   └── user-stories.md                 ✅ User stories gốc
+│   ├── cela-ui-refactor.md             ✅ CÉLA design spec + task tracker (32/32 pages ✅)
+│   ├── coding-convention.md            ✅ Coding standards (CÉLA styling rules)
+│   ├── user-stories.md                 ✅ User stories gốc (tham khảo)
+│   ├── API_TEST_GUIDE.md               ✅ Kết quả kiểm thử API (96/96 PASS — 2026-05-18)
+│   ├── FUTURE_IMPROVEMENTS.md          📋 Tính năng chờ backend bổ sung (M2 M3 M4 M6)
+│   └── API_INTEGRATION_PLAN.md         📚 Tài liệu lịch sử (tất cả issues đã xử lý — 2026-05-18)
 │
 ├── middleware.ts                       ✅ DONE — Auth guard cookie 'jwt', 20 protected routes
 ├── .env.local                          ✅ DONE — NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
@@ -255,7 +258,7 @@ LƯU Ý QUAN TRỌNG: Backend KHÔNG có GET /auth/me endpoint.
 | `inventory.service.ts` | ✅ Done | inventory-service :8084 | stock, adjustments, approve/reject |
 | `purchaseOrder.service.ts` | ✅ Done | inventory-service :8084 | CRUD PO, receiveGoods |
 | `supplier.service.ts` | ✅ Done | inventory-service :8084 | CRUD suppliers |
-| `loyalty.service.ts` | ✅ Done | loyalty-promotion :8085 | members, points, redeem, history |
+| `loyalty.service.ts` | ✅ Done | loyalty-promotion :8085 | members, points, redeem (points-history: M2 future) |
 | `coupon.service.ts` | ✅ Done | loyalty-promotion :8085 | validate, CRUD |
 | `promotion.service.ts` | ✅ Done | loyalty-promotion :8085 | CRUD, deactivate |
 | `report.service.ts` | ✅ Done | report-service :8086 | dashboard, revenue (sync+async), inventory |
@@ -361,4 +364,4 @@ Layout:      ████████████████████  100% 
 Hooks:       ████████████████████  100% (1/1 hooks) ✅
 ```
 
-> Toàn bộ Wave 1–5 hoàn thành. CÉLA Design System 100%. TypeScript: 0 errors. Cập nhật lần cuối: 2026-05-13.
+> Toàn bộ Wave 1–5 hoàn thành. CÉLA Design System 100%. TypeScript: 0 errors. Cập nhật lần cuối: 2026-05-18.

@@ -146,6 +146,10 @@ export interface Order {
   tenderedAmount: number;
   changeAmount: number;
   status: OrderStatus;
+  /** Có khi đơn COMPLETED đang chờ Manager duyệt hủy */
+  hasPendingCancel?: boolean;
+  pendingCancelReason?: string;
+  pendingCancelNote?: string;
   receiptUrl: string | null;
   items: OrderItem[];
   createdAt: string;

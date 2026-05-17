@@ -350,7 +350,10 @@ export default function POSOrderPage() {
     saveDraft,
     loadDraft,
     resetForNewOrder,
+    syncShift,
   } = usePOSStore();
+
+  const [isSyncingShift, setIsSyncingShift] = useState(false);
 
   // Product search
   const [searchQuery, setSearchQuery] = useState("");
@@ -403,6 +406,14 @@ export default function POSOrderPage() {
   const maxRedeemable = member
     ? Math.min(member.points, maxRedeemableByPercent)
     : 0;
+
+  // Mount: try to restore shift from server if sessionStorage was cleared
+  useEffect(() => {
+    if (!currentShift) {
+      setIsSyncingShift(true);
+      syncShift().finally(() => setIsSyncingShift(false));
+    }
+  }, []);
 
   // Mount: check draft
   useEffect(() => {
@@ -593,6 +604,18 @@ export default function POSOrderPage() {
     } finally {
       setIsCancelling(false);
     }
+  }
+
+  // While syncing shift from server, show spinner instead of "no shift" screen
+  if (isSyncingShift) {
+    return (
+      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cela-ivory)" }}>
+        <svg style={{ width: 32, height: 32, animation: "spin 1s linear infinite", color: "var(--cela-rose)" }} viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+      </div>
+    );
   }
 
   // No shift guard

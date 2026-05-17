@@ -39,9 +39,8 @@ export default function ManagerOrdersPage() {
 
     setIsLoading(true);
     try {
-      const data = await orderService.getCancelRequests(branchId, {
-        status: "PENDING",
-        page: 0,
+      const data = await orderService.getPendingCancels(branchId, {
+        page: 1,
         size: 100,
       });
       setRequests(data);
