@@ -57,7 +57,7 @@ export default function LoginPage() {
     try {
       const user = await login(username, password);
       setFailedAttempts(0);
-      toast.success("Dang nhap thanh cong!");
+      toast.success("Đăng nhập thành công!");
       if (user.forceChangePassword) {
         router.push("/force-change-password");
       } else {

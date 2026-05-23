@@ -3,6 +3,7 @@
 import { Bell, LogOut, ChevronDown, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/auth.store";
 import { useNotificationStore } from "@/stores/notification.store";
 
@@ -18,6 +19,11 @@ export function Header() {
   const { logout } = useAuthStore();
   const router = useRouter();
   const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const [todayISO, setTodayISO] = useState("");
+
+  useEffect(() => {
+    setTodayISO(new Date().toISOString().split("T")[0]);
+  }, []);
 
   const initials =
     user?.fullName
@@ -93,7 +99,7 @@ export function Header() {
             />
             <input
               type="date"
-              defaultValue={new Date().toISOString().split("T")[0]}
+              defaultValue={todayISO}
               style={{
                 appearance: "none",
                 background: "var(--cela-ivory)",

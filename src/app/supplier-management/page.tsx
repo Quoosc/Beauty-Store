@@ -119,6 +119,19 @@ export default function SupplierManagementPage() {
     }
   }
 
+  async function handleActivate(supplier: Supplier) {
+    try {
+      await supplierService.activate(supplier.id);
+      toast.success("Đã kích hoạt nhà cung cấp");
+      await load();
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Kích hoạt thất bại";
+      toast.error(msg);
+    }
+  }
+
   const filtered = suppliers.filter(
     (s) =>
       !search ||
@@ -224,7 +237,13 @@ export default function SupplierManagementPage() {
                             Vô hiệu hóa
                           </button>
                         ) : (
-                          <span className="text-xs text-[var(--cela-stone)]">Chỉ đọc</span>
+                          <button
+                            onClick={() => handleActivate(supplier)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--cela-success)] hover:bg-[rgba(107,142,106,0.1)]"
+                            style={{ border: "1px solid rgba(107,142,106,0.3)" }}
+                          >
+                            Kích hoạt
+                          </button>
                         )}
                       </div>
                     </td>

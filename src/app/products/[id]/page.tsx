@@ -41,7 +41,7 @@ export default function ProductDetailPage() {
           setActiveImage(0);
         }
       } catch {
-        toast.error("Khong tim thay san pham");
+        toast.error("Không tìm thấy sản phẩm");
         router.push("/products");
       } finally {
         if (mounted) setIsLoading(false);
@@ -74,17 +74,17 @@ export default function ProductDetailPage() {
   async function handleDiscontinue() {
     if (!product) return;
 
-    if (!confirm(`Ngung ban san pham \"${product.name}\"?`)) {
+    if (!confirm(`Ngừng bán sản phẩm "${product.name}"?`)) {
       return;
     }
 
     try {
       setIsUpdating(true);
       await productService.discontinue(product.id);
-      toast.success("Da ngung ban san pham");
+      toast.success("Đã ngừng bán sản phẩm");
       setProduct({ ...product, status: "DISCONTINUED" });
     } catch {
-      toast.error("Thao tac that bai");
+      toast.error("Thao tác thất bại");
     } finally {
       setIsUpdating(false);
     }
@@ -118,7 +118,7 @@ export default function ProductDetailPage() {
               BEAUTY ERP
             </p>
             <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-              Chi tiet <span style={{ color: "var(--cela-rose)" }}>san pham</span>
+              Chi tiết <span style={{ color: "var(--cela-rose)" }}>sản phẩm</span>
             </h1>
           </div>
 
@@ -128,7 +128,7 @@ export default function ProductDetailPage() {
               className="px-3 py-2 rounded-lg text-sm hover:bg-[var(--cela-fog)]"
               style={{ border: "1px solid var(--cela-mist)" }}
             >
-              <ArrowLeft className="w-4 h-4 inline mr-1" /> Danh sach
+              <ArrowLeft className="w-4 h-4 inline mr-1" /> Danh sách
             </button>
 
             {canManage && (
@@ -138,7 +138,7 @@ export default function ProductDetailPage() {
                   className="px-3 py-2 rounded-lg text-sm hover:bg-[var(--cela-fog)]"
                   style={{ border: "1px solid var(--cela-mist)" }}
                 >
-                  <Edit2 className="w-4 h-4 inline mr-1" /> Sua
+                  <Edit2 className="w-4 h-4 inline mr-1" /> Sửa
                 </button>
 
                 {product.status === "ACTIVE" && (
@@ -148,7 +148,7 @@ export default function ProductDetailPage() {
                     className="px-3 py-2 rounded-lg text-sm text-[var(--cela-danger)] hover:bg-[rgba(183,110,121,0.08)] disabled:opacity-50"
                     style={{ border: "1px solid var(--cela-mist)" }}
                   >
-                    <Ban className="w-4 h-4 inline mr-1" /> Ngung ban
+                    <Ban className="w-4 h-4 inline mr-1" /> Ngừng bán
                   </button>
                 )}
               </>
@@ -188,28 +188,28 @@ export default function ProductDetailPage() {
 
           <div className="lg:col-span-2 bg-[var(--cela-paper)] rounded-xl p-6" style={{ border: "1px solid var(--cela-mist)" }}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <InfoRow label="Ten san pham" value={product.name} />
+              <InfoRow label="Tên sản phẩm" value={product.name} />
               <InfoRow label="SKU" value={product.sku} mono />
               <InfoRow label="Barcode" value={product.barcode || "-"} mono />
-              <InfoRow label="Danh muc" value={product.category?.name || "-"} />
-              <InfoRow label="Gia ban" value={formatVND(product.sellingPrice)} mono />
-              <InfoRow label="Gia von" value={formatVND(product.costPrice)} mono />
+              <InfoRow label="Danh mục" value={product.category?.name || "-"} />
+              <InfoRow label="Giá bán" value={formatVND(product.sellingPrice)} mono />
+              <InfoRow label="Giá vốn" value={formatVND(product.costPrice)} mono />
 
               <div>
-                <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Trang thai</p>
+                <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Trạng thái</p>
                 <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${product.status === "ACTIVE" ? "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}>
-                  {product.status === "ACTIVE" ? "Dang ban" : "Ngung ban"}
+                  {product.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                 </span>
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Han su dung</p>
+                <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Hạn sử dụng</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[var(--cela-espresso)]">{expiryInfo?.text || "Khong co"}</span>
+                  <span className="text-sm text-[var(--cela-espresso)]">{expiryInfo?.text || "Không có"}</span>
                   {expiryInfo?.isNear && (
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-[rgba(183,110,121,0.12)] text-[var(--cela-danger)]">
                       <AlertTriangle className="w-3.5 h-3.5" />
-                      Con {expiryInfo.days} ngay
+                      Còn {expiryInfo.days} ngày
                     </span>
                   )}
                 </div>
@@ -218,7 +218,7 @@ export default function ProductDetailPage() {
 
             {product.description && (
               <div className="mt-5">
-                <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Mo ta</p>
+                <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Mô tả</p>
                 <p className="text-sm text-[var(--cela-cocoa)] leading-6">{product.description}</p>
               </div>
             )}

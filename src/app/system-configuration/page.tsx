@@ -159,13 +159,13 @@ export default function SystemConfigurationPage() {
                 lineHeight: 1.2,
               }}
             >
-              C?u h�nh{" "}
+              Cấu hình{" "}
               <span
                 style={{
                   color: "var(--cela-rose)",
                 }}
               >
-                h? th?ng
+                hệ thống
               </span>
             </h1>
           </div>{" "}

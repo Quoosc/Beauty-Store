@@ -42,7 +42,6 @@ export default function RevenueReportPage() {
 
   const [startDate, setStartDate] = useState(sevenDaysAgo);
   const [endDate, setEndDate] = useState(today);
-  // Single RevenueReportResponse object — matches backend structure
   const [reportData, setReportData] = useState<RevenueReportResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [asyncMessage, setAsyncMessage] = useState<string>("");
@@ -52,7 +51,7 @@ export default function RevenueReportPage() {
   );
 
   async function pollAsyncJob(jobId: string) {
-    setAsyncMessage("Dang xu ly bao cao bat dong bo...");
+    setAsyncMessage("Đang xử lý báo cáo bất đồng bộ...");
 
     for (let attempt = 0; attempt < 60; attempt += 1) {
       await sleep(5000);
@@ -61,38 +60,37 @@ export default function RevenueReportPage() {
       const status = job.status;
 
       if (status === "COMPLETED") {
-        // AsyncReportJobResponse.data is RevenueReportResponse
         const data = job.data as RevenueReportResponse | undefined;
         if (data?.dailyData) {
           setReportData(data);
-          setAsyncMessage("Bao cao da hoan tat");
+          setAsyncMessage("Báo cáo đã hoàn tất");
           return;
         }
 
         setAsyncMessage(
-          "Bao cao da hoan tat. Vui long mo notification de lay ket qua."
+          "Báo cáo đã hoàn tất. Vui lòng mở thông báo để lấy kết quả."
         );
         return;
       }
 
       if (status === "FAILED") {
-        throw new Error("Job tao bao cao that bai");
+        throw new Error("Job tạo báo cáo thất bại");
       }
 
-      setAsyncMessage(`Job dang ${status.toLowerCase()}...`);
+      setAsyncMessage(`Job đang ${status.toLowerCase()}...`);
     }
 
-    setAsyncMessage("Het thoi gian cho polling. Vui long thu lai sau.");
+    setAsyncMessage("Hết thời gian chờ polling. Vui lòng thử lại sau.");
   }
 
   async function handleGenerate() {
     if (!startDate || !endDate) {
-      toast.error("Vui long chon khoang thoi gian");
+      toast.error("Vui lòng chọn khoảng thời gian");
       return;
     }
 
     if (endDate < startDate) {
-      toast.error("Ngay ket thuc phai sau ngay bat dau");
+      toast.error("Ngày kết thúc phải sau ngày bắt đầu");
       return;
     }
 
@@ -102,16 +100,14 @@ export default function RevenueReportPage() {
 
     try {
       if (daysDiff > 31) {
-        // Backend: POST /reports/revenue/async — params must be "from" and "to"
         const job = await reportService.requestAsyncRevenue({
           from: startDate,
           to: endDate,
         });
 
-        toast.success("Da tao job bao cao bat dong bo");
+        toast.success("Đã tạo job báo cáo bất đồng bộ");
         await pollAsyncJob(job.jobId);
       } else {
-        // Backend: GET /reports/revenue?from=&to=
         const data = await reportService.getRevenue({
           from: startDate,
           to: endDate,
@@ -121,7 +117,7 @@ export default function RevenueReportPage() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? (err as Error)?.message ?? "Khong the tai bao cao";
+          ?.message ?? (err as Error)?.message ?? "Không thể tải báo cáo";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -164,13 +160,13 @@ export default function RevenueReportPage() {
     if (!reportData) return;
 
     const csv = [
-      ["Ngay", "So don", "Doanh thu", "Giam gia"].join(","),
+      ["Ngày", "Số đơn", "Doanh thu", "Giảm giá"].join(","),
       ...reportData.dailyData.map((d) =>
         [d.date, d.orderCount, d.revenue, d.discount].join(",")
       ),
     ].join("\n");
 
-    const blob = new Blob([csv], {
+    const blob = new Blob(["﻿" + csv], {
       type: "text/csv;charset=utf-8;",
     });
     const url = URL.createObjectURL(blob);
@@ -181,12 +177,10 @@ export default function RevenueReportPage() {
     URL.revokeObjectURL(url);
   }
 
-  // KPI values come directly from top-level RevenueReportResponse fields
   const totalRevenue = reportData?.totalRevenue ?? 0;
   const totalOrders = reportData?.orderCount ?? 0;
   const avgOrder = reportData?.averageOrderValue ?? 0;
 
-  // Chart uses dailyData[] — each entry has date, revenue, orderCount, discount
   const chartRows = useMemo(
     () =>
       (reportData?.dailyData ?? []).map((d) => ({
@@ -210,7 +204,7 @@ export default function RevenueReportPage() {
               BEAUTY ERP
             </p>
             <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-              Bao cao <span style={{ color: "var(--cela-rose)" }}>doanh thu</span>
+              Báo cáo <span style={{ color: "var(--cela-rose)" }}>doanh thu</span>
             </h1>
           </div>
         </div>
@@ -218,7 +212,7 @@ export default function RevenueReportPage() {
         <div className="bg-[var(--cela-paper)] rounded-xl p-6">
           <div className="flex items-end gap-4 flex-wrap">
             <div>
-              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Tu ngay</label>
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Từ ngày</label>
               <input
                 type="date"
                 value={startDate}
@@ -233,7 +227,7 @@ export default function RevenueReportPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Den ngay</label>
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Đến ngày</label>
               <input
                 type="date"
                 value={endDate}
@@ -250,10 +244,10 @@ export default function RevenueReportPage() {
 
           <div className="flex items-center justify-between mt-4">
             <div className="flex gap-2">
-              <button onClick={() => handleQuickPreset("today")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>Hom nay</button>
-              <button onClick={() => handleQuickPreset("7days")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>7 ngay</button>
-              <button onClick={() => handleQuickPreset("30days")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>30 ngay</button>
-              <button onClick={() => handleQuickPreset("thisMonth")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>Thang nay</button>
+              <button onClick={() => handleQuickPreset("today")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>Hôm nay</button>
+              <button onClick={() => handleQuickPreset("7days")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>7 ngày</button>
+              <button onClick={() => handleQuickPreset("30days")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>30 ngày</button>
+              <button onClick={() => handleQuickPreset("thisMonth")} className="px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--cela-fog)]" style={{ border: "1px solid var(--cela-mist)" }}>Tháng này</button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -263,7 +257,7 @@ export default function RevenueReportPage() {
                 className="px-4 py-2 bg-[var(--cela-rose-deep)] text-white rounded-lg hover:opacity-90 disabled:opacity-50 font-medium text-sm flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" />
-                {daysDiff > 31 ? "TAO JOB BAO CAO" : "XEM BAO CAO"}
+                {daysDiff > 31 ? "TẠO JOB BÁO CÁO" : "XEM BÁO CÁO"}
               </button>
 
               {reportData && (
@@ -272,7 +266,7 @@ export default function RevenueReportPage() {
                   className="px-4 py-2 rounded-lg hover:bg-[var(--cela-fog)] font-medium text-sm flex items-center gap-2"
                   style={{ border: "1px solid var(--cela-mist)" }}
                 >
-                  <Download className="w-4 h-4" /> XUAT CSV
+                  <Download className="w-4 h-4" /> XUẤT CSV
                 </button>
               )}
             </div>
@@ -280,7 +274,7 @@ export default function RevenueReportPage() {
 
           {daysDiff > 31 && (
             <p className="text-xs text-[var(--cela-gold)] mt-3">
-              Khoang &gt;31 ngay se duoc xu ly bat dong bo va polling moi 5 giay.
+              Khoảng &gt;31 ngày sẽ được xử lý bất đồng bộ và polling mỗi 5 giây.
             </p>
           )}
         </div>
@@ -303,13 +297,13 @@ export default function RevenueReportPage() {
         {reportData && !isLoading && (
           <>
             <div className="grid grid-cols-3 gap-4">
-              <MetricCard icon={TrendingUp} label="Tong doanh thu" value={formatVND(totalRevenue)} />
-              <MetricCard icon={ShoppingCart} label="So don hoan thanh" value={totalOrders.toLocaleString("vi-VN")} />
-              <MetricCard icon={BarChart2} label="Gia tri don trung binh" value={formatVND(avgOrder)} />
+              <MetricCard icon={TrendingUp} label="Tổng doanh thu" value={formatVND(totalRevenue)} />
+              <MetricCard icon={ShoppingCart} label="Số đơn hoàn thành" value={totalOrders.toLocaleString("vi-VN")} />
+              <MetricCard icon={BarChart2} label="Giá trị đơn trung bình" value={formatVND(avgOrder)} />
             </div>
 
             <div className="bg-[var(--cela-paper)] rounded-xl p-6">
-              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Doanh thu theo ngay</h3>
+              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Doanh thu theo ngày</h3>
               <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={chartRows} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
                   <defs>
@@ -336,15 +330,15 @@ export default function RevenueReportPage() {
 
             <div className="bg-[var(--cela-paper)] rounded-xl overflow-hidden">
               <div className="p-6" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
-                <h3 className="font-semibold text-[var(--cela-espresso)]">Chi tiet theo ngay</h3>
+                <h3 className="font-semibold text-[var(--cela-espresso)]">Chi tiết theo ngày</h3>
               </div>
               <table className="w-full">
                 <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
                   <tr>
-                    <th className="text-left px-6 py-3">Ngay</th>
-                    <th className="text-right px-4 py-3">So don</th>
+                    <th className="text-left px-6 py-3">Ngày</th>
+                    <th className="text-right px-4 py-3">Số đơn</th>
                     <th className="text-right px-4 py-3">Doanh thu</th>
-                    <th className="text-right px-4 py-3">Giam gia</th>
+                    <th className="text-right px-4 py-3">Giảm giá</th>
                   </tr>
                 </thead>
                 <tbody>

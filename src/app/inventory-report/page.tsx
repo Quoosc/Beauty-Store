@@ -39,9 +39,9 @@ export default function InventoryReportPage() {
     label: string;
     color: string;
   }[] = [
-    { key: "current_stock", label: "Ton kho hien tai", color: "text-[var(--cela-danger)]" },
-    { key: "near_expiry", label: "Sap het han", color: "text-[var(--cela-gold)]" },
-    { key: "slow_moving", label: "Cham luan chuyen", color: "text-[var(--cela-cocoa)]" },
+    { key: "current_stock", label: "Tồn kho hiện tại", color: "text-[var(--cela-danger)]" },
+    { key: "near_expiry", label: "Sắp hết hạn", color: "text-[var(--cela-gold)]" },
+    { key: "slow_moving", label: "Chậm luân chuyển", color: "text-[var(--cela-cocoa)]" },
   ];
 
   async function load(tab = activeTab) {
@@ -58,7 +58,7 @@ export default function InventoryReportPage() {
         setSlowMovingRows(Array.isArray(result) ? (result as SlowMovingItem[]) : []);
       }
     } catch {
-      toast.error("Khong the tai bao cao ton kho");
+      toast.error("Không thể tải báo cáo tồn kho");
     } finally {
       setIsLoading(false);
     }
@@ -83,9 +83,9 @@ export default function InventoryReportPage() {
       a.download = `inventory-report-${activeTab}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Da xuat PDF");
+      toast.success("Đã xuất PDF");
     } catch {
-      toast.error("Xuat PDF that bai");
+      toast.error("Xuất PDF thất bại");
     } finally {
       setIsExporting(false);
     }
@@ -228,7 +228,7 @@ function StockTable({ rows }: { rows: InventoryReportRow[] }) {
             <td className="px-4 py-4 text-center text-sm text-[var(--cela-stone)]">{row.minThreshold}</td>
             <td className="px-4 py-4 text-center">
               <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${row.isLowStock ? "bg-[rgba(183,110,121,0.12)] text-[var(--cela-danger)]" : "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]"}`}>
-                {row.isLowStock ? "LOW_STOCK" : "OK"}
+                {row.isLowStock ? "Tồn kho thấp" : "Bình thường"}
               </span>
             </td>
           </tr>
@@ -279,7 +279,7 @@ function SlowMovingTable({ rows }: { rows: SlowMovingItem[] }) {
           <th className="text-left px-6 py-3">Sản phẩm</th>
           <th className="text-left px-4 py-3">SKU</th>
           <th className="text-center px-4 py-3">Số lượng</th>
-          <th className="text-left px-4 py-3">ần bán cuối</th>
+          <th className="text-left px-4 py-3">Lần bán cuối</th>
         </tr>
       </thead>
       <tbody>
@@ -288,7 +288,7 @@ function SlowMovingTable({ rows }: { rows: SlowMovingItem[] }) {
             <td className="px-6 py-4 text-sm text-[var(--cela-espresso)]">{row.productName}</td>
             <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{row.sku}</td>
             <td className="px-4 py-4 text-center text-sm font-semibold text-[var(--cela-cocoa)]">{row.quantity}</td>
-            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{row.lastSoldAt ? formatDate(row.lastSoldAt) : "Chua ban"}</td>
+            <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{row.lastSoldAt ? formatDate(row.lastSoldAt) : "Chưa bán"}</td>
           </tr>
         ))}
       </tbody>

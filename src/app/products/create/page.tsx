@@ -7,10 +7,16 @@ import { toast } from "sonner";
 import { ERPLayout } from "@/components/layout/ERPLayout";
 import { productService } from "@/services/product.service";
 import { categoryService } from "@/services/category.service";
+import { accountService } from "@/services/auth.service";
+import { useAuthStore } from "@/stores/auth.store";
 import type { Category } from "@/types";
 export default function CreateProductPage() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === "ADMIN";
   const [categories, setCategories] = useState<Category[]>([]);
+  const [availableBranchIds, setAvailableBranchIds] = useState<string[]>([]);
+  const [adminBranchId, setAdminBranchId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
@@ -20,6 +26,7 @@ export default function CreateProductPage() {
   const [costPrice, setCostPrice] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [description, setDescription] = useState("");
+  const [unit, setUnit] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const today = new Date().toISOString().split("T")[0];
   const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 3600 * 1000)
@@ -30,15 +37,29 @@ export default function CreateProductPage() {
   const expiryWarning =
     expiryDate && expiryDate > today && expiryDate < thirtyDaysLater;
   useEffect(() => {
-    categoryService
-      .getAll()
-      .then(setCategories)
-      .catch(() => {});
-  }, []);
+    categoryService.getAll().then(setCategories).catch(() => {});
+    if (isAdmin) {
+      accountService.getAll()
+        .then((res) => {
+          const ids = [...new Set(
+            (res.data.data as { branchId?: string | null }[])
+              .map((a) => a.branchId)
+              .filter((b): b is string => !!b)
+          )];
+          setAvailableBranchIds(ids);
+          if (ids.length > 0) setAdminBranchId(ids[0]);
+        })
+        .catch(() => {});
+    }
+  }, [isAdmin]);
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !sku.trim() || !categoryId || !sellingPrice) {
+    if (!name.trim() || !sku.trim() || !categoryId || !sellingPrice || !unit.trim()) {
       toast.error("Vui lòng điền đầy đủ các trường bắt buộc");
+      return;
+    }
+    if (isAdmin && !adminBranchId) {
+      toast.error("Vui lòng chọn chi nhánh");
       return;
     }
     if (expiryDate && expiryDate <= today) {
@@ -47,16 +68,27 @@ export default function CreateProductPage() {
     }
     setIsLoading(true);
     try {
+      const branchId = isAdmin ? adminBranchId : user?.branchId;
+      const payload: Record<string, unknown> = {
+        name: name.trim(),
+        sku: sku.trim(),
+        categoryId,
+        unit: unit.trim(),
+        sellingPrice: Number(sellingPrice),
+        ...(branchId ? { branchId } : {}),
+      };
+      if (barcode.trim()) payload.barcode = barcode.trim();
+      if (costPrice) payload.costPrice = Number(costPrice);
+      if (expiryDate) payload.expiryDate = expiryDate;
+      if (description.trim()) payload.description = description.trim();
+
       const formData = new FormData();
-      formData.append("name", name.trim());
-      formData.append("sku", sku.trim());
-      if (barcode) formData.append("barcode", barcode.trim());
-      formData.append("categoryId", categoryId);
-      formData.append("sellingPrice", sellingPrice);
-      if (costPrice) formData.append("costPrice", costPrice);
-      if (expiryDate) formData.append("expiryDate", expiryDate);
-      if (description) formData.append("description", description);
-      images.forEach((img) => formData.append("images", img));
+      formData.append(
+        "data",
+        new Blob([JSON.stringify(payload)], { type: "application/json" }),
+      );
+      if (images[0]) formData.append("image", images[0]);
+
       await productService.create(formData);
       toast.success("Tạo sản phẩm thành công!");
       router.push("/products");
@@ -118,13 +150,13 @@ export default function CreateProductPage() {
                 lineHeight: 1.2,
               }}
             >
-              Th�m s?n ph?m{" "}
+              Thêm sản phẩm{" "}
               <span
                 style={{
                   color: "var(--cela-rose)",
                 }}
               >
-                m?i
+                mới
               </span>
             </h1>
           </div>{" "}
@@ -190,6 +222,45 @@ export default function CreateProductPage() {
               />{" "}
             </div>{" "}
           </div>{" "}
+          {/* Unit */}{" "}
+          <div>
+            {" "}
+            <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+              {" "}
+              Đơn vị tính <span className="text-[var(--cela-danger)]">*</span>{" "}
+            </label>{" "}
+            <input
+              type="text"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              placeholder="Cái, Hộp, Chai, Tuýp..."
+              className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] focus:border-[var(--cela-rose)]"
+              style={{
+                border: "1px solid var(--cela-mist)",
+              }}
+            />{" "}
+          </div>{" "}
+          {/* Branch selector — chỉ hiện cho ADMIN */}
+          {isAdmin && (
+            <div>
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">
+                Chi nhánh <span className="text-[var(--cela-danger)]">*</span>
+              </label>
+              <select
+                value={adminBranchId}
+                onChange={(e) => setAdminBranchId(e.target.value)}
+                className="w-full h-11 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)]"
+                style={{ border: "1px solid var(--cela-mist)" }}
+              >
+                <option value="">-- Chọn chi nhánh --</option>
+                {availableBranchIds.map((id) => (
+                  <option key={id} value={id}>
+                    Chi nhánh {id.slice(0, 8)}…
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}{" "}
           {/* Category */}{" "}
           <div>
             {" "}
@@ -320,11 +391,10 @@ export default function CreateProductPage() {
               {" "}
               <Upload className="w-6 h-6 text-[var(--cela-stone)] mb-2" />{" "}
               <span className="text-sm text-[var(--cela-stone)]">
-                Chọn ảnh (nhiều file)
+                Chọn ảnh sản phẩm
               </span>{" "}
               <input
                 type="file"
-                multiple
                 accept="image/*"
                 onChange={(e) => setImages(Array.from(e.target.files ?? []))}
                 className="hidden"

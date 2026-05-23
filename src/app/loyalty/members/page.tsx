@@ -56,9 +56,9 @@ function LookupPanel() {
       });
       setMember(data);
       setShowRegister(false);
-      toast.success("Dang ky thanh vien thanh cong");
+      toast.success("Đăng ký thành viên thành công");
     } catch {
-      toast.error("Dang ky that bai, vui long kiem tra lai so dien thoai");
+      toast.error("Đăng ký thất bại, vui lòng kiểm tra lại số điện thoại");
     } finally {
       setIsRegistering(false);
     }

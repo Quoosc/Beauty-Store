@@ -2,13 +2,9 @@
 
 import {
   LayoutDashboard,
-  Clock,
-  ShoppingCart,
-  Receipt,
-  CheckSquare,
-  RotateCcw,
-  Warehouse,
   ShoppingBag,
+  CheckSquare,
+  Warehouse,
   ClipboardCheck,
   Package,
   Tag,
@@ -172,17 +168,13 @@ export function BranchManagerSidebar() {
           <NavItem href="/branch-manager" icon={LayoutDashboard} label="Dashboard" />
         </NavSection>
 
-        <NavSection title="Vận hành POS">
-          <NavItem href="/pos/shift" icon={Clock} label="Mở / Đóng ca" />
-          <NavItem href="/pos/order" icon={ShoppingCart} label="Bán hàng" />
-          <NavItem href="/cashier/orders" icon={Receipt} label="Đơn hàng của tôi" />
-          <NavItem href="/manager/orders" icon={CheckSquare} label="Duyệt hủy đơn" />
-          <NavItem href="/returns/new" icon={RotateCcw} label="Trả hàng" />
+        <NavSection title="Đơn hàng">
+          <NavItem href="/manager/orders" icon={CheckSquare} label="Duyệt & Quản lý đơn" />
         </NavSection>
 
         <NavSection title="Kho hàng">
           <NavItem href="/inventory/stock" icon={Warehouse} label="Tồn kho" />
-          <NavItem href="/inventory/purchase-orders" icon={ShoppingBag} label="Purchase Orders" />
+          <NavItem href="/inventory/purchase-orders" icon={ShoppingBag} label="Đặt hàng NCC" />
           <NavItem href="/manager/inventory" icon={ClipboardCheck} label="Duyệt điều chỉnh" />
         </NavSection>
 
@@ -192,7 +184,7 @@ export function BranchManagerSidebar() {
         </NavSection>
 
         <NavSection title="Chương trình">
-          <NavItem href="/loyalty/members" icon={Heart} label="Loyalty Members" />
+          <NavItem href="/loyalty/members" icon={Heart} label="Khách hàng thân thiết" />
           <NavItem href="/promotions" icon={Gift} label="Khuyến mãi" />
           <NavItem href="/coupons" icon={Ticket} label="Coupon" />
         </NavSection>
@@ -254,7 +246,7 @@ export function BranchManagerSidebar() {
                 letterSpacing: "0.1em",
               }}
             >
-              Quản lý CN
+              Quản lý Chi nhánh
             </div>
           </div>
           <button

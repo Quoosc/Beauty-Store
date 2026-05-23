@@ -164,7 +164,7 @@ export function WarehouseStaffSidebar() {
 
         <NavSection title="Nghiệp vụ">
           <NavItem href="/inventory/stock" icon={Warehouse} label="Tồn kho" />
-          <NavItem href="/inventory/purchase-orders" icon={ShoppingBag} label="Purchase Orders" />
+          <NavItem href="/inventory/purchase-orders" icon={ShoppingBag} label="Đặt hàng NCC" />
           <NavItem href="/inventory/purchase-orders" icon={PackageCheck} label="Nhận hàng" />
           <NavItem href="/inventory/adjustments" icon={ClipboardEdit} label="Điều chỉnh kho" />
           <NavItem href="/supplier-management" icon={Truck} label="Nhà cung cấp" />

@@ -52,17 +52,17 @@ export default function WarehouseDashboardPage() {
 
   const quickLinks = [
     {
-      label: "Xem ton kho",
+      label: "Xem tồn kho",
       href: "/inventory/stock",
       icon: Warehouse,
     },
     {
-      label: "Tao phieu nhap",
+      label: "Tạo phiếu nhập",
       href: "/inventory/purchase-orders/create",
       icon: Plus,
     },
     {
-      label: "Dieu chinh kho",
+      label: "Điều chỉnh kho",
       href: "/inventory/adjustments",
       icon: ClipboardEdit,
     },
@@ -76,7 +76,7 @@ export default function WarehouseDashboardPage() {
             BEAUTY ERP
           </p>
           <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-            Dashboard <span style={{ color: "var(--cela-rose)" }}>Kho hang</span>
+            Dashboard <span style={{ color: "var(--cela-rose)" }}>Kho hàng</span>
           </h1>
         </div>
 
@@ -92,26 +92,26 @@ export default function WarehouseDashboardPage() {
             <div className="grid grid-cols-3 gap-4">
               <StatCard
                 icon={AlertTriangle}
-                label="Hang sap het"
+                label="Hàng sắp hết"
                 value={lowStockRows.length}
                 tone="danger"
               />
               <StatCard
                 icon={PackageCheck}
-                label="PO cho nhan hang"
+                label="PO chờ nhận hàng"
                 value={confirmedPOCount}
                 tone="info"
               />
               <StatCard
                 icon={Warehouse}
-                label="Tong SKU"
+                label="Tổng SKU"
                 value={stockRows.length}
                 tone="success"
               />
             </div>
 
             <div className="bg-[var(--cela-paper)] rounded-xl p-6" style={{ border: "1px solid var(--cela-mist)" }}>
-              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Truy cap nhanh</h3>
+              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Truy cập nhanh</h3>
               <div className="grid grid-cols-3 gap-3">
                 {quickLinks.map((link) => {
                   const Icon = link.icon;
@@ -134,19 +134,19 @@ export default function WarehouseDashboardPage() {
 
             <div className="bg-[var(--cela-paper)] rounded-xl overflow-hidden" style={{ border: "1px solid var(--cela-mist)" }}>
               <div className="p-6" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
-                <h3 className="font-semibold text-[var(--cela-espresso)]">Canh bao ton kho thap</h3>
+                <h3 className="font-semibold text-[var(--cela-espresso)]">Cảnh báo tồn kho thấp</h3>
               </div>
 
               {lowStockRows.length === 0 ? (
-                <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co SKU nao dang low stock.</p>
+                <p className="p-6 text-sm text-[var(--cela-stone)]">Không có SKU nào đang tồn kho thấp.</p>
               ) : (
                 <table className="w-full">
                   <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
                     <tr>
                       <th className="text-left px-6 py-3">SKU</th>
-                      <th className="text-left px-4 py-3">Ten san pham</th>
-                      <th className="text-center px-4 py-3">Ton hien tai</th>
-                      <th className="text-center px-4 py-3">Threshold</th>
+                      <th className="text-left px-4 py-3">Tên sản phẩm</th>
+                      <th className="text-center px-4 py-3">Tồn hiện tại</th>
+                      <th className="text-center px-4 py-3">Ngưỡng</th>
                     </tr>
                   </thead>
                   <tbody>

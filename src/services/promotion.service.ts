@@ -28,4 +28,8 @@ export const promotionService = {
   deactivate: async (id: string): Promise<void> => {
     await api.delete(`/loyalty-promotion/promotions/${id}`);
   },
+
+  activate: async (id: string): Promise<void> => {
+    await api.post(`/loyalty-promotion/promotions/${id}/activate`);
+  },
 };

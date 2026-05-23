@@ -25,4 +25,8 @@ export const supplierService = {
   deactivate: async (id: string): Promise<void> => {
     await api.post(`/inventory/suppliers/${id}/deactivate`);
   },
+
+  activate: async (id: string): Promise<void> => {
+    await api.post(`/inventory/suppliers/${id}/activate`);
+  },
 };

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CashierSidebar } from "@/components/layout/CashierSidebar";
+import { ERPLayout } from "@/components/layout/ERPLayout";
 import { Clock } from "lucide-react";
 import { shiftService } from "@/services/shift.service";
 import { usePOSStore } from "@/stores/pos.store";
@@ -109,9 +109,8 @@ export default function POSShiftPage() {
   const expected = (shift?.openingCash ?? 0) + (shift?.summary?.totalRevenue ?? 0);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--cela-ivory)" }}>
-      <CashierSidebar />
-      <main style={{ flex: 1, padding: 24 }}>
+    <ERPLayout>
+      <div style={{ padding: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--cela-cocoa)", margin: "0 0 4px" }}>
@@ -271,7 +270,7 @@ export default function POSShiftPage() {
             </CelaCard>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </ERPLayout>
   );
 }

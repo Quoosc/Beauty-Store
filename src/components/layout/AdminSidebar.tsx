@@ -181,12 +181,12 @@ export function AdminSidebar() {
 
         <NavSection title="Vận hành">
           <NavItem href="/inventory/stock" icon={Warehouse} label="Tồn kho" />
-          <NavItem href="/inventory/purchase-orders" icon={ShoppingBag} label="Purchase Orders" />
+          <NavItem href="/inventory/purchase-orders" icon={ShoppingBag} label="Đặt hàng NCC" />
           <NavItem href="/inventory/adjustments" icon={ClipboardEdit} label="Điều chỉnh kho" />
         </NavSection>
 
         <NavSection title="Chương trình">
-          <NavItem href="/loyalty/members" icon={Heart} label="Loyalty Members" />
+          <NavItem href="/loyalty/members" icon={Heart} label="Khách hàng thân thiết" />
           <NavItem href="/promotions" icon={Gift} label="Khuyến mãi" />
           <NavItem href="/coupons" icon={Ticket} label="Coupon" />
         </NavSection>

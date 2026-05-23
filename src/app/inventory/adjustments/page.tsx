@@ -185,7 +185,7 @@ export default function InventoryAdjustmentsPage() {
       toast.success("Đã phê duyệt điều chỉnh");
       await loadPending();
     } catch {
-      toast.error("Phe duyet that bai");
+      toast.error("Phê duyệt thất bại");
     }
   }
 
@@ -195,7 +195,7 @@ export default function InventoryAdjustmentsPage() {
       toast.success("Đã từ chối yêu cầu");
       await loadPending();
     } catch {
-      toast.error("Tu choi that bai");
+      toast.error("Từ chối thất bại");
     }
   }
 

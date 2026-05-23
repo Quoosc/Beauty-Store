@@ -40,14 +40,16 @@ export default function BranchManagerDashboardPage() {
   const [pendingCancelCount, setPendingCancelCount] = useState(0);
   const [pendingAdjustmentCount, setPendingAdjustmentCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [today, setToday] = useState("");
 
   useEffect(() => {
+    setToday(new Date().toLocaleDateString("vi-VN", { dateStyle: "full" }));
     let mounted = true;
 
     async function load() {
       setIsLoading(true);
       try {
-        const [dashboardData, cancelRequests, pendingAdjustments] = await Promise.all([
+        const [dashboardResult, cancelResult, adjustmentResult] = await Promise.allSettled([
           reportService.getDashboard(),
           branchId
             ? orderService.getCancelRequests(branchId, {
@@ -61,8 +63,12 @@ export default function BranchManagerDashboardPage() {
 
         if (!mounted) return;
 
+        const dashboardData = dashboardResult.status === "fulfilled" ? dashboardResult.value : null;
+        const cancelRequests = cancelResult.status === "fulfilled" ? cancelResult.value : [];
+        const pendingAdjustments = adjustmentResult.status === "fulfilled" ? adjustmentResult.value : [];
+
         setDashboard(dashboardData);
-        setPendingCancelCount(cancelRequests.length);
+        setPendingCancelCount(Array.isArray(cancelRequests) ? cancelRequests.length : 0);
 
         const pendingRows = Array.isArray(pendingAdjustments)
           ? pendingAdjustments
@@ -99,8 +105,6 @@ export default function BranchManagerDashboardPage() {
     [dashboard?.chart7Days]
   );
 
-  const today = new Date().toLocaleDateString("vi-VN", { dateStyle: "full" });
-
   return (
     <ERPLayout>
       <div className="space-y-6">
@@ -110,7 +114,7 @@ export default function BranchManagerDashboardPage() {
               BEAUTY ERP
             </p>
             <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-              Dashboard <span style={{ color: "var(--cela-rose)" }}>Chi nhanh</span>
+              Dashboard <span style={{ color: "var(--cela-rose)" }}>Chi nhánh</span>
             </h1>
           </div>
           <p className="text-sm text-[var(--cela-stone)]">{today}</p>
@@ -125,14 +129,14 @@ export default function BranchManagerDashboardPage() {
           </div>
         ) : !dashboard ? (
           <div className="bg-[var(--cela-paper)] rounded-xl p-10 text-center" style={{ border: "1px solid var(--cela-mist)" }}>
-            <p className="text-[var(--cela-stone)]">Không tải được dữ Liệu dashboard.</p>
+            <p className="text-[var(--cela-stone)]">Không tải được dữ liệu dashboard.</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-4">
               <KpiCard icon={DollarSign} label="Doanh thu" value={formatVND(dashboard.revenue?.today ?? 0)} trend={dashboard.revenue?.vsPreviousDayPercent ?? 0} />
-              <KpiCard icon={ShoppingBag} label="So don" value={(dashboard.revenue?.orderCount ?? 0).toLocaleString("vi-VN")} />
-              <KpiCard icon={(dashboard.revenue?.vsPreviousDayPercent ?? 0) >= 0 ? TrendingUp : TrendingDown} label="Tang truong" value={`${dashboard.revenue?.vsPreviousDayPercent ?? 0}%`} trend={dashboard.revenue?.vsPreviousDayPercent ?? 0} />
+              <KpiCard icon={ShoppingBag} label="Số đơn" value={(dashboard.revenue?.orderCount ?? 0).toLocaleString("vi-VN")} />
+              <KpiCard icon={(dashboard.revenue?.vsPreviousDayPercent ?? 0) >= 0 ? TrendingUp : TrendingDown} label="Tăng trưởng" value={`${dashboard.revenue?.vsPreviousDayPercent ?? 0}%`} trend={dashboard.revenue?.vsPreviousDayPercent ?? 0} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -155,7 +159,7 @@ export default function BranchManagerDashboardPage() {
                     <ClipboardCheck className="w-5 h-5 text-[var(--cela-cocoa)]" />
                     <div>
                       <p className="font-semibold text-[var(--cela-espresso)]">Điều chỉnh kho chờ duyệt</p>
-                      <p className="text-sm text-[var(--cela-stone)]">ần phê duyệt bởi manager</p>
+                      <p className="text-sm text-[var(--cela-stone)]">Cần phê duyệt bởi manager</p>
                     </div>
                   </div>
                   <span className="text-xl font-bold text-[var(--cela-cocoa)]">{pendingAdjustmentCount}</span>

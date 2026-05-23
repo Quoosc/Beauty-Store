@@ -187,13 +187,13 @@ export default function CreatePurchaseOrderPage() {
                 lineHeight: 1.2,
               }}
             >
-              T?o don{" "}
+              Tạo đơn{" "}
               <span
                 style={{
                   color: "var(--cela-rose)",
                 }}
               >
-                d?t h�ng
+                Đặt hàng
               </span>
             </h1>
           </div>{" "}

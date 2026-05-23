@@ -28,8 +28,10 @@ const formatVND = (n: number) =>
 export default function AdminDashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [today, setToday] = useState("");
 
   useEffect(() => {
+    setToday(new Date().toLocaleDateString("vi-VN", { dateStyle: "full" }));
     reportService
       .getDashboard()
       .then((data) => setDashboard(data))
@@ -49,8 +51,6 @@ export default function AdminDashboardPage() {
     }));
   }, [dashboard?.chart7Days]);
 
-  const today = new Date().toLocaleDateString("vi-VN", { dateStyle: "full" });
-
   // Lấy từ nested revenue object — BE: DashboardResponse.RevenueSummary
   const revenue = dashboard?.revenue;
   const vsPrev = revenue?.vsPreviousDayPercent ?? 0;
@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
               Tổng quan
             </p>
             <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 500, color: "var(--cela-espresso)", margin: 0, letterSpacing: "-0.01em" }}>
-              Dashboard <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>he thong</span>
+              Dashboard <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>hệ thống</span>
             </h1>
           </div>
           <p style={{ fontSize: 13, color: "var(--cela-stone)", fontFamily: "var(--cela-mono)" }}>{today}</p>
@@ -194,7 +194,7 @@ function KpiCard({
       <p className="text-2xl font-bold text-[var(--cela-espresso)]">{value}</p>
       {trend !== undefined && (
         <p className={`text-xs mt-2 ${trend >= 0 ? "text-[var(--cela-success)]" : "text-[var(--cela-danger)]"}`}>
-          {trend >= 0 ? "↑" : "↓"} {Math.abs(trend)}% so voi hom qua
+          {trend >= 0 ? "↑" : "↓"} {Math.abs(trend)}% so với hôm qua
         </p>
       )}
     </div>
