@@ -17,9 +17,9 @@ import { useAuthStore } from "@/stores/auth.store";
 import type { AdjustmentLossType, InventoryStock, Product } from "@/types";
 
 const ADJUSTMENT_TYPES: { value: AdjustmentLossType; label: string }[] = [
-  { value: "DAMAGED", label: "Hang hong" },
-  { value: "LOST", label: "Hang that thoat" },
-  { value: "EXPIRED", label: "Hang het han" },
+  { value: "DAMAGED", label: "Hàng hỏng" },
+  { value: "LOST", label: "Hàng thất thoát" },
+  { value: "EXPIRED", label: "Hàng hết hạn" },
 ];
 
 interface PendingAdjustment {
@@ -134,15 +134,15 @@ export default function InventoryAdjustmentsPage() {
     e.preventDefault();
 
     if (!selectedProduct) {
-      toast.error("Vui long chon san pham");
+      toast.error("Vui lòng chọn sản phẩm");
       return;
     }
     if (qtyNum <= 0) {
-      toast.error("So luong phai lon hon 0");
+      toast.error("Số lượng phải lớn hơn 0");
       return;
     }
     if (!description.trim()) {
-      toast.error("Mo ta la bat buoc");
+      toast.error("Mô tả là bắt buộc");
       return;
     }
 
@@ -157,10 +157,10 @@ export default function InventoryAdjustmentsPage() {
 
       if (needsApproval) {
         toast.success(
-          `Da gui yeu cau dieu chinh, dang cho phe duyet (>${approvalThreshold}%)`
+          `Đã gửi yêu cầu điều chỉnh, đang chờ phê duyệt (>${approvalThreshold}%)`
         );
       } else {
-        toast.success("Dieu chinh kho thanh cong");
+        toast.success("Điều chỉnh kho thành công");
       }
 
       setSelectedProduct(null);
@@ -172,7 +172,7 @@ export default function InventoryAdjustmentsPage() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Dieu chinh that bai";
+          ?.message ?? "Điều chỉnh thất bại";
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -182,7 +182,7 @@ export default function InventoryAdjustmentsPage() {
   async function handleApprove(id: string) {
     try {
       await inventoryService.approveAdjustment(id);
-      toast.success("Da phe duyet dieu chinh");
+      toast.success("Đã phê duyệt điều chỉnh");
       await loadPending();
     } catch {
       toast.error("Phe duyet that bai");
@@ -192,7 +192,7 @@ export default function InventoryAdjustmentsPage() {
   async function handleReject(id: string) {
     try {
       await inventoryService.rejectAdjustment(id);
-      toast.success("Da tu choi yeu cau");
+      toast.success("Đã từ chối yêu cầu");
       await loadPending();
     } catch {
       toast.error("Tu choi that bai");
@@ -209,17 +209,17 @@ export default function InventoryAdjustmentsPage() {
               BEAUTY ERP
             </p>
             <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-              Dieu chinh <span style={{ color: "var(--cela-rose)" }}>kho</span>
+              Điều chỉnh <span style={{ color: "var(--cela-rose)" }}>kho</span>
             </h1>
           </div>
         </div>
 
         <div className="bg-[var(--cela-paper)] rounded-xl p-6">
-          <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Ghi nhan dieu chinh ton kho</h3>
+          <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Ghi nhận điều chỉnh tồn kho</h3>
 
           <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
             <div>
-              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">San pham</label>
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Sản phẩm</label>
 
               {selectedProduct ? (
                 <div className="flex items-center justify-between p-3 rounded-lg bg-[rgba(183,110,121,0.08)]" style={{ border: "1px solid var(--cela-mist)" }}>
@@ -227,7 +227,7 @@ export default function InventoryAdjustmentsPage() {
                     <p className="text-sm font-medium text-[var(--cela-espresso)]">{selectedProduct.name}</p>
                     <p className="text-xs text-[var(--cela-stone)]">
                       {selectedProduct.sku}
-                      {currentStock && ` | Ton hien tai: ${currentStock.quantity}`}
+                      {currentStock && ` | Tồn hiện tại: ${currentStock.quantity}`}
                     </p>
                   </div>
                   <button
@@ -238,7 +238,7 @@ export default function InventoryAdjustmentsPage() {
                     }}
                     className="text-xs text-[var(--cela-stone)] hover:text-[var(--cela-danger)]"
                   >
-                    Doi
+                    Đổi
                   </button>
                 </div>
               ) : (
@@ -281,7 +281,7 @@ export default function InventoryAdjustmentsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">So luong</label>
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Số lượng</label>
               <input
                 type="number"
                 min="1"
@@ -293,7 +293,7 @@ export default function InventoryAdjustmentsPage() {
               />
               {currentStock && quantity && (
                 <p className="text-xs text-[var(--cela-stone)] mt-1">
-                  Ty le: {qtyNum}/{stockQty} = {adjustmentPercent.toFixed(1)}%
+                  Tỷ lệ: {qtyNum}/{stockQty} = {adjustmentPercent.toFixed(1)}%
                 </p>
               )}
             </div>
@@ -302,14 +302,14 @@ export default function InventoryAdjustmentsPage() {
               <div className="flex items-start gap-2 bg-[rgba(201,168,122,0.14)] border border-amber-200 rounded-lg p-3">
                 <AlertTriangle className="w-4 h-4 text-[var(--cela-gold)] flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-[var(--cela-gold)]">
-                  Yeu cau nay can Branch Manager phe duyet ({">"}
-                  {approvalThreshold}% ton kho)
+                  Yêu cầu này cần Branch Manager phê duyệt ({">"}
+                  {approvalThreshold}% tồn kho)
                 </p>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Loai dieu chinh</label>
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Loại điều chỉnh</label>
               <select
                 value={adjType}
                 onChange={(e) => setAdjType(e.target.value as AdjustmentLossType)}
@@ -323,12 +323,12 @@ export default function InventoryAdjustmentsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Mo ta *</label>
+              <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Mô tả *</label>
               <textarea
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Mo ta chi tiet ly do..."
+                placeholder="Mô tả chi tiết lý do..."
                 className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)] resize-none"
                 style={{ border: "1px solid var(--cela-mist)" }}
               />
@@ -340,10 +340,10 @@ export default function InventoryAdjustmentsPage() {
               className="w-full h-11 bg-[var(--cela-espresso)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50"
             >
               {isSubmitting
-                ? "Dang xu ly..."
+                ? "Đang xử lý..."
                 : needsApproval
-                ? "Gui yeu cau phe duyet"
-                : "Xac nhan dieu chinh"}
+                ? "Gửi yêu cầu phê duyệt"
+                : "Xác nhận điều chỉnh"}
             </button>
           </form>
         </div>
@@ -351,7 +351,7 @@ export default function InventoryAdjustmentsPage() {
         {showApprovalSection && (
           <div className="bg-[var(--cela-paper)] rounded-xl overflow-hidden">
             <div className="p-6" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
-              <h3 className="font-semibold text-[var(--cela-espresso)]">Yeu cau dang cho phe duyet</h3>
+              <h3 className="font-semibold text-[var(--cela-espresso)]">Yêu cầu đang chờ phê duyệt</h3>
             </div>
 
             {isLoadingPending ? (
@@ -362,18 +362,18 @@ export default function InventoryAdjustmentsPage() {
                 </svg>
               </div>
             ) : pending.length === 0 ? (
-              <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co yeu cau nao dang cho phe duyet</p>
+              <p className="p-6 text-sm text-[var(--cela-stone)]">Không có yêu cầu nào đang chờ phê duyệt</p>
             ) : (
               <table className="w-full">
                 <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
                   <tr>
-                    <th className="text-left px-6 py-3">San pham</th>
-                    <th className="text-center px-4 py-3">SL</th>
-                    <th className="text-center px-4 py-3">% Ton kho</th>
-                    <th className="text-left px-4 py-3">Loai</th>
-                    <th className="text-left px-4 py-3">Mo ta</th>
-                    <th className="text-left px-4 py-3">Nguoi tao</th>
-                    <th className="text-center px-4 py-3">Thao tac</th>
+                    <th className="text-left px-6 py-3">Sản phẩm</th>
+                    <th className="text-center px-4 py-3">Số lượng</th>
+                    <th className="text-center px-4 py-3">% Tồn kho</th>
+                    <th className="text-left px-4 py-3">Loại</th>
+                    <th className="text-left px-4 py-3">Mô tả</th>
+                    <th className="text-left px-4 py-3">Người tạo</th>
+                    <th className="text-center px-4 py-3">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -395,13 +395,13 @@ export default function InventoryAdjustmentsPage() {
                               onClick={() => handleApprove(adj.id)}
                               className="flex items-center gap-1 px-3 py-1.5 bg-[rgba(107,142,106,0.10)] border border-green-200 text-[var(--cela-success)] rounded-lg text-xs font-medium hover:bg-[rgba(107,142,106,0.15)]"
                             >
-                              <CheckCircle className="w-3.5 h-3.5" /> Phe duyet
+                              <CheckCircle className="w-3.5 h-3.5" /> Phê duyệt
                             </button>
                             <button
                               onClick={() => handleReject(adj.id)}
                               className="flex items-center gap-1 px-3 py-1.5 bg-[rgba(183,110,121,0.08)] border border-red-200 text-[var(--cela-danger)] rounded-lg text-xs font-medium hover:bg-[rgba(183,110,121,0.15)]"
                             >
-                              <XCircle className="w-3.5 h-3.5" /> Tu choi
+                              <XCircle className="w-3.5 h-3.5" /> Từ chối
                             </button>
                           </div>
                         </td>

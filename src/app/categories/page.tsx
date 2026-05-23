@@ -253,13 +253,13 @@ export default function CategoriesPage() {
                   lineHeight: 1.2,
                 }}
               >
-                Qu?n l�{" "}
+                Quản lý{" "}
                 <span
                   style={{
                     color: "var(--cela-rose)",
                   }}
                 >
-                  danh m?c
+                  danh mục
                 </span>
               </h1>
             </div>{" "}

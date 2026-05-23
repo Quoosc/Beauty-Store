@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--cela-cocoa)", margin: "0 0 4px" }}>
-              Tong quan
+              Tổng quan
             </p>
             <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 500, color: "var(--cela-espresso)", margin: 0, letterSpacing: "-0.01em" }}>
               Dashboard <span style={{ fontStyle: "italic", color: "var(--cela-rose)" }}>he thong</span>
@@ -78,27 +78,27 @@ export default function AdminDashboardPage() {
         ) : !dashboard ? (
           <div className="bg-[var(--cela-paper)] rounded-xl p-10 text-center" style={{ border: "1px solid var(--cela-mist)" }}>
             <BarChart2 className="w-12 h-12 text-[var(--cela-mist)] mx-auto mb-3" />
-            <p className="text-[var(--cela-stone)]">Khong tai duoc du lieu dashboard. Vui long thu lai.</p>
+            <p className="text-[var(--cela-stone)]">Không tải được dữ liệu dashboard. Vui lòng thử lại.</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-4 gap-4">
               {/* revenue.today — không phải totalRevenue */}
-              <KpiCard icon={DollarSign} label="Tong doanh thu" value={formatVND(revenue?.today ?? 0)} accent="rose" trend={vsPrev} />
+              <KpiCard icon={DollarSign} label="Tổng doanh thu" value={formatVND(revenue?.today ?? 0)} accent="rose" trend={vsPrev} />
               {/* revenue.orderCount — không phải totalOrders */}
-              <KpiCard icon={ShoppingBag} label="So don hang" value={(revenue?.orderCount ?? 0).toLocaleString("vi-VN")} accent="espresso" />
+              <KpiCard icon={ShoppingBag} label="Số đơn hàng" value={(revenue?.orderCount ?? 0).toLocaleString("vi-VN")} accent="espresso" />
               {/* revenue.averageOrderValue */}
               <KpiCard icon={BarChart2} label="AOV" value={formatVND(revenue?.averageOrderValue ?? 0)} accent="champagne" />
               {/* revenue.vsPreviousDayPercent — không phải revenueGrowth */}
-              <KpiCard icon={vsPrev >= 0 ? TrendingUp : TrendingDown} label="Tang truong" value={`${vsPrev}%`} accent={vsPrev >= 0 ? "success" : "rose"} trend={vsPrev} />
+              <KpiCard icon={vsPrev >= 0 ? TrendingUp : TrendingDown} label="Tăng trưởng" value={`${vsPrev}%`} accent={vsPrev >= 0 ? "success" : "rose"} trend={vsPrev} />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-2 bg-[var(--cela-paper)] rounded-xl p-6" style={{ border: "1px solid var(--cela-mist)" }}>
-                <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Doanh thu theo ngay</h3>
+                <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Doanh thu theo ngày</h3>
                 {chartData.length === 0 ? (
                   <div className="h-[260px] rounded-lg bg-[var(--cela-ivory)] text-[var(--cela-stone)] flex items-center justify-center text-sm">
-                    Chua co du lieu doanh thu theo ngay
+                    Chưa có dữ liệu doanh thu theo ngày
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height={260}>
@@ -129,18 +129,18 @@ export default function AdminDashboardPage() {
               <div className="bg-[var(--cela-paper)] rounded-xl p-6" style={{ border: "1px solid var(--cela-mist)" }}>
                 <div className="flex items-center gap-2 mb-4">
                   <Star className="w-4 h-4 text-[var(--cela-gold)]" />
-                  <h3 className="font-semibold text-[var(--cela-espresso)]">Top 5 san pham</h3>
+                  <h3 className="font-semibold text-[var(--cela-espresso)]">Top 5 sản phẩm</h3>
                 </div>
 
                 {(dashboard.topProducts ?? []).length === 0 ? (
-                  <p className="text-sm text-[var(--cela-stone)]">Chua co du lieu.</p>
+                  <p className="text-sm text-[var(--cela-stone)]">Chưa có dữ liệu.</p>
                 ) : (
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-[var(--cela-stone)] uppercase">
                         <th className="text-left pb-2">#</th>
-                        <th className="text-left pb-2">Ten</th>
-                        <th className="text-right pb-2">SL</th>
+                        <th className="text-left pb-2">Tên sản phẩm</th>
+                        <th className="text-right pb-2">Số lượng</th>
                       </tr>
                     </thead>
                     <tbody>

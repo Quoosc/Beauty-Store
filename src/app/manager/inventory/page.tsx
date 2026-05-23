@@ -113,7 +113,7 @@ export default function ManagerInventoryPage() {
                 lineHeight: 1.2,
               }}
             >
-              Duy?t di?u ch?nh{" "}
+              Duyệt điều chỉnh{" "}
               <span
                 style={{
                   color: "var(--cela-rose)",

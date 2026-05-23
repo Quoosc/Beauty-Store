@@ -19,10 +19,10 @@ type FormErrors = {
 };
 
 function validatePassword(pwd: string): string | null {
-  if (pwd.length < 8) return "Mat khau phai co it nhat 8 ky tu";
-  if (!/[A-Z]/.test(pwd)) return "Mat khau phai co it nhat 1 chu hoa";
-  if (!/[a-z]/.test(pwd)) return "Mat khau phai co it nhat 1 chu thuong";
-  if (!/[0-9]/.test(pwd)) return "Mat khau phai co it nhat 1 chu so";
+  if (pwd.length < 8) return "Mật khẩu phải có ít nhất 8 ký tự";
+  if (!/[A-Z]/.test(pwd)) return "Mật khẩu phải có ít nhất 1 chữ hoa";
+  if (!/[a-z]/.test(pwd)) return "Mật khẩu phải có ít nhất 1 chữ thường";
+  if (!/[0-9]/.test(pwd)) return "Mật khẩu phải có ít nhất 1 chữ số";
   return null;
 }
 
@@ -48,7 +48,7 @@ export default function ForceChangePasswordPage() {
     const nextErrors: FormErrors = {};
 
     if (!currentPassword.trim()) {
-      nextErrors.currentPassword = "Vui long nhap mat khau tam thoi";
+      nextErrors.currentPassword = "Vui lòng nhập mật khẩu tạm thời";
     }
 
     const pwdErr = validatePassword(newPassword);
@@ -57,11 +57,11 @@ export default function ForceChangePasswordPage() {
     }
 
     if (newPassword && currentPassword && newPassword === currentPassword) {
-      nextErrors.newPassword = "Mat khau moi khong duoc trung mat khau tam thoi";
+      nextErrors.newPassword = "Mật khẩu mới không được trùng mật khẩu tạm thời";
     }
 
     if (newPassword !== confirmPassword) {
-      nextErrors.confirmPassword = "Mat khau xac nhan khong khop";
+      nextErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
     }
 
     setErrors(nextErrors);
@@ -77,7 +77,7 @@ export default function ForceChangePasswordPage() {
       await authService.changePassword(currentPassword, newPassword);
 
       setForceChangePasswordResolved();
-      toast.success("Doi mat khau thanh cong");
+      toast.success("Đổi mật khẩu thành công");
 
       const redirectPath = user ? ROLE_REDIRECT[user.role] : "/login";
       router.push(redirectPath);
@@ -88,7 +88,7 @@ export default function ForceChangePasswordPage() {
           : (err as { response?: { data?: { message?: string } } })?.response
               ?.data?.message;
 
-      toast.error(message || "Doi mat khau that bai");
+      toast.error(message || "Đổi mật khẩu thất bại");
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +135,7 @@ export default function ForceChangePasswordPage() {
             margin: 0,
           }}
         >
-          Doi mat khau moi
+          Đổi mật khẩu mới
         </h1>
 
         <p
@@ -146,7 +146,7 @@ export default function ForceChangePasswordPage() {
             lineHeight: 1.5,
           }}
         >
-          Dang nhap lan dau. Vui long nhap mat khau tam thoi va dat mat khau moi.
+          Đăng nhập lần đầu. Vui lòng nhập mật khẩu tạm thời và đặt mật khẩu mới.
         </p>
 
         <form
@@ -154,32 +154,32 @@ export default function ForceChangePasswordPage() {
           style={{ marginTop: 22, display: "grid", gap: 16 }}
         >
           <PasswordField
-            label="Mat khau tam thoi"
+            label="Mật khẩu tạm thời"
             value={currentPassword}
             onChange={setCurrentPassword}
             show={showCurrent}
             onToggle={() => setShowCurrent((v) => !v)}
-            placeholder="Nhap mat khau tam thoi"
+            placeholder="Nhập mật khẩu tạm thời"
             error={errors.currentPassword}
           />
 
           <PasswordField
-            label="Mat khau moi"
+            label="Mật khẩu mới"
             value={newPassword}
             onChange={setNewPassword}
             show={showNew}
             onToggle={() => setShowNew((v) => !v)}
-            placeholder="Nhap mat khau moi"
+            placeholder="Nhập mật khẩu mới"
             error={errors.newPassword}
           />
 
           <PasswordField
-            label="Xac nhan mat khau moi"
+            label="Xác nhận mật khẩu mới"
             value={confirmPassword}
             onChange={setConfirmPassword}
             show={showConfirm}
             onToggle={() => setShowConfirm((v) => !v)}
-            placeholder="Nhap lai mat khau moi"
+            placeholder="Nhập lại mật khẩu mới"
             error={errors.confirmPassword}
           />
 
@@ -201,10 +201,10 @@ export default function ForceChangePasswordPage() {
                     animation: "spin 0.7s linear infinite",
                   }}
                 />
-                Dang xu ly...
+                Đang xử lý...
               </>
             ) : (
-              "Cap nhat mat khau"
+              "Cập nhật mật khẩu"
             )}
           </CelaButton>
         </form>

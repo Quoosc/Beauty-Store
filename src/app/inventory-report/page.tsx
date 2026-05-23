@@ -102,7 +102,7 @@ export default function InventoryReportPage() {
                 BEAUTY ERP
               </p>
               <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-                Bao cao <span style={{ color: "var(--cela-rose)" }}>ton kho</span>
+                Báo cáo <span style={{ color: "var(--cela-rose)" }}>tồn kho</span>
               </h1>
             </div>
           </div>
@@ -115,7 +115,7 @@ export default function InventoryReportPage() {
               style={{ border: "1px solid var(--cela-mist)" }}
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-              Cap nhat
+              Cập nhật
             </button>
             <button
               onClick={handleExportPdf}
@@ -123,15 +123,15 @@ export default function InventoryReportPage() {
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-[var(--cela-espresso)] hover:opacity-90 disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
-              {isExporting ? "Dang xuat..." : "Xuat PDF"}
+              {isExporting ? "Đang xuất..." : "Xuất PDF"}
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <SummaryCard icon={AlertTriangle} label="SKU low stock" value={lowStockCount} tone="danger" />
-          <SummaryCard icon={Clock} label="SKU sap het han" value={nearExpiryRows.length} tone="warning" />
-          <SummaryCard icon={TrendingDown} label="SKU cham luan chuyen" value={slowMovingRows.length} tone="info" />
+          <SummaryCard icon={Clock} label="SKU sắp hết hạn" value={nearExpiryRows.length} tone="warning" />
+          <SummaryCard icon={TrendingDown} label="SKU chậm luân chuyển" value={slowMovingRows.length} tone="info" />
         </div>
 
         <div className="bg-[var(--cela-paper)] rounded-xl overflow-hidden">
@@ -205,18 +205,18 @@ function SummaryCard({
 
 function StockTable({ rows }: { rows: InventoryReportRow[] }) {
   if (rows.length === 0) {
-    return <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co du lieu ton kho.</p>;
+    return <p className="p-6 text-sm text-[var(--cela-stone)]">Không có dữ liệu tồn kho.</p>;
   }
 
   return (
     <table className="w-full">
       <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
         <tr>
-          <th className="text-left px-6 py-3">San pham</th>
+          <th className="text-left px-6 py-3">Sản phẩm</th>
           <th className="text-left px-4 py-3">SKU</th>
-          <th className="text-center px-4 py-3">Ton kho</th>
-          <th className="text-center px-4 py-3">Threshold</th>
-          <th className="text-center px-4 py-3">Trang thai</th>
+          <th className="text-center px-4 py-3">Tồn kho</th>
+          <th className="text-center px-4 py-3">Ngưỡng</th>
+          <th className="text-center px-4 py-3">Trạng thái</th>
         </tr>
       </thead>
       <tbody>
@@ -240,17 +240,17 @@ function StockTable({ rows }: { rows: InventoryReportRow[] }) {
 
 function NearExpiryTable({ rows }: { rows: NearExpiryItem[] }) {
   if (rows.length === 0) {
-    return <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co du lieu sap het han.</p>;
+    return <p className="p-6 text-sm text-[var(--cela-stone)]">Không có dữ liệu sắp hết hạn.</p>;
   }
 
   return (
     <table className="w-full">
       <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
         <tr>
-          <th className="text-left px-6 py-3">San pham</th>
+          <th className="text-left px-6 py-3">Sản phẩm</th>
           <th className="text-left px-4 py-3">SKU</th>
-          <th className="text-left px-4 py-3">Han su dung</th>
-          <th className="text-center px-4 py-3">So luong</th>
+          <th className="text-left px-4 py-3">Hạn sử dụng</th>
+          <th className="text-center px-4 py-3">Số lượng</th>
         </tr>
       </thead>
       <tbody>
@@ -269,17 +269,17 @@ function NearExpiryTable({ rows }: { rows: NearExpiryItem[] }) {
 
 function SlowMovingTable({ rows }: { rows: SlowMovingItem[] }) {
   if (rows.length === 0) {
-    return <p className="p-6 text-sm text-[var(--cela-stone)]">Khong co du lieu cham luan chuyen.</p>;
+    return <p className="p-6 text-sm text-[var(--cela-stone)]">Không có dữ liệu chậm luân chuyển.</p>;
   }
 
   return (
     <table className="w-full">
       <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
         <tr>
-          <th className="text-left px-6 py-3">San pham</th>
+          <th className="text-left px-6 py-3">Sản phẩm</th>
           <th className="text-left px-4 py-3">SKU</th>
-          <th className="text-center px-4 py-3">So luong</th>
-          <th className="text-left px-4 py-3">Lan ban cuoi</th>
+          <th className="text-center px-4 py-3">Số lượng</th>
+          <th className="text-left px-4 py-3">ần bán cuối</th>
         </tr>
       </thead>
       <tbody>

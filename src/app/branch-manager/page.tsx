@@ -125,7 +125,7 @@ export default function BranchManagerDashboardPage() {
           </div>
         ) : !dashboard ? (
           <div className="bg-[var(--cela-paper)] rounded-xl p-10 text-center" style={{ border: "1px solid var(--cela-mist)" }}>
-            <p className="text-[var(--cela-stone)]">Khong tai duoc du lieu dashboard.</p>
+            <p className="text-[var(--cela-stone)]">Không tải được dữ Liệu dashboard.</p>
           </div>
         ) : (
           <>
@@ -141,8 +141,8 @@ export default function BranchManagerDashboardPage() {
                   <div className="flex items-center gap-3">
                     <CheckSquare className="w-5 h-5 text-[var(--cela-gold)]" />
                     <div>
-                      <p className="font-semibold text-[var(--cela-espresso)]">Don huy cho duyet</p>
-                      <p className="text-sm text-[var(--cela-stone)]">Dang cho xu ly</p>
+                      <p className="font-semibold text-[var(--cela-espresso)]">Đơn Hủy chờ duyệt</p>
+                      <p className="text-sm text-[var(--cela-stone)]">Đang chờ xử lý</p>
                     </div>
                   </div>
                   <span className="text-xl font-bold text-[var(--cela-gold)]">{pendingCancelCount}</span>
@@ -154,8 +154,8 @@ export default function BranchManagerDashboardPage() {
                   <div className="flex items-center gap-3">
                     <ClipboardCheck className="w-5 h-5 text-[var(--cela-cocoa)]" />
                     <div>
-                      <p className="font-semibold text-[var(--cela-espresso)]">Dieu chinh kho cho duyet</p>
-                      <p className="text-sm text-[var(--cela-stone)]">Can phe duyet manager</p>
+                      <p className="font-semibold text-[var(--cela-espresso)]">Điều chỉnh kho chờ duyệt</p>
+                      <p className="text-sm text-[var(--cela-stone)]">ần phê duyệt bởi manager</p>
                     </div>
                   </div>
                   <span className="text-xl font-bold text-[var(--cela-cocoa)]">{pendingAdjustmentCount}</span>
@@ -164,10 +164,10 @@ export default function BranchManagerDashboardPage() {
             </div>
 
             <div className="bg-[var(--cela-paper)] rounded-xl p-6" style={{ border: "1px solid var(--cela-mist)" }}>
-              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Doanh thu theo ngay</h3>
+              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Doanh thu theo ngày</h3>
               {chartData.length === 0 ? (
                 <div className="h-[260px] rounded-lg bg-[var(--cela-ivory)] text-[var(--cela-stone)] flex items-center justify-center text-sm">
-                  Chua co du lieu doanh thu theo ngay
+                  Chưa có dữ liệu doanh thu theo ngày
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
@@ -196,9 +196,9 @@ export default function BranchManagerDashboardPage() {
             </div>
 
             <div className="bg-[var(--cela-paper)] rounded-xl p-6">
-              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Top 5 san pham</h3>
+              <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Top 5 sản phẩm</h3>
               {dashboard.topProducts.length === 0 ? (
-                <p className="text-sm text-[var(--cela-stone)]">Chua co du lieu.</p>
+                <p className="text-sm text-[var(--cela-stone)]">Chưa có dữ liệu.</p>
               ) : (
                 <div className="space-y-3">
                   {dashboard.topProducts.slice(0, 5).map((p, i) => (
@@ -207,7 +207,7 @@ export default function BranchManagerDashboardPage() {
                         {i + 1}
                       </span>
                       <p className="flex-1 text-sm text-[var(--cela-espresso)]">{p.productName}</p>
-                      <p className="text-sm font-semibold text-[var(--cela-stone)]">{p.soldQty} da ban</p>
+                      <p className="text-sm font-semibold text-[var(--cela-stone)]">{p.soldQty} đã bán</p>
                     </div>
                   ))}
                 </div>
@@ -242,7 +242,7 @@ function KpiCard({
       <p className="text-[28px] font-bold text-[var(--cela-espresso)]">{value}</p>
       {trend !== undefined && (
         <p className={`text-sm mt-2 ${trend >= 0 ? "text-[var(--cela-success)]" : "text-[var(--cela-danger)]"}`}>
-          {trend >= 0 ? "?" : "?"} {Math.abs(trend)}% so voi hom qua
+          {trend >= 0 ? "Tăng" : "Giảm"} {Math.abs(trend)}% so với hôm qua
         </p>
       )}
     </div>

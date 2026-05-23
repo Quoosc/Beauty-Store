@@ -109,13 +109,13 @@ export default function ManagerProductsPage() {
                   lineHeight: 1.2,
                 }}
               >
-                Qu?n l�{" "}
+                Quản lý{" "}
                 <span
                   style={{
                     color: "var(--cela-rose)",
                   }}
                 >
-                  s?n ph?m
+                  sản phẩm
                 </span>
               </h1>
             </div>{" "}

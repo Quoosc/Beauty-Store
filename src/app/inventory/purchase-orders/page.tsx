@@ -131,13 +131,13 @@ export default function PurchaseOrdersPage() {
                   lineHeight: 1.2,
                 }}
               >
-                �on{" "}
+                Đơn{" "}
                 <span
                   style={{
                     color: "var(--cela-rose)",
                   }}
                 >
-                  d?t h�ng
+                  Đặt hàng
                 </span>
               </h1>
             </div>{" "}

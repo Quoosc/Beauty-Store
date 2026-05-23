@@ -89,7 +89,7 @@ export default function InventoryStockPage() {
                 lineHeight: 1.2,
               }}
             >
-              T?n{" "}
+              Tồn{" "}
               <span
                 style={{
                   color: "var(--cela-rose)",

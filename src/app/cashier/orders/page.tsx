@@ -127,13 +127,13 @@ export default function CashierOrdersPage() {
               lineHeight: 1.2,
             }}
           >
-            �on h�ng{" "}
+            Đon hàng{" "}
             <span
               style={{
                 color: "var(--cela-rose)",
               }}
             >
-              c?a t�i
+              của tôi
             </span>
           </h1>
         </div>{" "}

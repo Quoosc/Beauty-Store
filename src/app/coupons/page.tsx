@@ -122,7 +122,7 @@ export default function CouponsPage() {
                 BEAUTY ERP
               </p>
               <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-                Quan ly ma <span style={{ color: "var(--cela-rose)" }}>coupon</span>
+                Quản lý Mã <span style={{ color: "var(--cela-rose)" }}>coupon</span>
               </h1>
             </div>
           </div>
@@ -131,19 +131,19 @@ export default function CouponsPage() {
             onClick={() => setShowForm(true)}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--cela-espresso)] text-white text-sm font-semibold rounded-xl hover:opacity-90"
           >
-            <Plus className="w-4 h-4" /> Tao coupon
+            <Plus className="w-4 h-4" /> Tạo coupon
           </button>
         </div>
 
         <div className="bg-[var(--cela-paper)] rounded-xl p-4">
-          <label className="text-sm text-[var(--cela-cocoa)] mr-3">Loc theo khuyen mai:</label>
+          <label className="text-sm text-[var(--cela-cocoa)] mr-3">Lọc theo khuyến mãi:</label>
           <select
             value={promotionFilter}
             onChange={(e) => applyFilter(e.target.value)}
             className="h-10 rounded-lg px-3 text-sm focus:outline-none"
             style={{ border: "1px solid var(--cela-mist)" }}
           >
-            <option value="ALL">Tat ca</option>
+            <option value="ALL">Tất cả</option>
             {promotions.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -163,8 +163,8 @@ export default function CouponsPage() {
               <Ticket className="w-12 h-12 text-[var(--cela-mist)] mb-3" />
               <p className="text-[var(--cela-stone)]">
                 {promotionFilter === "ALL"
-                  ? "Chon khuyen mai de xem coupon"
-                  : "Chua co coupon nao cho khuyen mai nay"}
+                  ? "Chọn khuyến mãi để xem coupon"
+                  : "Chưa có coupon nào cho khuyến mãi này"}
               </p>
             </div>
           ) : (
@@ -172,11 +172,11 @@ export default function CouponsPage() {
               <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
                 <tr>
                   <th className="text-left px-6 py-3">Ma coupon</th>
-                  <th className="text-left px-4 py-3">Khuyen mai</th>
-                  <th className="text-left px-4 py-3">Da dung / Tong</th>
-                  <th className="text-center px-4 py-3">Moi KH</th>
-                  <th className="text-center px-4 py-3">Trang thai</th>
-                  <th className="text-center px-4 py-3">Thao tac</th>
+                  <th className="text-left px-4 py-3">Khuyến mãi</th>
+                  <th className="text-left px-4 py-3">Đã dùng / Tổng</th>
+                  <th className="text-center px-4 py-3">Mỗi KH</th>
+                  <th className="text-center px-4 py-3">Trạng thái</th>
+                  <th className="text-center px-4 py-3">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -201,11 +201,11 @@ export default function CouponsPage() {
                       <td className="px-4 py-4 text-center text-sm text-[var(--cela-stone)]">{c.maxUsagePerCustomer}</td>
                       <td className="px-4 py-4 text-center">
                         <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${c.active ? "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}>
-                          {c.active ? "Dang hoat dong" : "Da tat"}
+                          {c.active ? "Đang hoạt động" : "Đã tắt"}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
-                        <span className="text-xs text-[var(--cela-stone)]">Chi ho tro tao moi</span>
+                        <span className="text-xs text-[var(--cela-stone)]">Chi hỗ trợ tạo mới</span>
                       </td>
                     </tr>
                   );
@@ -220,13 +220,13 @@ export default function CouponsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="bg-[var(--cela-paper)] rounded-2xl w-full max-w-md">
             <div className="flex items-center justify-between p-6" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
-              <h2 className="text-lg font-semibold text-[var(--cela-espresso)]">Tao coupon</h2>
-              <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-[var(--cela-fog)]">Dong</button>
+              <h2 className="text-lg font-semibold text-[var(--cela-espresso)]">Tạo coupon</h2>
+              <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-[var(--cela-fog)]">Đóng</button>
             </div>
 
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Ma coupon <span className="text-[var(--cela-danger)]">*</span></label>
+                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Mã coupon <span className="text-[var(--cela-danger)]">*</span></label>
                 <input
                   type="text"
                   value={form.code}
@@ -238,14 +238,14 @@ export default function CouponsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Khuyen mai ap dung <span className="text-[var(--cela-danger)]">*</span></label>
+                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Khuyến mãi áp dụng <span className="text-[var(--cela-danger)]">*</span></label>
                 <select
                   value={form.promotionId}
                   onChange={(e) => setForm((f) => ({ ...f, promotionId: e.target.value }))}
                   className="w-full h-10 rounded-lg px-3 text-sm focus:outline-none"
                   style={{ border: "1px solid var(--cela-mist)" }}
                 >
-                  <option value="">-- Chon khuyen mai --</option>
+                  <option value="">-- Chọn khuyến mãi --</option>
                   {promotions.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
@@ -254,7 +254,7 @@ export default function CouponsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Tong luot dung</label>
+                  <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Tổng lượt dùng</label>
                   <input
                     type="number"
                     min={1}
@@ -265,7 +265,7 @@ export default function CouponsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Luot dung moi KH</label>
+                  <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Lượt dùng mỗi KH</label>
                   <input
                     type="number"
                     min={1}
@@ -284,14 +284,14 @@ export default function CouponsPage() {
                   className="flex-1 h-10 rounded-xl text-sm font-medium text-[var(--cela-cocoa)] hover:bg-[var(--cela-fog)]"
                   style={{ border: "1px solid var(--cela-mist)" }}
                 >
-                  Huy
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
                   className="flex-1 h-10 bg-[var(--cela-espresso)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 text-sm"
                 >
-                  {isSaving ? "Dang luu..." : "Tao moi"}
+                  {isSaving ? "Đang lưu..." : "Tạo mới"}
                 </button>
               </div>
             </form>

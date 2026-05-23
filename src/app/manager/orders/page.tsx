@@ -45,7 +45,7 @@ export default function ManagerOrdersPage() {
       });
       setRequests(data);
     } catch {
-      toast.error("Khong the tai danh sach yeu cau huy");
+      toast.error("Không thể tải danh sách yêu cầu hủy đơn");
     } finally {
       setIsLoading(false);
     }
@@ -58,12 +58,12 @@ export default function ManagerOrdersPage() {
   async function handleApprove(orderId: string) {
     try {
       await orderService.approveCancel(orderId);
-      toast.success("Da phe duyet huy don");
+      toast.success("Đã phê duyệt yêu cầu hủy đơn");
       await load();
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Phe duyet that bai";
+          ?.message ?? "Phê duyệt thất bại";
       toast.error(msg);
     }
   }
@@ -71,12 +71,12 @@ export default function ManagerOrdersPage() {
   async function handleReject(orderId: string) {
     try {
       await orderService.rejectCancel(orderId);
-      toast.success("Da tu choi yeu cau huy");
+      toast.success("Đã từ chối yêu cầu hủy đơn");
       await load();
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Tu choi that bai";
+          ?.message ?? "Từ chối thất bại";
       toast.error(msg);
     }
   }
@@ -109,20 +109,20 @@ export default function ManagerOrdersPage() {
                 lineHeight: 1.2,
               }}
             >
-              Duyet yeu cau <span style={{ color: "var(--cela-rose)" }}>huy don</span>
+              Duyệt yêu cầu <span style={{ color: "var(--cela-rose)" }}>hủy đơn</span>
             </h1>
           </div>
         </div>
 
         {!canLoad ? (
           <div className="bg-[var(--cela-paper)] rounded-xl p-6 text-sm text-[var(--cela-stone)]">
-            Khong xac dinh duoc branchId cua tai khoan.
+            Không xác định được branchId của tài khoản.
           </div>
         ) : (
           <div className="bg-[var(--cela-paper)] rounded-xl overflow-hidden">
             <div className="p-6" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
               <p className="text-sm text-[var(--cela-stone)]">
-                Cac don co gia tri cao can Branch Manager phe duyet truoc khi huy.
+                Các đơn có giá trị cao cần Branch Manager phê duyệt trước khi hủy.
               </p>
             </div>
 
@@ -136,18 +136,18 @@ export default function ManagerOrdersPage() {
             ) : requests.length === 0 ? (
               <div className="flex flex-col items-center py-16">
                 <CheckSquare className="w-12 h-12 text-[var(--cela-mist)] mb-3" />
-                <p className="text-[var(--cela-stone)]">Khong co yeu cau huy nao dang cho phe duyet</p>
+                <p className="text-[var(--cela-stone)]">Không có yêu cầu hủy nào đang chờ phê duyệt</p>
               </div>
             ) : (
               <table className="w-full">
                 <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase">
                   <tr>
-                    <th className="text-left px-6 py-3">Ma don</th>
+                    <th className="text-left px-6 py-3">Mã đơn</th>
                     <th className="text-left px-4 py-3">Cashier</th>
-                    <th className="text-left px-4 py-3">Thoi gian</th>
-                    <th className="text-right px-4 py-3">Tong tien</th>
-                    <th className="text-left px-4 py-3">Ly do</th>
-                    <th className="text-center px-4 py-3">Thao tac</th>
+                    <th className="text-left px-4 py-3">Thời gian</th>
+                    <th className="text-right px-4 py-3">Tổng tiền</th>
+                    <th className="text-left px-4 py-3">Lý do</th>
+                    <th className="text-center px-4 py-3">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,13 +180,13 @@ export default function ManagerOrdersPage() {
                             onClick={() => handleApprove(req.orderId)}
                             className="flex items-center gap-1 px-3 py-1.5 bg-[rgba(107,142,106,0.10)] border border-green-200 text-[var(--cela-success)] rounded-lg text-xs font-medium hover:bg-[rgba(107,142,106,0.15)]"
                           >
-                            <CheckCircle className="w-3.5 h-3.5" /> Phe duyet
+                            <CheckCircle className="w-3.5 h-3.5" /> Duyệt
                           </button>
                           <button
                             onClick={() => handleReject(req.orderId)}
                             className="flex items-center gap-1 px-3 py-1.5 bg-[rgba(183,110,121,0.08)] border border-red-200 text-[var(--cela-danger)] rounded-lg text-xs font-medium hover:bg-[rgba(183,110,121,0.15)]"
                           >
-                            <XCircle className="w-3.5 h-3.5" /> Tu choi
+                            <XCircle className="w-3.5 h-3.5" /> Từ chối
                           </button>
                         </div>
                       </td>

@@ -71,7 +71,7 @@ export default function LoginPage() {
           ?.message ?? "";
 
       if (status === 423 || backendMessage.toLowerCase().includes("lock")) {
-        setError("Tai khoan bi khoa, lien he Admin");
+        setError("Tài khoản bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.");
         return;
       }
 
@@ -80,8 +80,8 @@ export default function LoginPage() {
       const remaining = Math.max(0, 5 - nextAttempts);
       setError(
         remaining > 0
-          ? `Sai ten dang nhap hoac mat khau. Con ${remaining} lan thu.`
-          : "Sai ten dang nhap hoac mat khau."
+          ? `Sai tên đăng nhập hoặc mật khẩu. Còn ${remaining} lần thử.`
+          : "Sai tên đăng nhập hoặc mật khẩu."
       );
     }
   };
