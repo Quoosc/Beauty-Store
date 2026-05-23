@@ -27,6 +27,7 @@ const emptyForm: CouponForm = {
 export default function CouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [activePromotions, setActivePromotions] = useState<Promotion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
@@ -34,17 +35,29 @@ export default function CouponsPage() {
   const [form, setForm] = useState<CouponForm>(emptyForm);
   const [promotionFilter, setPromotionFilter] = useState<string>("ALL");
 
-  async function loadCoupons(promotionId: string) {
+  async function loadCouponsForPromotion(promotionId: string): Promise<Coupon[]> {
     const data = await couponService.getAll(promotionId, { page: 0, size: 100 });
     return data?.content ?? (Array.isArray(data) ? data : []);
+  }
+
+  async function loadAllCoupons(promoList: Promotion[]) {
+    if (promoList.length === 0) { setCoupons([]); return; }
+    const results = await Promise.all(promoList.map((p) => loadCouponsForPromotion(p.id).catch(() => [] as Coupon[])));
+    setCoupons(results.flat());
   }
 
   async function loadInitial() {
     setIsLoading(true);
     try {
-      const promoRows = await promotionService.getAll({ active: true, page: 0, size: 100 });
-      const promoList = promoRows?.content ?? (Array.isArray(promoRows) ? promoRows : []);
-      setPromotions(promoList);
+      const [allRows, activeRows] = await Promise.all([
+        promotionService.getAll({ page: 0, size: 200 }),
+        promotionService.getAll({ active: true, page: 0, size: 200 }),
+      ]);
+      const allList: Promotion[] = allRows?.content ?? (Array.isArray(allRows) ? allRows : []);
+      const activeList: Promotion[] = activeRows?.content ?? (Array.isArray(activeRows) ? activeRows : []);
+      setPromotions(allList);
+      setActivePromotions(activeList);
+      await loadAllCoupons(allList);
     } catch {
       toast.error("Khong the tai danh sach khuyen mai");
     } finally {
@@ -58,37 +71,40 @@ export default function CouponsPage() {
 
   async function applyFilter(nextFilter: string) {
     setPromotionFilter(nextFilter);
-    if (nextFilter === "ALL") {
-      setCoupons([]);
-      return;
-    }
+    setIsLoading(true);
     try {
-      const data = await loadCoupons(nextFilter);
-      setCoupons(data);
+      if (nextFilter === "ALL") {
+        await loadAllCoupons(promotions);
+      } else {
+        const data = await loadCouponsForPromotion(nextFilter);
+        setCoupons(data);
+      }
     } catch {
-      toast.error("Khong the tai danh sach coupon");
+      toast.error("Không thể tải danh sách coupon");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!form.code.trim()) {
-      toast.error("Ma coupon la bat buoc");
+      toast.error("Mã coupon là bắt buộc");
       return;
     }
     if (!form.promotionId) {
-      toast.error("Vui long chon khuyen mai");
+      toast.error("Vui lòng chọn khuyến mãi áp dụng");
       return;
     }
     if (form.maxUsagePerCustomer > form.maxUsageTotal) {
-      toast.error("Luot dung moi khach khong duoc lon hon tong luot");
+      toast.error("Lượt dùng mỗi khách không được lớn hơn tổng lượt dùng");
       return;
     }
 
     setIsSaving(true);
     try {
       await couponService.create(form);
-      toast.success("Tao coupon thanh cong");
+      toast.success("Tạo coupon thành công");
       setShowForm(false);
       setForm(emptyForm);
       await applyFilter(promotionFilter);
@@ -97,9 +113,9 @@ export default function CouponsPage() {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
 
       if (status === 409) {
-        toast.error("Ma coupon da ton tai");
+        toast.error("Mã coupon đã tồn tại");
       } else {
-        toast.error(msg || "Luu that bai");
+        toast.error(msg || "Tạo coupon thất bại");
       }
     } finally {
       setIsSaving(false);
@@ -107,7 +123,7 @@ export default function CouponsPage() {
   }
 
   const promoMap = useMemo(
-    () => new Map(promotions.map((p) => [p.id, p.name])),
+    () => new Map(promotions.map((p) => [p.id, p.name + (p.active ? "" : " (đã tắt)")])),
     [promotions]
   );
 
@@ -163,7 +179,7 @@ export default function CouponsPage() {
               <Ticket className="w-12 h-12 text-[var(--cela-mist)] mb-3" />
               <p className="text-[var(--cela-stone)]">
                 {promotionFilter === "ALL"
-                  ? "Chọn khuyến mãi để xem coupon"
+                  ? "Chưa có coupon nào"
                   : "Chưa có coupon nào cho khuyến mãi này"}
               </p>
             </div>
@@ -246,7 +262,7 @@ export default function CouponsPage() {
                   style={{ border: "1px solid var(--cela-mist)" }}
                 >
                   <option value="">-- Chọn khuyến mãi --</option>
-                  {promotions.map((p) => (
+                  {activePromotions.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>

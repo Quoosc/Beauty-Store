@@ -2,7 +2,7 @@ import api from "@/lib/axios";
 import type { ApiResponse, Supplier } from "@/types";
 
 export const supplierService = {
-  getAll: async (params?: { page?: number; size?: number; search?: string }) => {
+  getAll: async (params?: { page?: number; size?: number; search?: string; includeInactive?: boolean }) => {
     const res = await api.get(`/inventory/suppliers`, { params });
     return res.data.data;
   },

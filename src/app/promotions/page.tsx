@@ -52,7 +52,7 @@ export default function PromotionsPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const data = await promotionService.getAll({ active: true, page: 0, size: 100 });
+      const data = await promotionService.getAll({ page: 0, size: 100 });
       const rows = data?.content ?? (Array.isArray(data) ? data : []);
       setPromotions(rows);
     } catch {

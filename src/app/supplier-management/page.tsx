@@ -38,10 +38,11 @@ export default function SupplierManagementPage() {
         search: search || undefined,
         page: 0,
         size: 100,
+        includeInactive: true,
       });
       setSuppliers(Array.isArray(data) ? data : (data?.content ?? []));
     } catch {
-      toast.error("Khong the tai danh sach nha cung cap");
+      toast.error("Không thể tải danh sách nhà cung cấp");
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +79,7 @@ export default function SupplierManagementPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast.error("Ten nha cung cap la bat buoc");
+      toast.error("Tên nhà cung cấp là bắt buộc");
       return;
     }
 
@@ -86,17 +87,17 @@ export default function SupplierManagementPage() {
     try {
       if (editing) {
         await supplierService.update(editing.id, form);
-        toast.success("Da cap nhat nha cung cap");
+        toast.success("Đã cập nhật nhà cung cấp");
       } else {
         await supplierService.create(form as Omit<Supplier, "id">);
-        toast.success("Da them nha cung cap");
+        toast.success("Đã thêm nhà cung cấp");
       }
       closeDialog();
       await load();
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Luu that bai";
+          ?.message ?? "Lưu thất bại";
       toast.error(msg);
     } finally {
       setIsSaving(false);
@@ -104,16 +105,16 @@ export default function SupplierManagementPage() {
   }
 
   async function handleDeactivate(supplier: Supplier) {
-    if (!confirm(`Vo hieu hoa nha cung cap \"${supplier.name}\"?`)) return;
+    if (!confirm(`Bạn có chắc chắn muốn vô hiệu hóa nhà cung cấp "${supplier.name}"?`)) return;
 
     try {
       await supplierService.deactivate(supplier.id);
-      toast.success("Da vo hieu hoa nha cung cap");
+      toast.success("Đã vô hiệu hóa nhà cung cấp");
       await load();
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Vo hieu hoa that bai";
+          ?.message ?? "Vô hiệu hóa thất bại";
       toast.error(msg);
     }
   }
@@ -136,7 +137,7 @@ export default function SupplierManagementPage() {
                 BEAUTY ERP
               </p>
               <h1 style={{ fontFamily: "var(--cela-display)", fontSize: 28, fontWeight: 700, color: "var(--cela-espresso)", fontStyle: "italic", lineHeight: 1.2 }}>
-                Quan ly <span style={{ color: "var(--cela-rose)" }}>nha cung cap</span>
+                Quản lý <span style={{ color: "var(--cela-rose)" }}>nhà cung cấp</span>
               </h1>
             </div>
           </div>
@@ -145,7 +146,7 @@ export default function SupplierManagementPage() {
             onClick={openCreate}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--cela-espresso)] text-white text-sm font-semibold rounded-xl hover:opacity-90"
           >
-            <Plus className="w-4 h-4" /> Them nha cung cap
+            <Plus className="w-4 h-4" /> Thêm nhà cung cấp
           </button>
         </div>
 
@@ -156,7 +157,7 @@ export default function SupplierManagementPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tim theo ten hoac ma so thue..."
+              placeholder="Tìm theo tên hoặc mã số thuế..."
               className="h-10 w-full pl-9 pr-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(183,110,121,0.18)]"
               style={{ border: "1px solid var(--cela-mist)" }}
             />
@@ -174,41 +175,57 @@ export default function SupplierManagementPage() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center py-16">
               <Truck className="w-12 h-12 text-[var(--cela-mist)] mb-3" />
-              <p className="text-[var(--cela-stone)]">Khong co nha cung cap nao</p>
+              <p className="text-[var(--cela-stone)]">Không có nhà cung cấp nào</p>
             </div>
           ) : (
             <table className="w-full">
               <thead className="bg-[var(--cela-fog)] text-xs text-[var(--cela-stone)] uppercase" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
                 <tr>
-                  <th className="text-left px-6 py-3">Ten nha cung cap</th>
-                  <th className="text-left px-4 py-3">Ma so thue</th>
-                  <th className="text-left px-4 py-3">SDT</th>
-                  <th className="text-left px-4 py-3">Dia chi</th>
-                  <th className="text-center px-4 py-3">Thao tac</th>
+                  <th className="text-left px-6 py-3">Tên nhà cung cấp</th>
+                  <th className="text-left px-4 py-3">Mã số thuế</th>
+                  <th className="text-left px-4 py-3">SĐT</th>
+                  <th className="text-left px-4 py-3">Địa chỉ</th>
+                  <th className="text-center px-4 py-3">Trạng thái</th>
+                  <th className="text-center px-4 py-3">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((supplier) => (
-                  <tr key={supplier.id} className="hover:bg-[var(--cela-fog)] transition-colors" style={{ borderBottom: "1px solid var(--cela-fog)" }}>
+                  <tr
+                    key={supplier.id}
+                    className="hover:bg-[var(--cela-fog)] transition-colors"
+                    style={{ borderBottom: "1px solid var(--cela-fog)", opacity: supplier.isActive ? 1 : 0.55 }}
+                  >
                     <td className="px-6 py-4 text-sm font-medium text-[var(--cela-espresso)]">{supplier.name}</td>
                     <td className="px-4 py-4 text-sm text-[var(--cela-stone)] font-mono">{supplier.taxCode || "-"}</td>
                     <td className="px-4 py-4 text-sm text-[var(--cela-stone)]">{supplier.phone || "-"}</td>
                     <td className="px-4 py-4 text-sm text-[var(--cela-stone)] max-w-xs"><p className="truncate" title={supplier.address}>{supplier.address || "-"}</p></td>
                     <td className="px-4 py-4 text-center">
+                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${supplier.isActive ? "bg-[rgba(107,142,106,0.15)] text-[var(--cela-success)]" : "bg-[var(--cela-fog)] text-[var(--cela-stone)]"}`}>
+                        {supplier.isActive ? "Đang hoạt động" : "Đã vô hiệu hóa"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => openEdit(supplier)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--cela-cocoa)] hover:bg-[var(--cela-fog)]"
-                          style={{ border: "1px solid var(--cela-mist)" }}
-                        >
-                          Sua
-                        </button>
-                        <button
-                          onClick={() => handleDeactivate(supplier)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--cela-danger)] hover:bg-[rgba(183,110,121,0.08)]"
-                        >
-                          Vo hieu hoa
-                        </button>
+                        {supplier.isActive && (
+                          <button
+                            onClick={() => openEdit(supplier)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--cela-cocoa)] hover:bg-[var(--cela-fog)]"
+                            style={{ border: "1px solid var(--cela-mist)" }}
+                          >
+                            Sửa
+                          </button>
+                        )}
+                        {supplier.isActive ? (
+                          <button
+                            onClick={() => handleDeactivate(supplier)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--cela-danger)] hover:bg-[rgba(183,110,121,0.08)]"
+                          >
+                            Vô hiệu hóa
+                          </button>
+                        ) : (
+                          <span className="text-xs text-[var(--cela-stone)]">Chỉ đọc</span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -224,14 +241,14 @@ export default function SupplierManagementPage() {
           <div className="bg-[var(--cela-paper)] rounded-2xl w-full max-w-md">
             <div className="flex items-center justify-between p-6" style={{ borderBottom: "1px solid var(--cela-mist)" }}>
               <h2 className="text-lg font-semibold text-[var(--cela-espresso)]">
-                {editing ? "Sua nha cung cap" : "Them nha cung cap"}
+                {editing ? "Sửa nhà cung cấp" : "Thêm nhà cung cấp"}
               </h2>
-              <button onClick={closeDialog} className="p-1.5 rounded-lg hover:bg-[var(--cela-fog)]">Dong</button>
+              <button onClick={closeDialog} className="p-1.5 rounded-lg hover:bg-[var(--cela-fog)]">Đóng</button>
             </div>
 
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Ten *</label>
+                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Tên *</label>
                 <input
                   type="text"
                   value={form.name}
@@ -242,7 +259,7 @@ export default function SupplierManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Ma so thue</label>
+                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Mã số thuế</label>
                 <input
                   type="text"
                   value={form.taxCode}
@@ -253,7 +270,7 @@ export default function SupplierManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">So dien thoai</label>
+                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Số điện thoại</label>
                 <input
                   type="tel"
                   value={form.phone}
@@ -264,7 +281,7 @@ export default function SupplierManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Dia chi</label>
+                <label className="block text-sm font-medium text-[var(--cela-cocoa)] mb-1.5">Địa chỉ</label>
                 <textarea
                   rows={2}
                   value={form.address}
@@ -281,14 +298,14 @@ export default function SupplierManagementPage() {
                   className="flex-1 h-10 rounded-xl text-sm font-medium text-[var(--cela-cocoa)] hover:bg-[var(--cela-fog)]"
                   style={{ border: "1px solid var(--cela-mist)" }}
                 >
-                  Huy
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving || !form.name.trim()}
                   className="flex-1 h-10 bg-[var(--cela-espresso)] text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 text-sm"
                 >
-                  {isSaving ? "Dang luu..." : editing ? "Cap nhat" : "Them moi"}
+                  {isSaving ? "Đang lưu..." : editing ? "Cập nhật" : "Thêm mới"}
                 </button>
               </div>
             </form>
