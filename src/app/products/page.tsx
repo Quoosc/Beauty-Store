@@ -193,7 +193,7 @@ export default function ProductsPage() {
                         {formatVND(product.sellingPrice)}
                       </td>
                       <td style={{ padding: "12px 16px", textAlign: "right", fontSize: 13, color: "var(--cela-stone)", fontFamily: "var(--cela-mono)" }}>
-                        <span>{formatVND(product.costPrice)}</span>
+                        <span>{product.costPrice === null ? "-" : formatVND(product.costPrice)}</span>
                         {costWarning && (
                           <span title="Giá vốn > Giá bán" style={{ marginLeft: 4 }}>
                             <AlertTriangle style={{ width: 14, height: 14, color: "var(--cela-gold)", display: "inline-block", verticalAlign: "middle" }} />

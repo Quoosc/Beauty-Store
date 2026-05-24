@@ -53,7 +53,7 @@ export default function ManagerProductsPage() {
     return () => clearTimeout(timer);
   }, [search, categoryFilter, statusFilter, page]);
   async function handleDiscontinue(id: string, name: string) {
-    if (!confirm(`Ngừng kinh doanh sản phẩm"${name}"?`)) return;
+    if (!confirm(`Ngừng kinh doanh sản phẩm "${name}"?`)) return;
     try {
       await productService.discontinue(id);
       toast.success("Đã ngừng kinh doanh sản phẩm");
@@ -243,7 +243,13 @@ export default function ManagerProductsPage() {
               <tbody>
                 {" "}
                 {products.map((product) => {
-                  const costWarning = product.costPrice > product.sellingPrice;
+                  const imageUrl = product.imageUrl;
+                  const costPrice = product.costPrice;
+                  const costWarning =
+                    costPrice !== null && costPrice > product.sellingPrice;
+                  const categoryName =
+                    categories.find((category) => category.id === product.categoryId)
+                      ?.name ?? "-";
                   return (
                     <tr
                       key={product.id}
@@ -255,11 +261,9 @@ export default function ManagerProductsPage() {
                       {" "}
                       <td className="px-4 py-3">
                         {" "}
-                        {product.imageUrls.length > 0 ? (
+                        {imageUrl ? (
                           <img
-                            src={productService.getImageUrl(
-                              product.imageUrls[0],
-                            )}
+                            src={productService.getImageUrl(imageUrl)}
                             alt={product.name}
                             className="w-12 h-12 rounded-lg object-cover"
                           />
@@ -281,7 +285,7 @@ export default function ManagerProductsPage() {
                       </td>{" "}
                       <td className="px-4 py-3 text-sm text-[var(--cela-stone)]">
                         {" "}
-                        {product.category?.name ?? "—"}{" "}
+                        {categoryName}{" "}
                       </td>{" "}
                       <td className="px-4 py-3 text-right text-sm font-medium text-[var(--cela-espresso)]">
                         {" "}
@@ -289,7 +293,7 @@ export default function ManagerProductsPage() {
                       </td>{" "}
                       <td className="px-4 py-3 text-right text-sm text-[var(--cela-stone)]">
                         {" "}
-                        <span>{formatVND(product.costPrice)}</span>{" "}
+                        <span>{costPrice === null ? "-" : formatVND(costPrice)}</span>{" "}
                         {costWarning && (
                           <span
                             className="ml-1 inline-flex items-center"
@@ -382,3 +386,4 @@ export default function ManagerProductsPage() {
     </ERPLayout>
   );
 }
+

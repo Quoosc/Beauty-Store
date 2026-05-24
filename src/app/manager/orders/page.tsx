@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, CheckSquare, ExternalLink, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -30,7 +30,7 @@ export default function ManagerOrdersPage() {
 
   const canLoad = useMemo(() => Boolean(branchId), [branchId]);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!branchId) {
       setRequests([]);
       setIsLoading(false);
@@ -49,11 +49,15 @@ export default function ManagerOrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [branchId]);
 
   useEffect(() => {
-    load();
-  }, [branchId]);
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   async function handleApprove(orderId: string) {
     try {

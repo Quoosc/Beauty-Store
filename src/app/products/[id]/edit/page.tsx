@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ERPLayout } from "@/components/layout/ERPLayout";
 import { productService } from "@/services/product.service";
 import { categoryService } from "@/services/category.service";
-import type { Category } from "@/types";
+import type { Category, Product } from "@/types";
 import {
   CelaButton,
   CelaCard,
@@ -49,11 +49,13 @@ export default function EditProductPage() {
           productService.getById(id),
           categoryService.getAll(),
         ]);
-        const p = productRes.data.data;
+        const p = productRes.data.data as Product & {
+          description?: string | null;
+        };
         setName(p.name);
         setSku(p.sku);
         setBarcode(p.barcode ?? "");
-        setCategoryId(p.category?.id ?? "");
+        setCategoryId(p.categoryId ?? "");
         setSellingPrice(String(p.sellingPrice));
         setCostPrice(String(p.costPrice ?? ""));
         setExpiryDate(p.expiryDate?.split("T")[0] ?? "");
@@ -67,7 +69,7 @@ export default function EditProductPage() {
       }
     }
     load();
-  }, [id]);
+  }, [id, router]);
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !sku.trim() || !categoryId || !sellingPrice) {

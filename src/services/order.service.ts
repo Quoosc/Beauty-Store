@@ -65,6 +65,23 @@ function normalizeOrderPage(data: unknown): SpringPage<Order> {
   };
 }
 
+function toCancelRequests(orders: Order[], pendingOnly = false): CancelRequest[] {
+  const source = pendingOnly
+    ? orders.filter((order) => order.hasPendingCancel || Boolean(order.pendingCancelReason))
+    : orders;
+
+  return source.map((order) => ({
+    id: order.id,
+    orderId: order.id,
+    cashierId: order.cashierId,
+    orderTotal: order.total,
+    reason: order.pendingCancelReason ?? "",
+    requestedAt: order.createdAt,
+    status: "PENDING" as CancelLogStatus,
+    hasPendingCancel: true,
+  }));
+}
+
 export const orderService = {
   create: (data: CreateOrderPayload) =>
     api.post<ApiResponse<Order>>("/order/orders", data, {
@@ -100,22 +117,23 @@ export const orderService = {
     branchId: string,
     params?: { page?: number; size?: number }
   ): Promise<CancelRequest[]> => {
-    const res = await api.get<ApiResponse<unknown>>(
-      `/order/orders/branch/${branchId}/pending-cancels`,
-      { params }
-    );
-    const orders = normalizeOrderList(res.data.data);
-    return orders.map((order) => ({
-      id: order.id,
-      orderId: order.id,
-      cashierId: order.cashierId,
-      orderTotal: order.total,
-      reason: order.pendingCancelReason ?? "",
-      requestedAt: order.createdAt,
-      status: "PENDING" as CancelLogStatus,
-      hasPendingCancel: true,
-    }));
+    try {
+      const res = await api.get<ApiResponse<unknown>>(
+        `/order/orders/branch/${branchId}/pending-cancels`,
+        { params }
+      );
+      return toCancelRequests(normalizeOrderList(res.data.data));
+    } catch {
+      const fallback = await api.get<ApiResponse<unknown>>(
+        `/order/orders/branch/${branchId}`,
+        { params }
+      );
+      return toCancelRequests(normalizeOrderList(fallback.data.data), true);
+    }
   },
+
+  getCancelRequests: (branchId: string, params?: { page?: number; size?: number }) =>
+    orderService.getPendingCancels(branchId, params),
 
   cancel: (id: string, data: { reason: string }) =>
     api.post<ApiResponse<Order>>(`/order/orders/${id}/cancel`, data),

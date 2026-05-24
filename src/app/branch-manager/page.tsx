@@ -40,10 +40,12 @@ export default function BranchManagerDashboardPage() {
   const [pendingCancelCount, setPendingCancelCount] = useState(0);
   const [pendingAdjustmentCount, setPendingAdjustmentCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [today, setToday] = useState("");
+  const today = useMemo(
+    () => new Date().toLocaleDateString("vi-VN", { dateStyle: "full" }),
+    []
+  );
 
   useEffect(() => {
-    setToday(new Date().toLocaleDateString("vi-VN", { dateStyle: "full" }));
     let mounted = true;
 
     async function load() {
@@ -52,8 +54,7 @@ export default function BranchManagerDashboardPage() {
         const [dashboardResult, cancelResult, adjustmentResult] = await Promise.allSettled([
           reportService.getDashboard(),
           branchId
-            ? orderService.getCancelRequests(branchId, {
-                status: "PENDING",
+            ? orderService.getPendingCancels(branchId, {
                 page: 0,
                 size: 100,
               })
@@ -201,11 +202,11 @@ export default function BranchManagerDashboardPage() {
 
             <div className="bg-[var(--cela-paper)] rounded-xl p-6">
               <h3 className="font-semibold text-[var(--cela-espresso)] mb-4">Top 5 sản phẩm</h3>
-              {dashboard.topProducts.length === 0 ? (
+              {(dashboard.topProducts ?? []).length === 0 ? (
                 <p className="text-sm text-[var(--cela-stone)]">Chưa có dữ liệu.</p>
               ) : (
                 <div className="space-y-3">
-                  {dashboard.topProducts.slice(0, 5).map((p, i) => (
+                  {(dashboard.topProducts ?? []).slice(0, 5).map((p, i) => (
                     <div key={p.productId} className="flex items-center gap-3">
                       <span className="w-6 h-6 rounded-full bg-[rgba(183,110,121,0.15)] text-[var(--cela-rose-deep)] text-xs font-bold flex items-center justify-center">
                         {i + 1}

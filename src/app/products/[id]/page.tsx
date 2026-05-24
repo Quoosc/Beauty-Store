@@ -9,6 +9,10 @@ import { productService } from "@/services/product.service";
 import { useAuthStore } from "@/stores/auth.store";
 import type { Product } from "@/types";
 
+type ProductDetail = Product & {
+  description?: string | null;
+};
+
 const formatVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -22,10 +26,11 @@ export default function ProductDetailPage() {
 
   const id = params.id as string;
 
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [todayMs] = useState(() => Date.now());
 
   const canManage = user?.role === "ADMIN" || user?.role === "BRANCH_MANAGER";
 
@@ -55,21 +60,23 @@ export default function ProductDetailPage() {
     };
   }, [id, router]);
 
+  const expiryDate = product?.expiryDate ?? null;
+
   const expiryInfo = useMemo(() => {
-    if (!product?.expiryDate) {
+    if (!expiryDate) {
       return null;
     }
 
     const days = Math.ceil(
-      (new Date(product.expiryDate).getTime() - Date.now()) / 86400000
+      (new Date(expiryDate).getTime() - todayMs) / 86400000
     );
 
     return {
       days,
       isNear: days < 30,
-      text: new Date(product.expiryDate).toLocaleDateString("vi-VN"),
+      text: new Date(expiryDate).toLocaleDateString("vi-VN"),
     };
-  }, [product?.expiryDate]);
+  }, [expiryDate, todayMs]);
 
   async function handleDiscontinue() {
     if (!product) return;
@@ -107,7 +114,8 @@ export default function ProductDetailPage() {
     return null;
   }
 
-  const imageUrls = product.imageUrls || [];
+  const imageUrls = product.imageUrl ? [product.imageUrl] : [];
+  const description = product.description?.trim();
 
   return (
     <ERPLayout>
@@ -191,9 +199,9 @@ export default function ProductDetailPage() {
               <InfoRow label="Tên sản phẩm" value={product.name} />
               <InfoRow label="SKU" value={product.sku} mono />
               <InfoRow label="Barcode" value={product.barcode || "-"} mono />
-              <InfoRow label="Danh mục" value={product.category?.name || "-"} />
+              <InfoRow label="Danh mục" value={product.categoryId || "-"} />
               <InfoRow label="Giá bán" value={formatVND(product.sellingPrice)} mono />
-              <InfoRow label="Giá vốn" value={formatVND(product.costPrice)} mono />
+              <InfoRow label="Giá vốn" value={product.costPrice === null ? "-" : formatVND(product.costPrice)} mono />
 
               <div>
                 <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Trạng thái</p>
@@ -216,10 +224,10 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {product.description && (
+            {description && (
               <div className="mt-5">
                 <p className="text-xs uppercase tracking-wider text-[var(--cela-stone)] mb-1">Mô tả</p>
-                <p className="text-sm text-[var(--cela-cocoa)] leading-6">{product.description}</p>
+                <p className="text-sm text-[var(--cela-cocoa)] leading-6">{description}</p>
               </div>
             )}
           </div>
