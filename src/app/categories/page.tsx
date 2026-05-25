@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Plus,
   ChevronDown,
@@ -22,7 +22,7 @@ interface CategoryDialogProps {
     name: string;
   };
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: () => void | Promise<void>;
 }
 function CategoryDialog({
   open,
@@ -34,9 +34,6 @@ function CategoryDialog({
 }: CategoryDialogProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [isLoading, setIsLoading] = useState(false);
-  useEffect(() => {
-    setName(initial?.name ?? "");
-  }, [initial]);
   if (!open) return null;
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +55,7 @@ function CategoryDialog({
         });
         toast.success("Cập nhật danh mục thành công!");
       }
-      onSuccess();
+      await onSuccess();
       onClose();
     } catch (err: unknown) {
       const msg = (
@@ -171,7 +168,7 @@ export default function CategoriesPage() {
     open: false,
     mode: "create",
   });
-  async function loadCategories() {
+  const loadCategories = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await categoryService.getAll();
@@ -181,10 +178,14 @@ export default function CategoriesPage() {
     } finally {
       setIsLoading(false);
     }
-  }
-  useEffect(() => {
-    loadCategories();
   }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadCategories();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [loadCategories]);
   async function handleDelete(id: string) {
     if (!confirm("Bạn có chắc muốn xóa danh mục này?")) return;
     try {
@@ -209,6 +210,7 @@ export default function CategoriesPage() {
     <ERPLayout>
       {" "}
       <CategoryDialog
+        key={`${dialog.open}:${dialog.mode}:${dialog.parentId ?? ""}:${dialog.initial?.id ?? ""}`}
         {...dialog}
         onClose={() =>
           setDialog((d) => ({
@@ -316,9 +318,7 @@ export default function CategoriesPage() {
             <div>
               {" "}
               {parents.map((parent) => {
-                const children = categories.filter(
-                  (c) => c.parentId === parent.id,
-                );
+                const children = parent.children ?? [];
                 const isExpanded = expanded.has(parent.id);
                 return (
                   <div

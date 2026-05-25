@@ -190,13 +190,13 @@ export default function ReturnsNewPage() {
                 lineHeight: 1.2,
               }}
             >
-              Tr?{" "}
+              Trả{" "}
               <span
                 style={{
                   color: "var(--cela-rose)",
                 }}
               >
-                h�ng
+                hàng
               </span>
             </h1>
           </div>{" "}

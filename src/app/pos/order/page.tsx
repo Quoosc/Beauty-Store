@@ -358,7 +358,9 @@ export default function POSOrderPage() {
   // Product search
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -409,17 +411,25 @@ export default function POSOrderPage() {
 
   // Mount: try to restore shift from server if sessionStorage was cleared
   useEffect(() => {
-    if (!currentShift) {
-      setIsSyncingShift(true);
-      syncShift().finally(() => setIsSyncingShift(false));
-    }
-  }, []);
+    const timer = window.setTimeout(() => {
+      if (!currentShift) {
+        setIsSyncingShift(true);
+        syncShift().finally(() => setIsSyncingShift(false));
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [currentShift, syncShift]);
 
   // Mount: check draft
   useEffect(() => {
-    const hasSaved = loadDraft();
-    if (hasSaved) setHasDraft(true);
-  }, []);
+    const timer = window.setTimeout(() => {
+      const hasSaved = loadDraft();
+      if (hasSaved) setHasDraft(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [loadDraft]);
 
   // Draft autosave every 10s
   useEffect(() => {
@@ -431,12 +441,13 @@ export default function POSOrderPage() {
 
   // Product search debounce
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setShowResults(false);
-      return;
-    }
-    const timer = setTimeout(async () => {
+    const delay = searchQuery.trim() ? 300 : 0;
+    const timer = window.setTimeout(async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        setShowResults(false);
+        return;
+      }
       setIsSearching(true);
       try {
         const res = await productService.search({
@@ -451,9 +462,29 @@ export default function POSOrderPage() {
       } finally {
         setIsSearching(false);
       }
-    }, 300);
-    return () => clearTimeout(timer);
+    }, delay);
+    return () => window.clearTimeout(timer);
   }, [searchQuery]);
+
+  // Load a default product shelf so cashier can add items without typing first.
+  useEffect(() => {
+    const timer = window.setTimeout(async () => {
+      setIsLoadingProducts(true);
+      try {
+        const res = await productService.search({
+          status: "ACTIVE",
+          size: 12,
+        });
+        setFeaturedProducts(res.data.data.products ?? []);
+      } catch {
+        setFeaturedProducts([]);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Close search results on outside click
   useEffect(() => {
@@ -593,7 +624,7 @@ export default function POSOrderPage() {
     }
   }
 
-  async function handleCancelConfirm(reason: string) {
+  async function handleCancelConfirm() {
     setIsCancelling(true);
     try {
       clearCart();
@@ -1036,6 +1067,123 @@ export default function POSOrderPage() {
                           }}
                         >
                           Thêm
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 10,
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: "var(--cela-cocoa)",
+                    }}
+                  >
+                    Sản phẩm bán sẵn
+                  </p>
+                  {isLoadingProducts && (
+                    <span style={{ fontSize: 12, color: "var(--cela-stone)" }}>
+                      Đang tải...
+                    </span>
+                  )}
+                </div>
+
+                {!isLoadingProducts && featuredProducts.length === 0 ? (
+                  <div
+                    style={{
+                      border: "1px dashed var(--cela-mist)",
+                      borderRadius: 12,
+                      padding: 18,
+                      textAlign: "center",
+                      color: "var(--cela-stone)",
+                      fontSize: 13,
+                    }}
+                  >
+                    Không có sản phẩm đang bán
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(180px, 1fr))",
+                      gap: 10,
+                      maxHeight: 232,
+                      overflowY: "auto",
+                      paddingRight: 2,
+                    }}
+                  >
+                    {featuredProducts.map((product) => (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => handleAddProduct(product)}
+                        className="hover:bg-[var(--cela-fog)]"
+                        style={{
+                          border: "1px solid var(--cela-fog)",
+                          borderRadius: 10,
+                          background: "transparent",
+                          cursor: "pointer",
+                          padding: 10,
+                          textAlign: "left",
+                          minHeight: 88,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: "var(--cela-espresso)",
+                            lineHeight: 1.35,
+                          }}
+                        >
+                          {product.name}
+                        </span>
+                        <span
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            marginTop: 8,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: "var(--cela-stone)",
+                              fontFamily: "var(--cela-mono)",
+                            }}
+                          >
+                            {product.sku}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: "var(--cela-rose)",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {formatVND(product.sellingPrice)}
+                          </span>
                         </span>
                       </button>
                     ))}
